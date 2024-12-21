@@ -215,7 +215,7 @@ namespace Kaka
 
 		GBuffer gBuffer;
 		RSMBuffer directionalLightRSMBuffer;
-		std::vector<RSMBuffer> spotLightRSMBuffer;
+		//std::vector<RSMBuffer> spotLightRSMBuffer;
 
 		DirectX::XMFLOAT2 halton23[16] = {
 			{0.5f, 0.333333f},

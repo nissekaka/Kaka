@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 
-
 namespace Kaka
 {
 	class Window

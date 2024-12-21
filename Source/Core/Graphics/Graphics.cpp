@@ -168,7 +168,7 @@ namespace Kaka
 
 		gBuffer = GBuffer::Create(*this, width, height);
 		directionalLightRSMBuffer = RSMBuffer::Create(*this, width, height);
-		spotLightRSMBuffer.emplace_back(RSMBuffer::Create(*this, width, height));
+		//spotLightRSMBuffer.emplace_back(RSMBuffer::Create(*this, width, height));
 
 		// Reflection texture
 		{

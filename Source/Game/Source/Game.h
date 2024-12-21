@@ -42,26 +42,6 @@ namespace Kaka
 
 		DeferredLights deferredLights;
 
-		std::vector<Sprite> sprites = {};
-		std::vector<Pointlight> pointlights = {};
-		std::vector<Spotlight> spotlights = {};
-
-		SpotlightData* flashlightInner = nullptr;
-		SpotlightData* flashlightOuter = nullptr;
-
-		float flashlightPositionInterpSpeed = 15.0f;
-		float flashlightDirectionInterpSpeed = 5.0f;
-		float flashlightBleedAngleMultiplier = 1.9f;
-		float flashlightBleedIntensityFactor = 0.05f;
-		float flashlightIntensityInterpSpeed = 20.0f;
-		float flashlightIntensity;
-		bool flashlightOn = true;
-
-		Texture* flashlightTexture;
-
-		Sprite dustParticles;
-		Sprite smokeParticles;
-
 	private:
 		bool showImGui = true;
 		bool showStatsWindow = true;
@@ -80,9 +60,11 @@ namespace Kaka
 	private:
 		std::vector<Model> models;
 
-		Skybox skybox{};
+		Skybox skybox = {};
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};
+
+		Sprite dustParticles;
 
 		struct CommonBuffer
 		{
@@ -134,13 +116,12 @@ namespace Kaka
 		{
 			BOOL isDirectionalLight = true;
 			UINT sampleCount = 12u;
-			float rMax = 0.08f; // Maximum sampling radius.
-			float rsmIntensity = 10.0f;
+			float rMax = 0.04f; // Maximum sampling radius
+			float rsmIntensity = 750.0f;
 			DirectX::XMMATRIX lightCameraTransform;
 		};
 
 		RSMBuffer rsmBufferDirectional = {};
-		RSMBuffer rsmBufferSpot = {};
 
 		struct RSMLightData
 		{
@@ -174,9 +155,8 @@ namespace Kaka
 		PixelConstantBuffer<ShadowBuffer> shadowPixelBuffer{wnd.Gfx(), PS_CBUFFER_SLOT_SHADOW};
 		PixelConstantBuffer<PostProcessingBuffer> ppb{wnd.Gfx(), 1u};
 
-		static constexpr unsigned int SAMPLE_COUNT_DIRECTIONAL = 8u;
+		static constexpr unsigned int SAMPLE_COUNT_DIRECTIONAL = 10u;
 		static constexpr unsigned int SAMPLE_COUNT_SPOT = 4u;
-
 
 		bool flipFlop = false;
 	};

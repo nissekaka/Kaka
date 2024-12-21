@@ -22,7 +22,7 @@ namespace Kaka
 
 	Window::WindowClass::WindowClass() : hInst(GetModuleHandle(nullptr))
 	{
-		WNDCLASSEX wc = {0};
+		WNDCLASSEX wc = { 0 };
 		wc.cbSize = sizeof(wc);
 		wc.style = CS_OWNDC;
 		wc.lpfnWndProc = HandleMsgSetup;
@@ -200,7 +200,7 @@ namespace Kaka
 			Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
 			// Set WinAPI-managed user data to store ptr to window class
 			SetWindowLongPtr(aHWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
-			// Sett kessage proc to normal (non-setup) handler now that setup is finished
+			// Set message proc to normal (non-setup) handler now that setup is finished
 			SetWindowLongPtr(aHWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgThunk));
 			// Forward message to window class handler
 			return pWnd->HandleMsg(aHWnd, aUMsg, aWParam, aLParam);
@@ -226,6 +226,7 @@ namespace Kaka
 
 		switch (aUMsg)
 		{
+#pragma region Windows Messages
 			// We don't want the DefProc to handle this message because
 			// we want our destructor to destroy the window, so return 0 instead of break
 			case WM_CLOSE:
@@ -277,11 +278,14 @@ namespace Kaka
 				//	io.DisplaySize.y = static_cast<float>(clientHeight);
 				//}
 			}
+#pragma endregion
+
+#pragma region Keyboard Messages
 			/********** KEYBOARD MESSAGES **********/
 			case WM_KEYDOWN:
 			case WM_SYSKEYDOWN:
 			{
-				// Stifle this keyboard message if ImGui wants to capture
+				// Ignore this keyboard message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureKeyboard)
 				{
 					break;
@@ -295,7 +299,7 @@ namespace Kaka
 			case WM_KEYUP:
 			case WM_SYSKEYUP:
 			{
-				// Stifle this keyboard message if ImGui wants to capture
+				// Ignore this keyboard message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureKeyboard)
 				{
 					break;
@@ -305,7 +309,7 @@ namespace Kaka
 			}
 			case WM_CHAR:
 			{
-				// Stifle this keyboard message if ImGui wants to capture
+				// Ignore this keyboard message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureKeyboard)
 				{
 					break;
@@ -314,11 +318,13 @@ namespace Kaka
 				break;
 			}
 			/********** END KEYBOARD MESSAGES **********/
+#pragma endregion
 
+#pragma region Mouse Messages
 			/********** MOUSE MESSAGES **********/
 			case WM_MOUSEMOVE:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -359,7 +365,7 @@ namespace Kaka
 					ConfineCursor();
 					HideCursor();
 				}
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -371,7 +377,7 @@ namespace Kaka
 			}
 			case WM_LBUTTONUP:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -382,7 +388,7 @@ namespace Kaka
 			}
 			case WM_RBUTTONDOWN:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -393,7 +399,7 @@ namespace Kaka
 			}
 			case WM_RBUTTONUP:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -404,7 +410,7 @@ namespace Kaka
 			}
 			case WM_MBUTTONDOWN:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -415,7 +421,7 @@ namespace Kaka
 			}
 			case WM_MBUTTONUP:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -426,7 +432,7 @@ namespace Kaka
 			}
 			case WM_MOUSEWHEEL:
 			{
-				// Stifle this mouse message if ImGui wants to capture
+				// Ignore this mouse message if ImGui wants to capture
 				if (ImGui::GetIO().WantCaptureMouse)
 				{
 					break;
@@ -437,7 +443,9 @@ namespace Kaka
 				break;
 			}
 			/********** END MOUSE MESSAGES **********/
+#pragma endregion
 
+#pragma region Raw Mouse Messages
 			/********** RAW MOUSE MESSAGES **********/
 			case WM_INPUT:
 			{
@@ -479,6 +487,7 @@ namespace Kaka
 				break;
 			}
 			/********** END RAW MOUSE MESSAGES **********/
+#pragma endregion
 		}
 		return DefWindowProc(aHWnd, aUMsg, aWParam, aLParam);
 	}
