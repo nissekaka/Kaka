@@ -1,0 +1,28 @@
+.-----------------.
+|    _  ____ _    |
+|   | |/ / _` |   |
+|   |   ( (_| |   |
+|   |_|\_\__,_|   |
+|   | |/ / _` |   |
+|   |   ( (_| |   |
+|   |_|\_\__,_|   |
+|  			      |
+'-----------------'
+  Direct3D Engine
+ by Anton Eriksson
+
+------ TO DO ------
+
+Bugs:
+- ImGui resolution is not updated with window
+
+Features:
+- Deferred Rendering
+	+ Directional Light [X]
+	+ Point lights	    [ ]
+	+ Spot lights	    [ ]
+- SSAO
+- Reflective Shadow Maps
+- Model instancing
+- Line renderer
+- Sprite renderer
