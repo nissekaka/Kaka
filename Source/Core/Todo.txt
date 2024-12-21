@@ -13,16 +13,11 @@
 
 ------ TO DO ------
 
-Bugs:
-- ImGui resolution is not updated with window
-
-Features:
-- Deferred Rendering
-	+ Directional Light [X]
-	+ Point lights	    [ ]
-	+ Spot lights	    [ ]
-- SSAO
-- Reflective Shadow Maps
+- Model rendering
+- Game Object
+- Component system (ECS or component based)
 - Model instancing
 - Line renderer
-- Sprite renderer
+- Memory management
+- Memory leak detection
+- Editor

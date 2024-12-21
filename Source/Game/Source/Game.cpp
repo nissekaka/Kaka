@@ -96,6 +96,11 @@ namespace Kaka
 		// TODO Move most of this to GFX
 		// TODO Move most of this to GFX
 
+		// 1. Move stuff from here to GFX
+		// 2. Models should loaded and drawn in GFX
+		// 3. Need some kind of model renderer in GFX
+		// 4. Need a GameObject and component system
+
 		wnd.Gfx().ApplyProjectionJitter();
 
 		commonBuffer.historyViewProjection = commonBuffer.viewProjection;
