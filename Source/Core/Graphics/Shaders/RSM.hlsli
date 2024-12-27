@@ -69,9 +69,9 @@ float3 IndirectLighting(const float2 aUv, const float3 aN, const float3 aX, cons
         float2 coord = aUv + float2(r * cos(theta), r * sin(theta));
         float weight = offset.x * offset.x;
 
-        float3 xp = rsmWorldPositionTex.Sample(linearSampler, coord).xyz; // Position (x_p) and normal (n_p) are in world coordinates too
-        float3 flux = rsmFluxTex.Sample(linearSampler, coord).rgb; // Collect components from corresponding RSM textures
-        float3 np = normalize(2.0f * rsmNormalTex.Sample(linearSampler, coord).xyz - 1.0f);
+        float3 xp = rsmWorldPositionTex.Sample(pointSampler, coord).xyz; // Position (x_p) and normal (n_p) are in world coordinates too
+        float3 flux = rsmFluxTex.Sample(pointSampler, coord).rgb; // Collect components from corresponding RSM textures
+        float3 np = normalize(2.0f * rsmNormalTex.Sample(pointSampler, coord).xyz - 1.0f);
 
         float3 Ep = flux * ((max(0, dot(np, aX - xp)) * max(0, dot(aN, xp - aX)))
 									/ pow(length(aX - xp), 4));

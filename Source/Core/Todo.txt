@@ -13,6 +13,7 @@
 
 ------ TO DO ------
 
+- RSM takes a lot of performance, remove for now
 - Model rendering
 - Game Object
 - Component system (ECS or component based)

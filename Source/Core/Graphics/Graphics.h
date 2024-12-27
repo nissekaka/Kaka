@@ -167,12 +167,12 @@ namespace Kaka
 		Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
 
-		RenderTarget renderWaterReflect;
+		//RenderTarget renderWaterReflect;
 		RenderTarget postProcessing;
 
 		RenderTarget indirectLight;
-		RenderTarget indirectLightN;
-		RenderTarget indirectLightN1;
+		//RenderTarget indirectLightN;
+		//RenderTarget indirectLightN1;
 		//RenderTarget rsmFullscaleSpot;
 
 		RenderTarget historyN;

@@ -160,6 +160,8 @@ namespace Kaka
 			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+			samplerDesc.MinLOD = 0.0f;
+			samplerDesc.MaxLOD = 0.0f;
 
 			pDevice->CreateSamplerState(&samplerDesc, &pPointClampedSampler);
 		}
@@ -171,29 +173,29 @@ namespace Kaka
 		//spotLightRSMBuffer.emplace_back(RSMBuffer::Create(*this, width, height));
 
 		// Reflection texture
-		{
-			ID3D11Texture2D* reflectionTexture;
-			D3D11_TEXTURE2D_DESC desc = {0};
-			desc.Width = width;
-			desc.Height = height;
-			desc.MipLevels = 1u;
-			desc.ArraySize = 1u;
-			desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-			desc.SampleDesc.Count = 1u;
-			desc.SampleDesc.Quality = 0u;
-			desc.Usage = D3D11_USAGE_DEFAULT;
-			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			desc.CPUAccessFlags = 0u;
-			desc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&desc, nullptr, &reflectionTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(reflectionTexture, nullptr, &renderWaterReflect.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(reflectionTexture, nullptr, &renderWaterReflect.pTarget);
-			assert(SUCCEEDED(result));
+		//{
+		//	ID3D11Texture2D* reflectionTexture;
+		//	D3D11_TEXTURE2D_DESC desc = {0};
+		//	desc.Width = width;
+		//	desc.Height = height;
+		//	desc.MipLevels = 1u;
+		//	desc.ArraySize = 1u;
+		//	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		//	desc.SampleDesc.Count = 1u;
+		//	desc.SampleDesc.Quality = 0u;
+		//	desc.Usage = D3D11_USAGE_DEFAULT;
+		//	desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		//	desc.CPUAccessFlags = 0u;
+		//	desc.MiscFlags = 0u;
+		//	result = pDevice->CreateTexture2D(&desc, nullptr, &reflectionTexture);
+		//	assert(SUCCEEDED(result));
+		//	result = pDevice->CreateShaderResourceView(reflectionTexture, nullptr, &renderWaterReflect.pResource);
+		//	assert(SUCCEEDED(result));
+		//	result = pDevice->CreateRenderTargetView(reflectionTexture, nullptr, &renderWaterReflect.pTarget);
+		//	assert(SUCCEEDED(result));
 
-			reflectionTexture->Release();
-		}
+		//	reflectionTexture->Release();
+		//}
 
 		// Post processing
 		{
@@ -282,61 +284,61 @@ namespace Kaka
 			rsmTexture->Release();
 		}
 
-		// Indirect light N
-		{
-			UINT rsmWidth = width;
-			UINT rsmHeight = height;
+		//// Indirect light N
+		//{
+		//	UINT rsmWidth = width;
+		//	UINT rsmHeight = height;
 
-			ID3D11Texture2D* rsmTexture;
-			D3D11_TEXTURE2D_DESC rsmDesc = {0};
-			rsmDesc.Width = rsmWidth;
-			rsmDesc.Height = rsmHeight;
-			rsmDesc.MipLevels = 1u;
-			rsmDesc.ArraySize = 1u;
-			rsmDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-			rsmDesc.SampleDesc.Count = 1u;
-			rsmDesc.SampleDesc.Quality = 0u;
-			rsmDesc.Usage = D3D11_USAGE_DEFAULT;
-			rsmDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			rsmDesc.CPUAccessFlags = 0u;
-			rsmDesc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&rsmDesc, nullptr, &rsmTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLightN.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLightN.pTarget);
-			assert(SUCCEEDED(result));
+		//	ID3D11Texture2D* rsmTexture;
+		//	D3D11_TEXTURE2D_DESC rsmDesc = {0};
+		//	rsmDesc.Width = rsmWidth;
+		//	rsmDesc.Height = rsmHeight;
+		//	rsmDesc.MipLevels = 1u;
+		//	rsmDesc.ArraySize = 1u;
+		//	rsmDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		//	rsmDesc.SampleDesc.Count = 1u;
+		//	rsmDesc.SampleDesc.Quality = 0u;
+		//	rsmDesc.Usage = D3D11_USAGE_DEFAULT;
+		//	rsmDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		//	rsmDesc.CPUAccessFlags = 0u;
+		//	rsmDesc.MiscFlags = 0u;
+		//	result = pDevice->CreateTexture2D(&rsmDesc, nullptr, &rsmTexture);
+		//	assert(SUCCEEDED(result));
+		//	result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLightN.pResource);
+		//	assert(SUCCEEDED(result));
+		//	result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLightN.pTarget);
+		//	assert(SUCCEEDED(result));
 
-			rsmTexture->Release();
-		}
+		//	rsmTexture->Release();
+		//}
 
-		// Indirect light N - 1
-		{
-			UINT rsmWidth = width;
-			UINT rsmHeight = height;
+		//// Indirect light N - 1
+		//{
+		//	UINT rsmWidth = width;
+		//	UINT rsmHeight = height;
 
-			ID3D11Texture2D* rsmTexture;
-			D3D11_TEXTURE2D_DESC rsmDesc = {0};
-			rsmDesc.Width = rsmWidth;
-			rsmDesc.Height = rsmHeight;
-			rsmDesc.MipLevels = 1u;
-			rsmDesc.ArraySize = 1u;
-			rsmDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-			rsmDesc.SampleDesc.Count = 1u;
-			rsmDesc.SampleDesc.Quality = 0u;
-			rsmDesc.Usage = D3D11_USAGE_DEFAULT;
-			rsmDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			rsmDesc.CPUAccessFlags = 0u;
-			rsmDesc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&rsmDesc, nullptr, &rsmTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLightN1.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLightN1.pTarget);
-			assert(SUCCEEDED(result));
+		//	ID3D11Texture2D* rsmTexture;
+		//	D3D11_TEXTURE2D_DESC rsmDesc = {0};
+		//	rsmDesc.Width = rsmWidth;
+		//	rsmDesc.Height = rsmHeight;
+		//	rsmDesc.MipLevels = 1u;
+		//	rsmDesc.ArraySize = 1u;
+		//	rsmDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		//	rsmDesc.SampleDesc.Count = 1u;
+		//	rsmDesc.SampleDesc.Quality = 0u;
+		//	rsmDesc.Usage = D3D11_USAGE_DEFAULT;
+		//	rsmDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		//	rsmDesc.CPUAccessFlags = 0u;
+		//	rsmDesc.MiscFlags = 0u;
+		//	result = pDevice->CreateTexture2D(&rsmDesc, nullptr, &rsmTexture);
+		//	assert(SUCCEEDED(result));
+		//	result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLightN1.pResource);
+		//	assert(SUCCEEDED(result));
+		//	result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLightN1.pTarget);
+		//	assert(SUCCEEDED(result));
 
-			rsmTexture->Release();
-		}
+		//	rsmTexture->Release();
+		//}
 
 		// Fullscreen
 		{
@@ -514,7 +516,7 @@ namespace Kaka
 			break;
 			case eRenderTargetType::WaterReflect:
 			{
-				pContext->OMSetRenderTargets(1u, renderWaterReflect.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
+				//pContext->OMSetRenderTargets(1u, renderWaterReflect.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
 			}
 			break;
 			case eRenderTargetType::PostProcessing:
@@ -563,7 +565,7 @@ namespace Kaka
 			break;
 			case eRenderTargetType::WaterReflect:
 			{
-				pContext->OMSetRenderTargets(1u, renderWaterReflect.pTarget.GetAddressOf(), aDepth);
+				//pContext->OMSetRenderTargets(1u, renderWaterReflect.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::PostProcessing:
@@ -968,7 +970,7 @@ namespace Kaka
 
 	void Graphics::BindWaterReflectionTexture()
 	{
-		pContext->PSSetShaderResources(2u, 1u, renderWaterReflect.pResource.GetAddressOf());
+		//pContext->PSSetShaderResources(2u, 1u, renderWaterReflect.pResource.GetAddressOf());
 	}
 
 	void Graphics::BindPostProcessingTexture()

@@ -298,6 +298,7 @@ project(PROJECT_GAME)
     targetdir(directories.bin)
 	targetname(PROJECT_GAME.."_%{cfg.buildcfg}")
 	objdir(directories.temp.."/"..PROJECT_GAME.."/%{cfg.buildcfg}")
+    icon "../Bin/Kaka.ico"
 	
     dependson { PROJECT_CORE, PROJECT_EXTERNAL }
     
@@ -353,6 +354,9 @@ project(PROJECT_GAME)
         symbols "On"
         systemversion "latest"
         warnings "Extra"
+
+        files { directories.game..'/Resources/resources.rc', '**.ico' }
+        vpaths { [directories.game..'Resources/*'] = { '*.rc', '**.ico' } }
 
         flags {
             --"FatalCompileWarnings",

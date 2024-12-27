@@ -76,7 +76,7 @@ namespace Kaka
 		indirectLightingVS->Bind(aGfx);
 		indirectLightingPS->Bind(aGfx);
 		inputLayout.Bind(aGfx);
-		topology.Bind(aGfx);
+		//topology.Bind(aGfx);
 
 		aGfx.DrawIndexed(indexBuffer.GetCount());
 	}

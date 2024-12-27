@@ -30,8 +30,8 @@ namespace Kaka
 		postProcessing.Init(wnd.Gfx());
 		indirectLighting.Init(wnd.Gfx());
 
-		ppBuffer.tint = {1.0f, 1.0f, 1.0f};
-		ppBuffer.blackpoint = {0.0f, 0.0f, 0.0f};
+		ppBuffer.tint = { 1.0f, 1.0f, 1.0f };
+		ppBuffer.blackpoint = { 0.0f, 0.0f, 0.0f };
 		ppBuffer.exposure = 0.0f;
 		ppBuffer.contrast = 1.0f;
 		ppBuffer.saturation = 1.0f;
@@ -40,8 +40,8 @@ namespace Kaka
 
 		skybox.Init(wnd.Gfx(), "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
 
-		wnd.Gfx().directionalLightRSMBuffer.GetCamera().SetPosition({0.0f, 70.0f, 0.0f});
-		camera.SetPosition({-11.0f, 28.0f, 26.0f});
+		wnd.Gfx().directionalLightRSMBuffer.GetCamera().SetPosition({ 0.0f, 70.0f, 0.0f });
+		camera.SetPosition({ -11.0f, 28.0f, 26.0f });
 		camera.SetRotationDegrees(29.0f, 138.0f);
 
 		models.emplace_back();
@@ -50,7 +50,7 @@ namespace Kaka
 		models.back().SetScale(0.1f);
 
 		// 131072 * 4 = 524288
-		dustParticles.Init(wnd.Gfx(), 0.0125f, 131072u, true, "Assets\\Textures\\particle.png", camera.GetPosition());
+		//dustParticles.Init(wnd.Gfx(), 0.0125f, 131072u, true, "Assets\\Textures\\particle.png", camera.GetPosition());
 
 		rsmBufferDirectional.sampleCount = SAMPLE_COUNT_DIRECTIONAL;
 		rsmBufferDirectional.rMax = 0.04f;
@@ -108,7 +108,7 @@ namespace Kaka
 		commonBuffer.inverseViewProjection = DirectX::XMMatrixInverse(nullptr, commonBuffer.viewProjection);
 		commonBuffer.projection = DirectX::XMMatrixInverse(nullptr, camera.GetProjection());
 		commonBuffer.viewInverse = camera.GetInverseView();
-		commonBuffer.cameraPosition = {camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z, 0.0f};
+		commonBuffer.cameraPosition = { camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z, 0.0f };
 		commonBuffer.resolution = wnd.Gfx().GetCurrentResolution();
 		commonBuffer.currentTime = timer.GetTotalTime();
 
@@ -123,7 +123,7 @@ namespace Kaka
 
 		deferredLights.Update(aDeltaTime);
 
-		dustParticles.Update(wnd.Gfx(), aDeltaTime, camera.GetPosition());
+		//dustParticles.Update(wnd.Gfx(), aDeltaTime, camera.GetPosition());
 
 		wnd.Gfx().SetDepthStencilState(eDepthStencilStates::Normal);
 		// Need backface culling for Reflective Shadow Maps
@@ -188,24 +188,24 @@ namespace Kaka
 				wnd.Gfx().directionalLightRSMBuffer.SetAllAsResources(wnd.Gfx().pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
 				rsmBufferDirectional.lightCameraTransform = wnd.Gfx().directionalLightRSMBuffer.GetCamera().GetInverseView() * wnd.Gfx().directionalLightRSMBuffer.GetCamera().GetJitteredProjection();
 
-				if (flipFlop)
-				{
-					wnd.Gfx().SetRenderTarget(eRenderTargetType::IndirectLight, nullptr);
-				}
-				else
-				{
-					wnd.Gfx().pContext->OMSetRenderTargets(1u, wnd.Gfx().indirectLightN.pTarget.GetAddressOf(), nullptr);
-				}
+				//if (flipFlop)
+				//{
+				wnd.Gfx().SetRenderTarget(eRenderTargetType::IndirectLight, nullptr);
+				//}
+				//else
+				//{
+				//	wnd.Gfx().pContext->OMSetRenderTargets(1u, wnd.Gfx().indirectLightN.pTarget.GetAddressOf(), nullptr);
+				//}
 
 				rsmBufferDirectional.isDirectionalLight = TRUE;
 				rsmPixelBuffer.Update(wnd.Gfx(), rsmBufferDirectional);
 				rsmPixelBuffer.Bind(wnd.Gfx());
 
-				taaBuffer.jitter = wnd.Gfx().currentJitter;
-				taaBuffer.previousJitter = wnd.Gfx().previousJitter;
-
-				tab.Update(wnd.Gfx(), taaBuffer);
-				tab.Bind(wnd.Gfx());
+				//taaBuffer.jitter = wnd.Gfx().currentJitter;
+				//taaBuffer.previousJitter = wnd.Gfx().previousJitter;
+				//
+				//tab.Update(wnd.Gfx(), taaBuffer);
+				//tab.Bind(wnd.Gfx());
 
 				indirectLighting.Draw(wnd.Gfx());
 
@@ -240,53 +240,13 @@ namespace Kaka
 		}
 		/// Skybox pass -- END
 
-		/// Indirect combined pass -- BEGIN
-
+		/// Indirect to Post Process pass -- BEGIN
+		// This draws the indirect light to the post processing buffer
+		// Indirect light is drawn to its own buffer, then combined with the post processing buffer here so that we see it
 		if (drawRSM)
 		{
-			// Set render target to combined
-
-			if (flipFlop)
-			{
-				wnd.Gfx().pContext->OMSetRenderTargets(1u, wnd.Gfx().indirectLightN1.pTarget.GetAddressOf(), nullptr);
-				wnd.Gfx().pContext->PSSetShaderResources(1u, 1u, wnd.Gfx().indirectLightN.pResource.GetAddressOf());
-			}
-			else
-			{
-				wnd.Gfx().pContext->OMSetRenderTargets(1u, wnd.Gfx().indirectLightN.pTarget.GetAddressOf(), nullptr);
-				wnd.Gfx().pContext->PSSetShaderResources(1u, 1u, wnd.Gfx().indirectLightN1.pResource.GetAddressOf());
-			}
-
-			// Draw the combined pass
 			wnd.Gfx().pContext->PSSetShaderResources(0u, 1u, wnd.Gfx().indirectLight.pResource.GetAddressOf());
-			wnd.Gfx().pContext->PSSetShaderResources(2u, 1u, wnd.Gfx().gBuffer.GetShaderResourceView(GBuffer::GBufferTexture::WorldPosition));
-
-			taaBuffer.jitter = wnd.Gfx().currentJitter;
-			taaBuffer.previousJitter = wnd.Gfx().previousJitter;
-
-			tab.Update(wnd.Gfx(), taaBuffer);
-			tab.Bind(wnd.Gfx());
-
-			indirectLighting.SetPixelShaderCombined(true);
-			indirectLighting.Draw(wnd.Gfx());
-			indirectLighting.SetPixelShaderCombined(false);
-
-			ID3D11ShaderResourceView* const nullSRV[1] = {nullptr};
-			wnd.Gfx().pContext->PSSetShaderResources(0u, 1u, nullSRV);
-			wnd.Gfx().pContext->PSSetShaderResources(1u, 1u, nullSRV);
-			wnd.Gfx().pContext->PSSetShaderResources(2u, 1u, nullSRV);
-
 			wnd.Gfx().SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
-
-			if (flipFlop)
-			{
-				wnd.Gfx().pContext->PSSetShaderResources(0u, 1u, wnd.Gfx().indirectLightN1.pResource.GetAddressOf());
-			}
-			else
-			{
-				wnd.Gfx().pContext->PSSetShaderResources(0u, 1u, wnd.Gfx().indirectLightN.pResource.GetAddressOf());
-			}
-
 			wnd.Gfx().SetBlendState(eBlendStates::Additive);
 
 			postProcessing.SetFullscreenPS();
@@ -297,7 +257,6 @@ namespace Kaka
 		/// Indirect combined pass -- END
 
 		/// TAA pass -- BEGIN
-
 		if (flipFlop)
 		{
 			wnd.Gfx().SetRenderTarget(eRenderTargetType::HistoryN1, nullptr);
@@ -312,7 +271,6 @@ namespace Kaka
 		wnd.Gfx().pContext->PSSetShaderResources(0u, 1u, wnd.Gfx().postProcessing.pResource.GetAddressOf());
 		// Need world position for reprojection
 		wnd.Gfx().pContext->PSSetShaderResources(2u, 1u, wnd.Gfx().gBuffer.GetShaderResourceView(GBuffer::GBufferTexture::WorldPosition));
-		//wnd.Gfx().pContext->PSSetShaderResources(2u, 1u, wnd.Gfx().gBuffer.GetShaderResourceView(GBuffer::GBufferTexture::Velocity));
 		wnd.Gfx().pContext->PSSetShaderResources(3u, 1u, wnd.Gfx().gBuffer.GetDepthShaderResourceView());
 
 		taaBuffer.jitter = wnd.Gfx().currentJitter;
@@ -346,7 +304,7 @@ namespace Kaka
 
 		postProcessing.Draw(wnd.Gfx());
 
-		ID3D11ShaderResourceView* nullSRVs[1] = {nullptr};
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		wnd.Gfx().pContext->PSSetShaderResources(0u, 1, nullSRVs);
 		wnd.Gfx().pContext->PSSetShaderResources(1u, 1, nullSRVs);
 		wnd.Gfx().pContext->PSSetShaderResources(2u, 1, nullSRVs);
@@ -355,13 +313,13 @@ namespace Kaka
 		/// Post processing pass -- END
 
 		/// Sprite pass -- BEGIN
-		{
-			wnd.Gfx().SetBlendState(eBlendStates::Additive);
+		//{
+		//	wnd.Gfx().SetBlendState(eBlendStates::Additive);
 
-			dustParticles.Draw(wnd.Gfx());
+		//	dustParticles.Draw(wnd.Gfx());
 
-			wnd.Gfx().SetBlendState(eBlendStates::Disabled);
-		}
+		//	wnd.Gfx().SetBlendState(eBlendStates::Disabled);
+		//}
 		/// Sprite pass -- END
 
 		ShowImGui();
@@ -426,7 +384,7 @@ namespace Kaka
 				cameraSpeed = cameraSpeedDefault;
 			}
 
-			cameraInput = {0.0f, 0.0f, 0.0f};
+			cameraInput = { 0.0f, 0.0f, 0.0f };
 
 			if (wnd.keyboard.KeyIsPressed('W'))
 			{

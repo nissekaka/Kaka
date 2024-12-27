@@ -64,7 +64,7 @@ namespace Kaka
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
-		Sprite dustParticles;
+		//Sprite dustParticles;
 
 		struct CommonBuffer
 		{

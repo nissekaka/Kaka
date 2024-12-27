@@ -60,6 +60,6 @@ namespace Kaka
 		int height;
 		HWND hWnd;
 		std::vector<BYTE> rawBuffer;
-		std::unique_ptr<Graphics> pGfx;
+		std::unique_ptr<Graphics> pGraphics;
 	};
 }

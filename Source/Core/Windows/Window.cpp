@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Window.h"
-#include "Game/resource.h"
+#include "Game/Resources/resource.h"
 #include <External/include/imgui/imgui_impl_win32.h>
 #include <cassert>
 #include <sstream>
@@ -82,7 +82,7 @@ namespace Kaka
 		height = clientRect.bottom - clientRect.top;
 
 		// Create graphics object
-		pGfx = std::make_unique<Graphics>(hWnd, width, height);
+		pGraphics = std::make_unique<Graphics>(hWnd, width, height);
 
 		// Initialise ImGui Win32 Impl
 		ImGui_ImplWin32_Init(hWnd);
@@ -147,8 +147,8 @@ namespace Kaka
 
 	Graphics& Window::Gfx() const
 	{
-		assert(pGfx && "pGfx is nullptr");
-		return *pGfx;
+		assert(pGraphics && "pGfx is nullptr");
+		return *pGraphics;
 	}
 
 	void Window::ConfineCursor() const
