@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "ShaderFactory.h"
 
-#include "Core/Graphics/Bindable/PixelShader.h"
-#include "Core/Graphics/Bindable/VertexShader.h"
-#include "Core/Graphics/Bindable/ComputeShader.h"
-
 namespace Kaka
 {
 	PixelShader* ShaderFactory::GetPixelShader(const Graphics& aGfx, const std::wstring& aFileName)

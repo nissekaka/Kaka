@@ -1,13 +1,13 @@
 #pragma once
 #include <unordered_map>
 #include <string>
+#include "Core/Graphics/Bindable/PixelShader.h"
+#include "Core/Graphics/Bindable/VertexShader.h"
+#include "Core/Graphics/Bindable/ComputeShader.h"
 
 namespace Kaka
 {
 	class Graphics;
-	class VertexShader;
-	class PixelShader;
-	class ComputeShader;
 
 	class ShaderFactory
 	{

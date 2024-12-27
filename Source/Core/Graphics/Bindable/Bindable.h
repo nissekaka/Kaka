@@ -1,9 +1,10 @@
 #pragma once
-#include "Core/Graphics/Graphics.h"
-
+#include <d3d11.h>
 
 namespace Kaka
 {
+	class Graphics;
+
 	class Bindable
 	{
 	public:

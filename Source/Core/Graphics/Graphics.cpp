@@ -1,11 +1,16 @@
 #include "stdafx.h"
 #include "Graphics.h"
-#include "Game/Source/Game.h"
+//#include "Game/Source/Game.h"
 #include <External/include/imgui/imgui_impl_dx11.h>
 #include <External/include/imgui/imgui_impl_win32.h>
 #include <complex>
 
-#include "GraphicsConstants.h"
+#include "Core/Graphics/Drawable/Model.h"
+#include <DirectXMath.h>
+#include <array>
+
+//#include "Core/Graphics/Lighting/Pointlight.h"
+//#include "GraphicsConstants.h"
 #include "Drawable/ModelLoader.h"
 
 namespace WRL = Microsoft::WRL;

@@ -10,6 +10,9 @@
 #include "ShaderFactory.h"
 #include <External/Include/FileWatch/FileWatch.hpp>
 
+#include "Core/Utility/ImGuiManager.h"
+#include "Core/Graphics/PostProcessing/PostProcessing.h"
+
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
 namespace DirectX
@@ -161,6 +164,8 @@ namespace Kaka
 
 	private:
 		filewatch::FileWatch<std::wstring> shaderFileWatcher;
+
+		ImGuiManager imGui;
 
 		Camera* camera = nullptr;
 		Microsoft::WRL::ComPtr<ID3D11Device> pDevice;

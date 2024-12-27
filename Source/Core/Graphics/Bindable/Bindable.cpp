@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Bindable.h"
+#include "Core/Graphics/Graphics.h"
 
 namespace Kaka
 {
