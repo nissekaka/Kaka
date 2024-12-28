@@ -17,7 +17,7 @@ namespace Kaka
 			Normal,
 			Material,
 			AmbientOcclusionAndCustom,
-			Velocity,
+			//Velocity,
 			Count
 		};
 
@@ -35,8 +35,8 @@ namespace Kaka
 				return 5u;
 			case GBufferTexture::AmbientOcclusionAndCustom:
 				return 6u;
-			case GBufferTexture::Velocity:
-				return 7u;
+			//case GBufferTexture::Velocity:
+			//	return 7u;
 			default:
 				return 0;
 			}

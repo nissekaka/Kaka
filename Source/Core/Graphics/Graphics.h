@@ -11,7 +11,18 @@
 #include <External/Include/FileWatch/FileWatch.hpp>
 
 #include "Core/Utility/ImGuiManager.h"
+
 #include "Core/Graphics/PostProcessing/PostProcessing.h"
+
+#include "Core/Graphics/Lighting/DeferredLights.h"
+#include "Core/Graphics/Lighting/IndirectLighting.h"
+
+#include "Core/Graphics/Bindable/ConstantBuffers.h"
+
+#include "Core/Graphics/Drawable/Skybox.h"
+#include "Core/Graphics/Drawable/Model.h"
+
+#include "GraphicsConstants.h"
 
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
@@ -102,7 +113,9 @@ namespace Kaka
 		void DrawIndexedInstanced(UINT aCount, UINT aInstanceCount);
 		DirectX::XMMATRIX GetProjection() const;
 		DirectX::XMMATRIX GetJitteredProjection() const;
+		void SetupCamera(const float aWidth, const float aHeight, const float aFoV = 80.0f, const float aNearZ = 0.5f, const float aFarZ = 5000.0f);
 		void SetCamera(Camera& aCamera);
+		//Camera& GetCamera() { return &currentCamera; }
 		DirectX::XMMATRIX GetCameraInverseView() const;
 		UINT GetDrawcallCount() const;
 		void SetRenderTarget(eRenderTargetType aRenderTargetType, const bool aUseDepth = true) const;
@@ -139,7 +152,17 @@ namespace Kaka
 		void ClearPixelShaderOverride() { pixelShaderOverride = nullptr; }
 		void ClearVertexShaderOverride() { vertexShaderOverride = nullptr; }
 
+
+		void ShowImGui(const float aFPS);
+		void ShowStatsWindow(const float aFPS);
+
+	private:
+		bool showImGui = true;
+		bool showStatsWindow = true;
+		bool drawLightDebug = false;
 	public:
+		void UpdateLights(const float aDeltaTime);
+		void Render(const float aDeltaTime, const float aTotalTime, const float aFPS);
 		void EnableImGui();
 		void DisableImGui();
 		bool IsImGuiEnabled() const;
@@ -165,27 +188,31 @@ namespace Kaka
 	private:
 		filewatch::FileWatch<std::wstring> shaderFileWatcher;
 
-		ImGuiManager imGui;
-
-		Camera* camera = nullptr;
+		Camera camera;
+		Camera* currentCamera = nullptr;
+		//Camera* currentCamera = nullptr;
 		Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
 		Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
 
-		//RenderTarget renderWaterReflect;
-		RenderTarget postProcessing;
+		ImGuiManager imGui;
 
-		RenderTarget indirectLight;
+		DeferredLights deferredLights;
+
+		//RenderTarget renderWaterReflect;
+		RenderTarget postProcessingTarget;
+
+		RenderTarget indirectLightTarget;
 		//RenderTarget indirectLightN;
 		//RenderTarget indirectLightN1;
 		//RenderTarget rsmFullscaleSpot;
 
-		RenderTarget historyN;
-		RenderTarget historyN1;
+		RenderTarget historyNTarget;
+		RenderTarget historyN1Target;
 
 		DirectX::XMMATRIX historyViewProjection;
 
-		std::vector<RenderTarget> bloomDownscale = {};
+		std::vector<RenderTarget> bloomDownscaleTargets = {};
 
 		struct DownSampleBuffer
 		{
@@ -241,12 +268,119 @@ namespace Kaka
 			{0.03125f, 0.592593f}
 		};
 
-		DirectX::XMFLOAT2 previousJitter = {0.0f, 0.0f};
-		DirectX::XMFLOAT2 currentJitter = {0.0f, 0.0f};
+		DirectX::XMFLOAT2 previousJitter = { 0.0f, 0.0f };
+		DirectX::XMFLOAT2 currentJitter = { 0.0f, 0.0f };
 		float jitterScale = 0.4f;
 
 		unsigned long long frameCount = 0;
 
 	private:
+		PostProcessing postProcessing;
+		IndirectLighting indirectLighting;
+
+		struct PostProcessingBuffer
+		{
+			DirectX::XMFLOAT3 tint; // RGB values for tint adjustment
+			float exposure; // Exposure adjustment
+			DirectX::XMFLOAT3 blackpoint; // Blackpoint adjustment
+			float contrast; // Contrast adjustment
+			float saturation; // Saturation adjustment
+			float blur; // Blur adjustment
+			float sharpness; // Sharpness adjustment
+			float padding;
+		};
+
+		PostProcessingBuffer ppBuffer = {};
+
+		float cameraMoveSpeed = 10.0f;
+
+		struct ShadowBuffer
+		{
+			BOOL usePCF = false;
+			float offsetScalePCF = 0.004f;
+			int sampleCountPCF = 5;
+			BOOL usePoisson = true;
+			float offsetScalePoissonDisk = 0.0019f;
+			float padding[3];
+		};
+
+		ShadowBuffer shadowBuffer = {};
+
+		struct RSMConstantBuffer
+		{
+			BOOL isDirectionalLight = true;
+			UINT sampleCount = 12u;
+			float rMax = 0.04f; // Maximum sampling radius
+			float rsmIntensity = 750.0f;
+			DirectX::XMMATRIX lightCameraTransform;
+		};
+
+		RSMConstantBuffer rsmBufferDirectional = {};
+
+		struct RSMLightData
+		{
+			float colourAndIntensity[4];
+			float directionAndInnerAngle[4];
+			float lightPositionAndOuterAngle[4];
+			float range;
+			BOOL isDirectionalLight;
+			float padding[2];
+		} rsmLightData;
+
+		struct RSMCombinedBuffer
+		{
+			UINT currentPass = 0;
+			float padding[3];
+		} rsmCombinedBuffer;
+
+		struct TAABuffer
+		{
+			DirectX::XMFLOAT2 jitter;
+			DirectX::XMFLOAT2 previousJitter;
+			BOOL useTAA = true;
+			float padding[3];
+		} taaBuffer;
+
+		struct CommonBuffer
+		{
+			DirectX::XMMATRIX viewProjection;
+			DirectX::XMMATRIX historyViewProjection;
+			DirectX::XMMATRIX inverseViewProjection;
+			DirectX::XMMATRIX projection;
+			DirectX::XMMATRIX viewInverse;
+			DirectX::XMFLOAT4 cameraPosition;
+			DirectX::XMFLOAT2 resolution;
+			float currentTime;
+			float padding;
+		};
+
+		CommonBuffer commonBuffer = {};
+		//KonstantBuffer vcb;
+		//KonstantBuffer pcb;
+		//KonstantBuffer rsmLightDataBuffer;
+		//KonstantBuffer tab;
+		//KonstantBuffer rsmPixelBuffer;
+		//KonstantBuffer shadowPixelBuffer;
+		//KonstantBuffer ppb;
+		VertexConstantBuffer<CommonBuffer> vcb { VS_CBUFFER_SLOT_COMMON };
+		PixelConstantBuffer<CommonBuffer> pcb { PS_CBUFFER_SLOT_COMMON };
+		PixelConstantBuffer<RSMLightData> rsmLightDataBuffer { PS_CBUFFER_SLOT_RSM_LIGHT };
+		PixelConstantBuffer<TAABuffer> tab { 1u };
+		PixelConstantBuffer<RSMConstantBuffer> rsmPixelBuffer { PS_CBUFFER_SLOT_RSM_DIRECTIONAL };
+		PixelConstantBuffer<ShadowBuffer> shadowPixelBuffer { PS_CBUFFER_SLOT_SHADOW };
+		PixelConstantBuffer<PostProcessingBuffer> ppb { 1u };
+
+		static constexpr unsigned int SAMPLE_COUNT_DIRECTIONAL = 10u;
+		static constexpr unsigned int SAMPLE_COUNT_SPOT = 4u;
+
+		bool flipFlop = false;
+
+	private:
+		bool drawRSM = true;
+		Skybox skybox = {};
+		float skyboxSpeed = 0.005f;
+		DirectX::XMFLOAT3 skyboxAngle = {};
+
+		std::vector<Model> models = {};
 	};
 }

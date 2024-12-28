@@ -20,6 +20,11 @@ namespace Kaka
 			GetContext(aGfx)->Unmap(pConstantBuffer.Get(), 0u);
 		}
 
+		ConstantBuffer(const UINT aSlot = 0u)
+			:
+			slot(aSlot)
+		{ }
+
 		ConstantBuffer(const Graphics& aGfx, const C& aConsts, const UINT aSlot = 0u)
 			:
 			slot(aSlot)
@@ -49,6 +54,21 @@ namespace Kaka
 			cbd.ByteWidth = sizeof(C);
 			cbd.StructureByteStride = 0u;
 			GetDevice(aGfx)->CreateBuffer(&cbd, nullptr, &pConstantBuffer);
+		}
+
+		void Init(const Graphics& aGfx, const C& aConsts)
+		{
+			D3D11_BUFFER_DESC cbd;
+			cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			cbd.Usage = D3D11_USAGE_DYNAMIC;
+			cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+			cbd.MiscFlags = 0u;
+			cbd.ByteWidth = sizeof(aConsts);
+			cbd.StructureByteStride = 0u;
+
+			D3D11_SUBRESOURCE_DATA csd = {};
+			csd.pSysMem = &aConsts;
+			GetDevice(aGfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer);
 		}
 
 	protected:

@@ -63,5 +63,14 @@ namespace Kaka
 		float yaw;
 		static constexpr float TRAVEL_SPEED = 12.0f;
 		static constexpr float ROTATION_SPEED = 0.0008f;
+
+	public:
+		DirectX::XMFLOAT3 cameraInput = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 cameraVelocity = { 0.0f, 0.0f, 0.0f };
+		float cameraMoveInterpSpeed = 8.0f;
+		float cameraRotateInterpSpeed = 25.0f;
+		float cameraSpeed = 0.0f;
+		float cameraSpeedDefault = 3.0f;
+		float cameraSpeedBoost = 6.0f;
 	};
 }

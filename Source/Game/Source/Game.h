@@ -24,7 +24,7 @@ namespace Kaka
 		//ImGuiManager imGui;
 		Window wnd;
 		Timer timer;
-		Camera camera;
+		//Camera camera;
 
 		//DeferredLights deferredLights;
 

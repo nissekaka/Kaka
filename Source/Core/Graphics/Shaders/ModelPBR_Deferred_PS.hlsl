@@ -64,15 +64,15 @@ GBufferOutput main(PixelInput aInput)
     output.ambientOcclusionAndCustom = float4(ambientOcclusion, aInput.worldNormal); // gba are unused, put whatever data you want here!
     output.ambientOcclusionAndCustom.g = 0.0f;
 
-    const float4 location_ndc = aInput.position / aInput.position.w;
-    const float4 previous_location_ndc = aInput.position / aInput.position.w;
+    //const float4 location_ndc = aInput.position / aInput.position.w;
+    //const float4 previous_location_ndc = aInput.position / aInput.position.w;
+    //
+    //const float2 previous_uv = 0.5 + previous_location_ndc.xy * float2(0.5, -0.5);
+    //const float2 previous_pixel_location = previous_uv * resolution;
+    //
+    //const float2 pixel_motion_vectors = previous_pixel_location - previousJitterOffset - location_ndc - jitterOffset;
 
-    const float2 previous_uv = 0.5 + previous_location_ndc.xy * float2(0.5, -0.5);
-    const float2 previous_pixel_location = previous_uv * resolution;
-
-    const float2 pixel_motion_vectors = previous_pixel_location - previousJitterOffset - location_ndc - jitterOffset;
-
-    output.velocity = pixel_motion_vectors;
+    //output.velocity = pixel_motion_vectors;
     //const float2 previousPosNDC = aInput.previousPosition.xy / aInput.previousPosition.w;
     //const float2 currentPosNDC = aInput.position.xy / aInput.position.w;
 

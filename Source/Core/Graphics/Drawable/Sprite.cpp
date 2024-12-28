@@ -391,7 +391,7 @@ namespace Kaka
 		const unsigned int instanceCount = instanceData.size();
 
 		// Rotate the sprite to face the camera
-		const DirectX::XMVECTOR cameraForward = aGfx.camera->GetForwardVector();
+		const DirectX::XMVECTOR cameraForward = aGfx.camera.GetForwardVector();
 
 		// Get right vector from cross product of forward and up
 		DirectX::XMVECTOR cameraRight = DirectX::XMVector3Cross(DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), cameraForward);

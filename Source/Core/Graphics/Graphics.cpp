@@ -77,7 +77,7 @@ namespace Kaka
 
 		// Create depth stencil state
 		{
-			D3D11_TEXTURE2D_DESC desc = {0};
+			D3D11_TEXTURE2D_DESC desc = { 0 };
 			desc.Width = width;
 			desc.Height = height;
 			desc.MipLevels = 1u;
@@ -134,7 +134,7 @@ namespace Kaka
 
 		// Default sampler
 		{
-			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{CD3D11_DEFAULT{}};
+			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 			samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -149,7 +149,7 @@ namespace Kaka
 
 		// Linear sampler
 		{
-			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{CD3D11_DEFAULT{}};
+			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 			samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -160,7 +160,7 @@ namespace Kaka
 
 		// Point sampler
 		{
-			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{CD3D11_DEFAULT{}};
+			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 			samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -205,7 +205,7 @@ namespace Kaka
 		// Post processing
 		{
 			ID3D11Texture2D* postTexture;
-			D3D11_TEXTURE2D_DESC ppDesc = {0};
+			D3D11_TEXTURE2D_DESC ppDesc = { 0 };
 			ppDesc.Width = width;
 			ppDesc.Height = height;
 			ppDesc.MipLevels = 1u;
@@ -219,9 +219,9 @@ namespace Kaka
 			ppDesc.MiscFlags = 0u;
 			result = pDevice->CreateTexture2D(&ppDesc, nullptr, &postTexture);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(postTexture, nullptr, &postProcessing.pResource);
+			result = pDevice->CreateShaderResourceView(postTexture, nullptr, &postProcessingTarget.pResource);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(postTexture, nullptr, &postProcessing.pTarget);
+			result = pDevice->CreateRenderTargetView(postTexture, nullptr, &postProcessingTarget.pTarget);
 			assert(SUCCEEDED(result));
 
 			postTexture->Release();
@@ -237,9 +237,9 @@ namespace Kaka
 				ID3D11Texture2D* bloomTexture;
 				bloomWidth /= bloomDivideFactor;
 				bloomHeight /= bloomDivideFactor;
-				bloomDownscale.emplace_back();
+				bloomDownscaleTargets.emplace_back();
 
-				D3D11_TEXTURE2D_DESC ppDesc = {0};
+				D3D11_TEXTURE2D_DESC ppDesc = { 0 };
 				ppDesc.Width = bloomWidth;
 				ppDesc.Height = bloomHeight;
 				ppDesc.MipLevels = 1u;
@@ -253,9 +253,9 @@ namespace Kaka
 				ppDesc.MiscFlags = 0u;
 				result = pDevice->CreateTexture2D(&ppDesc, nullptr, &bloomTexture);
 				assert(SUCCEEDED(result));
-				result = pDevice->CreateShaderResourceView(bloomTexture, nullptr, &bloomDownscale.back().pResource);
+				result = pDevice->CreateShaderResourceView(bloomTexture, nullptr, &bloomDownscaleTargets.back().pResource);
 				assert(SUCCEEDED(result));
-				result = pDevice->CreateRenderTargetView(bloomTexture, nullptr, &bloomDownscale.back().pTarget);
+				result = pDevice->CreateRenderTargetView(bloomTexture, nullptr, &bloomDownscaleTargets.back().pTarget);
 				assert(SUCCEEDED(result));
 				bloomTexture->Release();
 			}
@@ -267,7 +267,7 @@ namespace Kaka
 			UINT rsmHeight = height;
 
 			ID3D11Texture2D* rsmTexture;
-			D3D11_TEXTURE2D_DESC rsmDesc = {0};
+			D3D11_TEXTURE2D_DESC rsmDesc = { 0 };
 			rsmDesc.Width = rsmWidth;
 			rsmDesc.Height = rsmHeight;
 			rsmDesc.MipLevels = 1u;
@@ -281,9 +281,9 @@ namespace Kaka
 			rsmDesc.MiscFlags = 0u;
 			result = pDevice->CreateTexture2D(&rsmDesc, nullptr, &rsmTexture);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLight.pResource);
+			result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLightTarget.pResource);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLight.pTarget);
+			result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLightTarget.pTarget);
 			assert(SUCCEEDED(result));
 
 			rsmTexture->Release();
@@ -348,7 +348,7 @@ namespace Kaka
 		// Fullscreen
 		{
 			ID3D11Texture2D* fullTexture;
-			D3D11_TEXTURE2D_DESC fullDesc = {0};
+			D3D11_TEXTURE2D_DESC fullDesc = { 0 };
 			fullDesc.Width = width;
 			fullDesc.Height = height;
 			fullDesc.MipLevels = 1u;
@@ -362,9 +362,9 @@ namespace Kaka
 			fullDesc.MiscFlags = 0u;
 			result = pDevice->CreateTexture2D(&fullDesc, nullptr, &fullTexture);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(fullTexture, nullptr, &historyN1.pResource);
+			result = pDevice->CreateShaderResourceView(fullTexture, nullptr, &historyN1Target.pResource);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(fullTexture, nullptr, &historyN1.pTarget);
+			result = pDevice->CreateRenderTargetView(fullTexture, nullptr, &historyN1Target.pTarget);
 			assert(SUCCEEDED(result));
 
 			fullTexture->Release();
@@ -373,7 +373,7 @@ namespace Kaka
 		// TAA
 		{
 			ID3D11Texture2D* taaTexture;
-			D3D11_TEXTURE2D_DESC taaDesc = {0};
+			D3D11_TEXTURE2D_DESC taaDesc = { 0 };
 			taaDesc.Width = width;
 			taaDesc.Height = height;
 			taaDesc.MipLevels = 1u;
@@ -387,9 +387,9 @@ namespace Kaka
 			taaDesc.MiscFlags = 0u;
 			result = pDevice->CreateTexture2D(&taaDesc, nullptr, &taaTexture);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(taaTexture, nullptr, &historyN.pResource);
+			result = pDevice->CreateShaderResourceView(taaTexture, nullptr, &historyNTarget.pResource);
 			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(taaTexture, nullptr, &historyN.pTarget);
+			result = pDevice->CreateRenderTargetView(taaTexture, nullptr, &historyNTarget.pTarget);
 			assert(SUCCEEDED(result));
 
 			taaTexture->Release();
@@ -405,7 +405,7 @@ namespace Kaka
 
 		// VFX
 		{
-			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{CD3D11_DEFAULT{}};
+			D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
 			samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
 			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -420,6 +420,75 @@ namespace Kaka
 		pContext->PSSetSamplers(0u, 1u, pDefaultSampler.GetAddressOf());
 		pContext->PSSetSamplers(1u, 1u, pLinearSampler.GetAddressOf());
 		pContext->PSSetSamplers(2u, 1u, pPointClampedSampler.GetAddressOf());
+
+		// TODO New refactor stuff
+		// TODO New refactor stuff
+		// TODO New refactor stuff
+		// TODO New refactor stuff
+		// TODO New refactor stuff
+
+		deferredLights.Init(*this);
+
+		postProcessing.Init(*this);
+		indirectLighting.Init(*this);
+
+		ppBuffer.tint = { 1.0f, 1.0f, 1.0f };
+		ppBuffer.blackpoint = { 0.0f, 0.0f, 0.0f };
+		ppBuffer.exposure = 0.0f;
+		ppBuffer.contrast = 1.0f;
+		ppBuffer.saturation = 1.0f;
+		ppBuffer.blur = 0.0f;
+		ppBuffer.sharpness = 1.0f;
+		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
+
+		directionalLightRSMBuffer.GetCamera().SetOrthographic(static_cast<float>(width) / 3.0f, static_cast<float>(height) / 3.0f, -500.0f, 500.0f);
+		directionalLightRSMBuffer.GetCamera().SetPosition({ 0.0f, 70.0f, 0.0f });
+
+		historyViewProjection = camera.GetInverseView() * camera.GetProjection();
+
+
+
+		//skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
+
+		//directionalLightRSMBuffer.GetCamera().SetPosition({ 0.0f, 70.0f, 0.0f });
+		//camera.SetPosition({ -11.0f, 28.0f, 26.0f });
+		//camera.SetRotationDegrees(29.0f, 138.0f);
+
+		//models.emplace_back();
+		//models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
+		//models.back().Init();
+		//models.back().SetScale(0.1f);
+
+		// 131072 * 4 = 524288
+		//dustParticles.Init(*this, 0.0125f, 131072u, true, "Assets\\Textures\\particle.png", camera.GetPosition());
+
+		rsmBufferDirectional.sampleCount = SAMPLE_COUNT_DIRECTIONAL;
+		rsmBufferDirectional.rMax = 0.04f;
+		rsmBufferDirectional.rsmIntensity = 750.0f;
+		rsmBufferDirectional.isDirectionalLight = TRUE;
+
+		//vcb.Init(pDevice.Get(), sizeof(CommonBuffer), VS_CBUFFER_SLOT_COMMON);
+		//pcb.Init(pDevice.Get(), sizeof(CommonBuffer), PS_CBUFFER_SLOT_COMMON);
+		//rsmLightDataBuffer.Init(pDevice.Get(), sizeof(RSMLightData), PS_CBUFFER_SLOT_RSM_LIGHT);
+		//tab.Init(pDevice.Get(), sizeof(TAABuffer), 1u);
+		//rsmPixelBuffer.Init(pDevice.Get(), sizeof(RSMConstantBuffer), PS_CBUFFER_SLOT_RSM_DIRECTIONAL);
+		//shadowPixelBuffer.Init(pDevice.Get(), sizeof(ShadowBuffer), PS_CBUFFER_SLOT_SHADOW);
+		//ppb.Init(pDevice.Get(), sizeof(PostProcessingBuffer), 1u);
+
+		vcb.Init(*this, commonBuffer);
+		pcb.Init(*this, commonBuffer);
+		rsmLightDataBuffer.Init(*this, rsmLightData);
+		tab.Init(*this, taaBuffer);
+		rsmPixelBuffer.Init(*this, rsmBufferDirectional);
+		shadowPixelBuffer.Init(*this, shadowBuffer);
+		ppb.Init(*this, ppBuffer);
+
+		skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
+
+		models.emplace_back();
+		models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
+		models.back().Init();
+		models.back().SetScale(0.1f);
 	}
 
 	Graphics::~Graphics()
@@ -439,9 +508,9 @@ namespace Kaka
 			ImGui::NewFrame();
 		}
 
-		constexpr float colour[] = {0.0f, 0.0f, 0.0f, 0.0f};
+		constexpr float colour[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		//pContext->ClearRenderTargetView(pDefaultTarget.Get(), colour);
-		pContext->ClearRenderTargetView(postProcessing.pTarget.Get(), colour);
+		pContext->ClearRenderTargetView(postProcessingTarget.pTarget.Get(), colour);
 		//pContext->ClearRenderTargetView(rsmDownscaleDirectional.pTarget.Get(), colour);
 		//pContext->ClearRenderTargetView(rsmFullscaleDirectional.pTarget.Get(), colour);
 		//pContext->ClearRenderTargetView(rsmDownscaleSpot.pTarget.Get(), colour);
@@ -480,22 +549,30 @@ namespace Kaka
 
 	DirectX::XMMATRIX Graphics::GetProjection() const
 	{
-		return camera->GetProjection();
+		return currentCamera->GetProjection();
 	}
 
 	DirectX::XMMATRIX Graphics::GetJitteredProjection() const
 	{
-		return camera->GetJitteredProjection();
+		return currentCamera->GetJitteredProjection();
+	}
+
+	void Graphics::SetupCamera(const float aWidth, const float aHeight, const float aFoV, const float aNearZ, const float aFarZ)
+	{
+		camera.SetPerspective(aWidth, aHeight, aFoV, aNearZ, aFarZ);
+		camera.SetPosition({ -11.0f, 28.0f, 26.0f });
+		camera.SetRotationDegrees(29.0f, 138.0f);
+		//currentCamera = &camera;
 	}
 
 	void Graphics::SetCamera(Camera& aCamera)
 	{
-		camera = &aCamera;
+		currentCamera = &aCamera;
 	}
 
 	DirectX::XMMATRIX Graphics::GetCameraInverseView() const
 	{
-		return camera->GetInverseView();
+		return currentCamera->GetInverseView();
 	}
 
 	UINT Graphics::GetDrawcallCount() const
@@ -526,22 +603,22 @@ namespace Kaka
 			break;
 			case eRenderTargetType::PostProcessing:
 			{
-				pContext->OMSetRenderTargets(1u, postProcessing.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
+				pContext->OMSetRenderTargets(1u, postProcessingTarget.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
 			}
 			break;
 			case eRenderTargetType::IndirectLight:
 			{
-				pContext->OMSetRenderTargets(1u, indirectLight.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
+				pContext->OMSetRenderTargets(1u, indirectLightTarget.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
 			}
 			break;
 			case eRenderTargetType::HistoryN1:
 			{
-				pContext->OMSetRenderTargets(1u, historyN1.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
+				pContext->OMSetRenderTargets(1u, historyN1Target.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
 			}
 			break;
 			case eRenderTargetType::HistoryN:
 			{
-				pContext->OMSetRenderTargets(1u, historyN.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
+				pContext->OMSetRenderTargets(1u, historyNTarget.pTarget.GetAddressOf(), aUseDepth ? pDepth.Get() : NULL);
 			}
 			break;
 			//case eRenderTargetType::ShadowMap:
@@ -575,22 +652,22 @@ namespace Kaka
 			break;
 			case eRenderTargetType::PostProcessing:
 			{
-				pContext->OMSetRenderTargets(1u, postProcessing.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, postProcessingTarget.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::IndirectLight:
 			{
-				pContext->OMSetRenderTargets(1u, indirectLight.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, indirectLightTarget.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::HistoryN1:
 			{
-				pContext->OMSetRenderTargets(1u, historyN1.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, historyN1Target.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::HistoryN:
 			{
-				pContext->OMSetRenderTargets(1u, historyN.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, historyNTarget.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
 			//case eRenderTargetType::ShadowMap:
@@ -635,29 +712,29 @@ namespace Kaka
 		currentJitter.x *= jitterScale;
 		currentJitter.y *= jitterScale;
 
-		camera->ApplyProjectionJitter(currentJitter.x, currentJitter.y);
+		currentCamera->ApplyProjectionJitter(currentJitter.x, currentJitter.y);
 	}
 
 	void Graphics::HandleBloomScaling(PostProcessing& aPostProcessor, ID3D11ShaderResourceView* aResource)
 	{
 		if (usePostProcessing)
 		{
-			pContext->OMSetRenderTargets(1u, bloomDownscale[0].pTarget.GetAddressOf(), nullptr);
+			pContext->OMSetRenderTargets(1u, bloomDownscaleTargets[0].pTarget.GetAddressOf(), nullptr);
 			pContext->PSSetShaderResources(0u, 1u, &aResource);
 
 			aPostProcessor.SetDownsamplePS();
 
 			bb.uvScale = bloomDivideFactor;
-			PixelConstantBuffer<DownSampleBuffer> bloomBuffer{*this, 1u};
+			PixelConstantBuffer<DownSampleBuffer> bloomBuffer{ *this, 1u };
 			bloomBuffer.Update(*this, bb);
 			bloomBuffer.Bind(*this);
 
 			aPostProcessor.Draw(*this);
 
-			for (int i = 1; i < bloomDownscale.size(); ++i)
+			for (int i = 1; i < bloomDownscaleTargets.size(); ++i)
 			{
-				pContext->OMSetRenderTargets(1u, bloomDownscale[i].pTarget.GetAddressOf(), nullptr);
-				pContext->PSSetShaderResources(0u, 1u, bloomDownscale[i - 1].pResource.GetAddressOf());
+				pContext->OMSetRenderTargets(1u, bloomDownscaleTargets[i].pTarget.GetAddressOf(), nullptr);
+				pContext->PSSetShaderResources(0u, 1u, bloomDownscaleTargets[i - 1].pResource.GetAddressOf());
 
 				bb.uvScale *= bloomDivideFactor;
 				bloomBuffer.Update(*this, bb);
@@ -670,10 +747,10 @@ namespace Kaka
 
 			aPostProcessor.SetUpsamplePS();
 
-			for (int i = (int)bloomDownscale.size() - 1; i > 0; --i)
+			for (int i = (int)bloomDownscaleTargets.size() - 1; i > 0; --i)
 			{
-				pContext->OMSetRenderTargets(1u, bloomDownscale[i - 1].pTarget.GetAddressOf(), nullptr);
-				pContext->PSSetShaderResources(0u, 1u, bloomDownscale[i].pResource.GetAddressOf());
+				pContext->OMSetRenderTargets(1u, bloomDownscaleTargets[i - 1].pTarget.GetAddressOf(), nullptr);
+				pContext->PSSetShaderResources(0u, 1u, bloomDownscaleTargets[i].pResource.GetAddressOf());
 
 				bb.uvScale /= bloomDivideFactor;
 				bloomBuffer.Update(*this, bb);
@@ -688,7 +765,7 @@ namespace Kaka
 
 			pContext->OMSetRenderTargets(1u, pDefaultTarget.GetAddressOf(), nullptr);
 			pContext->PSSetShaderResources(0u, 1u, &aResource);
-			pContext->PSSetShaderResources(1u, 1u, bloomDownscale[0].pResource.GetAddressOf());
+			pContext->PSSetShaderResources(1u, 1u, bloomDownscaleTargets[0].pResource.GetAddressOf());
 		}
 		else
 		{
@@ -696,7 +773,7 @@ namespace Kaka
 
 			pContext->OMSetRenderTargets(1u, pDefaultTarget.GetAddressOf(), nullptr);
 			pContext->PSSetShaderResources(0u, 1u, &aResource);
-			ID3D11ShaderResourceView* nullSRVs[1] = {nullptr};
+			ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 			pContext->PSSetShaderResources(1u, 1, nullSRVs);
 		}
 	}
@@ -752,7 +829,7 @@ namespace Kaka
 				pContext->OMSetDepthStencilState(pDepthStencilStates[(int)eDepthStencilStates::ReadOnlyEmpty].Get(), 0u);
 			}
 			break;
-			default: ;
+			default:;
 		}
 	}
 
@@ -775,7 +852,7 @@ namespace Kaka
 				pContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::NoCulling].Get());
 			}
 			break;
-			default: ;
+			default:;
 		}
 	}
 
@@ -833,7 +910,7 @@ namespace Kaka
 
 		blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 		hr = pDevice->CreateBlendState(&blendStateDesc,
-		                               pBlendStates[(int)eBlendStates::VFX].ReleaseAndGetAddressOf());
+			pBlendStates[(int)eBlendStates::VFX].ReleaseAndGetAddressOf());
 		if (FAILED(hr))
 		{
 			return false;
@@ -881,7 +958,7 @@ namespace Kaka
 		HRESULT hr = S_OK;
 
 		// NORMAL
-		D3D11_DEPTH_STENCIL_DESC dsDesc = CD3D11_DEPTH_STENCIL_DESC{CD3D11_DEFAULT{}};
+		D3D11_DEPTH_STENCIL_DESC dsDesc = CD3D11_DEPTH_STENCIL_DESC{ CD3D11_DEFAULT{} };
 		dsDesc.DepthEnable = TRUE;
 		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
@@ -980,17 +1057,17 @@ namespace Kaka
 
 	void Graphics::BindPostProcessingTexture()
 	{
-		pContext->PSSetShaderResources(0u, 1u, postProcessing.pResource.GetAddressOf());
+		pContext->PSSetShaderResources(0u, 1u, postProcessingTarget.pResource.GetAddressOf());
 	}
 
 	void Graphics::BindBloomDownscaleTexture(const int aIndex)
 	{
-		pContext->PSSetShaderResources(0u, 1u, bloomDownscale[aIndex].pResource.GetAddressOf());
+		pContext->PSSetShaderResources(0u, 1u, bloomDownscaleTargets[aIndex].pResource.GetAddressOf());
 	}
 
 	DirectX::XMFLOAT2 Graphics::GetCurrentResolution() const
 	{
-		return {static_cast<float>(width), static_cast<float>(height)};
+		return { static_cast<float>(width), static_cast<float>(height) };
 	}
 
 	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer, const UINT aSlot)
@@ -1003,7 +1080,7 @@ namespace Kaka
 		SetVertexShaderOverride(L"Shaders\\RSM_VS.cso");
 		SetPixelShaderOverride(L"Shaders\\RSM_PS.cso");
 
-		ID3D11ShaderResourceView* nullSRVs[1] = {nullptr};
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		pContext->PSSetShaderResources(aSlot, 1u, nullSRVs);
 	}
 
@@ -1024,8 +1101,387 @@ namespace Kaka
 
 	void Graphics::UnbindShadows(const UINT aSlot)
 	{
-		ID3D11ShaderResourceView* nullSRVs[1] = {nullptr};
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
 		pContext->PSSetShaderResources(aSlot, 1u, nullSRVs);
+	}
+
+	void Graphics::UpdateLights(const float aDeltaTime)
+	{
+		// TODO Not sure about this
+		skyboxAngle.y += skyboxSpeed * aDeltaTime;
+		skybox.Rotate(skyboxAngle);
+
+		deferredLights.Update(aDeltaTime);
+	}
+
+	void Graphics::Render(const float aDeltaTime, const float aTotalTime, const float aFPS)
+	{
+		BeginFrame();
+		SetCamera(camera);
+
+
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+		// TODO Move most of this to GFX
+
+		// 1. Move stuff from here to GFX
+		// 2. Models should loaded and drawn in GFX
+		// 3. Need some kind of model renderer in GFX
+		// 4. Need a GameObject and component system
+
+		ApplyProjectionJitter();
+
+		commonBuffer.historyViewProjection = commonBuffer.viewProjection;
+		commonBuffer.viewProjection = camera.GetInverseView() * camera.GetJitteredProjection();
+		commonBuffer.inverseViewProjection = DirectX::XMMatrixInverse(nullptr, commonBuffer.viewProjection);
+		commonBuffer.projection = DirectX::XMMatrixInverse(nullptr, camera.GetProjection());
+		commonBuffer.viewInverse = camera.GetInverseView();
+		commonBuffer.cameraPosition = { camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z, 0.0f };
+		commonBuffer.resolution = GetCurrentResolution();
+		commonBuffer.currentTime = aTotalTime;
+
+		pcb.Update(*this, commonBuffer);
+		pcb.Bind(*this);
+
+		vcb.Update(*this, commonBuffer);
+		vcb.Bind(*this);
+
+		skyboxAngle.y += skyboxSpeed * aDeltaTime;
+		skybox.Rotate(skyboxAngle);
+
+		deferredLights.Update(aDeltaTime);
+
+		//dustParticles.Update(*this, aDeltaTime, camera.GetPosition());
+
+		SetDepthStencilState(eDepthStencilStates::Normal);
+		// Need backface culling for Reflective Shadow Maps
+		SetRasterizerState(eRasterizerStates::BackfaceCulling);
+
+		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
+		{
+			StartShadows(directionalLightRSMBuffer.GetCamera(), deferredLights.GetDirectionalLightData().lightDirection, directionalLightRSMBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+			deferredLights.SetShadowCamera(directionalLightRSMBuffer.GetCamera().GetInverseView() * directionalLightRSMBuffer.GetCamera().GetProjection());
+
+			directionalLightRSMBuffer.ClearTextures(pContext.Get());
+			directionalLightRSMBuffer.SetAsActiveTarget(pContext.Get());
+
+
+			rsmLightData.colourAndIntensity[0] = deferredLights.GetDirectionalLightData().lightColour.x;
+			rsmLightData.colourAndIntensity[1] = deferredLights.GetDirectionalLightData().lightColour.y;
+			rsmLightData.colourAndIntensity[2] = deferredLights.GetDirectionalLightData().lightColour.z;
+			rsmLightData.colourAndIntensity[3] = deferredLights.GetDirectionalLightData().lightIntensity;
+			rsmLightData.isDirectionalLight = TRUE;
+
+			rsmLightDataBuffer.Update(*this, rsmLightData);
+			rsmLightDataBuffer.Bind(*this);
+
+			// Render everything that casts shadows
+			{
+				for (Model& model : models)
+				{
+					model.Draw(*this, aDeltaTime, false);
+				}
+			}
+
+			ResetShadows(camera);
+		}
+		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- END
+
+		/// GBuffer pass -- BEGIN
+		{
+			gBuffer.ClearTextures(pContext.Get());
+			gBuffer.SetAsActiveTarget(pContext.Get(), gBuffer.GetDepthStencilView());
+
+			taaBuffer.jitter = currentJitter;
+			taaBuffer.previousJitter = previousJitter;
+
+			tab.Update(*this, taaBuffer);
+			tab.Bind(*this);
+
+			for (Model& model : models)
+			{
+				model.Draw(*this, aDeltaTime, true);
+			}
+
+			SetRenderTarget(eRenderTargetType::None, nullptr);
+			gBuffer.SetAllAsResources(pContext.Get(), PS_GBUFFER_SLOT);
+		}
+		/// GBuffer pass -- END
+
+		/// Indirect lighting pass -- BEGIN
+		{
+			if (drawRSM)
+			{
+				// Directional light
+				directionalLightRSMBuffer.SetAllAsResources(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
+				rsmBufferDirectional.lightCameraTransform = directionalLightRSMBuffer.GetCamera().GetInverseView() * directionalLightRSMBuffer.GetCamera().GetJitteredProjection();
+
+				//if (flipFlop)
+				//{
+				SetRenderTarget(eRenderTargetType::IndirectLight, nullptr);
+				//}
+				//else
+				//{
+				//	pContext->OMSetRenderTargets(1u, indirectLightN.pTarget.GetAddressOf(), nullptr);
+				//}
+
+				rsmBufferDirectional.isDirectionalLight = TRUE;
+				rsmPixelBuffer.Update(*this, rsmBufferDirectional);
+				rsmPixelBuffer.Bind(*this);
+
+				//taaBuffer.jitter = currentJitter;
+				//taaBuffer.previousJitter = previousJitter;
+				//
+				//tab.Update(*this, taaBuffer);
+				//tab.Bind(*this);
+
+				indirectLighting.Draw(*this);
+
+				directionalLightRSMBuffer.ClearAllAsResourcesSlots(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
+			}
+		}
+		/// Indirect lighting pass -- END
+
+		/// Lighting pass -- BEGIN
+		{
+			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
+
+			shadowPixelBuffer.Update(*this, shadowBuffer);
+			shadowPixelBuffer.Bind(*this);
+
+			BindShadows(directionalLightRSMBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+
+			deferredLights.Draw(*this);
+			UnbindShadows(PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+			UnbindShadows(PS_TEXTURE_SLOT_SHADOW_MAP_SPOT);
+		}
+		/// Lighting pass -- END
+
+		/// Skybox pass -- BEGIN
+		{
+			SetRenderTarget(eRenderTargetType::PostProcessing, gBuffer.GetDepthStencilView());
+
+			SetDepthStencilState(eDepthStencilStates::ReadOnlyLessEqual);
+			SetRasterizerState(eRasterizerStates::NoCulling);
+
+			skybox.Draw(*this);
+		}
+		/// Skybox pass -- END
+
+		/// Indirect to Post Process pass -- BEGIN
+		// This draws the indirect light to the post processing buffer
+		// Indirect light is drawn to its own buffer, then combined with the post processing buffer here so that we see it
+		if (drawRSM)
+		{
+			pContext->PSSetShaderResources(0u, 1u, indirectLightTarget.pResource.GetAddressOf());
+			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
+			SetBlendState(eBlendStates::Additive);
+
+			postProcessing.SetFullscreenPS();
+			postProcessing.Draw(*this);
+
+			SetBlendState(eBlendStates::Disabled);
+		}
+		/// Indirect combined pass -- END
+
+		/// TAA pass -- BEGIN
+		if (flipFlop)
+		{
+			SetRenderTarget(eRenderTargetType::HistoryN1, nullptr);
+			pContext->PSSetShaderResources(1u, 1u, historyNTarget.pResource.GetAddressOf());
+		}
+		else
+		{
+			SetRenderTarget(eRenderTargetType::HistoryN, nullptr);
+			pContext->PSSetShaderResources(1u, 1u, historyN1Target.pResource.GetAddressOf());
+		}
+
+		pContext->PSSetShaderResources(0u, 1u, postProcessingTarget.pResource.GetAddressOf());
+		// Need world position for reprojection
+		pContext->PSSetShaderResources(2u, 1u, gBuffer.GetShaderResourceView(GBuffer::GBufferTexture::WorldPosition));
+		pContext->PSSetShaderResources(3u, 1u, gBuffer.GetDepthShaderResourceView());
+
+		taaBuffer.jitter = currentJitter;
+		taaBuffer.previousJitter = previousJitter;
+
+		tab.Update(*this, taaBuffer);
+		tab.Bind(*this);
+
+		// Set history view projection matrix for next frame
+		historyViewProjection = camera.GetInverseView() * camera.GetProjection();
+
+		postProcessing.SetTemporalAliasingPS();
+		postProcessing.Draw(*this);
+		/// TAA pass -- END
+
+		/// Post processing pass -- BEGIN
+
+		if (flipFlop)
+		{
+			HandleBloomScaling(postProcessing, *historyN1Target.pResource.GetAddressOf());
+		}
+		else
+		{
+			HandleBloomScaling(postProcessing, *historyNTarget.pResource.GetAddressOf());
+		}
+
+		flipFlop = !flipFlop;
+
+		ppb.Update(*this, ppBuffer);
+		ppb.Bind(*this);
+
+		postProcessing.Draw(*this);
+
+		// NOTE This must be as many as render targets, I think
+		// TODO Should probably be cleaned up after each pass
+		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+		pContext->PSSetShaderResources(0u, 1, nullSRVs);
+		pContext->PSSetShaderResources(1u, 1, nullSRVs);
+		pContext->PSSetShaderResources(2u, 1, nullSRVs);
+		pContext->PSSetShaderResources(3u, 1, nullSRVs);
+		pContext->PSSetShaderResources(4u, 1, nullSRVs);
+
+		/// Post processing pass -- END
+
+		/// Sprite pass -- BEGIN
+		//{
+		//	SetBlendState(eBlendStates::Additive);
+
+		//	dustParticles.Draw(*this);
+
+		//	SetBlendState(eBlendStates::Disabled);
+		//}
+		/// Sprite pass -- END
+
+		ShowImGui(aFPS);
+
+		// End frame
+		EndFrame();
+	}
+
+	void Graphics::ShowImGui(const float aFPS)
+	{
+		// ImGui windows
+		if (showImGui)
+		{
+			if (ImGui::Begin("Post Processing"))
+			{
+				ImGui::Checkbox("Use PP", &usePostProcessing);
+				ImGui::ColorPicker3("Tint", &ppBuffer.tint.x);
+				ImGui::DragFloat3("Blackpoint", &ppBuffer.blackpoint.x, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::DragFloat("Exposure", &ppBuffer.exposure, 0.01f, -10.0f, 10.0f, "%.2f");
+				ImGui::DragFloat("Contrast", &ppBuffer.contrast, 0.01f, 0.0f, 10.0f, "%.2f");
+				ImGui::DragFloat("Saturation", &ppBuffer.saturation, 0.01f, 0.0f, 10.0f, "%.2f");
+				ImGui::DragFloat("Blur", &ppBuffer.blur, 0.01f, 0.0f, 64.0f, "%.2f");
+				ImGui::DragFloat("Sharpness", &ppBuffer.sharpness, 0.01f, 0.0f, 10.0f, "%.2f");
+				ImGui::Text("Bloom");
+				ImGui::SetNextItemWidth(100);
+				ImGui::SliderFloat("Bloom blending", &bb.bloomBlending, 0.0f, 1.0f);
+				ImGui::SetNextItemWidth(100);
+				ImGui::SliderFloat("Bloom threshold", &bb.bloomThreshold, 0.0f, 1.0f);
+				ImGui::Text("Temporal Anti-Aliasing");
+				ImGui::DragFloat("Jitter scale", &jitterScale, 0.01f, 0.0f, 1.0f, "%.2f");
+			}
+			ImGui::End();
+
+			if (ImGui::Begin("Shadows"))
+			{
+				ImGui::Text("PCF");
+				ImGui::Checkbox("Use PCF", (bool*)&shadowBuffer.usePCF);
+				ImGui::DragFloat("Offset scale##OffsetPCF", &shadowBuffer.offsetScalePCF, 0.0001f, 0.0f, 1.0f, "%.6f");
+				ImGui::DragInt("Sample count", &shadowBuffer.sampleCountPCF, 1, 1, 25);
+				ImGui::Text("Poisson");
+				ImGui::Checkbox("Use Poisson##Shadow", (bool*)&shadowBuffer.usePoisson);
+				ImGui::DragFloat("Offset scale##OffsetPoisson", &shadowBuffer.offsetScalePoissonDisk, 0.0001f, 0.0f, 1.0f, "%.6f");
+			}
+			ImGui::End();
+
+			if (ImGui::Begin("RSM Directional"))
+			{
+				ImGui::DragInt("Sample count##DirSam", (int*)&rsmBufferDirectional.sampleCount, 1, 1, 64);
+				ImGui::DragFloat("R Max##DirectMax", &rsmBufferDirectional.rMax, 0.001f, 0.0f, 5.0f, "%.3f");
+				ImGui::DragFloat("RSM Intensity##DirInt", &rsmBufferDirectional.rsmIntensity, 10.0f, 0.0f, 100000.0f, "%.2f");
+			}
+			ImGui::End();
+
+			camera.ShowControlWindow();
+
+			// Draw all resources in GBuffer
+			if (ImGui::Begin("GBuffer"))
+			{
+				ImGui::Columns(2, nullptr, false);
+				ImGui::Text("World Position");
+				ImGui::Image(gBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
+				ImGui::Text("Albedo");
+				ImGui::Image(gBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
+				ImGui::Text("Normal");
+				ImGui::Image(gBuffer.GetShaderResourceViews()[2], ImVec2(512, 288));
+				ImGui::NextColumn();
+				ImGui::Text("Material");
+				ImGui::Image(gBuffer.GetShaderResourceViews()[3], ImVec2(512, 288));
+				ImGui::Text("Ambient Occlusion");
+				ImGui::Image(gBuffer.GetShaderResourceViews()[4], ImVec2(512, 288));
+				ImGui::Text("Depth");
+				ImGui::Image(*gBuffer.GetDepthShaderResourceView(), ImVec2(512, 288));
+				//ImGui::Text("Velocity");
+				//ImGui::Image(gBuffer.GetShaderResourceViews()[5], ImVec2(512, 288));
+			}
+			ImGui::End();
+
+			// RSM indirect lighting
+			if (ImGui::Begin("Indirect light"))
+			{
+				ImGui::Image(indirectLightTarget.pResource.Get(), ImVec2(1024, 576));
+			}
+			ImGui::End();
+
+			// Draw all resources in RSMBuffer
+			if (ImGui::Begin("RSMBuffer Directional"))
+			{
+				ImGui::Columns(2, nullptr, false);
+				ImGui::Text("World Position");
+				ImGui::Image(directionalLightRSMBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
+				ImGui::Text("Normal");
+				ImGui::Image(directionalLightRSMBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
+				ImGui::NextColumn();
+				ImGui::Text("Flux");
+				ImGui::Image(directionalLightRSMBuffer.GetShaderResourceViews()[2], ImVec2(512, 288));
+				ImGui::Text("Depth");
+				ImGui::Image(*directionalLightRSMBuffer.GetDepthShaderResourceView(), ImVec2(512, 288));
+			}
+			ImGui::End();
+
+			deferredLights.ShowControlWindow();
+
+			if (showStatsWindow)
+			{
+				ShowStatsWindow(aFPS);
+			}
+		}
+	}
+
+	void Graphics::ShowStatsWindow(const float aFPS)
+	{
+		if (ImGui::Begin("Stats"))
+		{
+			ImGui::Text("%.3f ms", 1000.0f / aFPS);
+			ImGui::Text("%.0f FPS", aFPS);
+			const std::string drawcalls = "Drawcalls:" + std::to_string(GetDrawcallCount());
+			ImGui::Text(drawcalls.c_str());
+		}
+		ImGui::End();
 	}
 
 	void Graphics::EnableImGui()
@@ -1075,7 +1531,7 @@ namespace Kaka
 
 		// Extract the rows of the view-projection matrix
 		DirectX::XMFLOAT4X4 VP;
-		const DirectX::XMMATRIX viewProjectionMatrix = camera->GetInverseView() * camera->GetProjection();
+		const DirectX::XMMATRIX viewProjectionMatrix = camera.GetInverseView() * camera.GetProjection();
 		DirectX::XMStoreFloat4x4(&VP, viewProjectionMatrix);
 
 		// Extract the frustum planes from the view-projection matrix
@@ -1100,9 +1556,9 @@ namespace Kaka
 				frustum.planes[i].z * frustum.planes[i].z);
 
 			frustum.planes[i] = DirectX::XMFLOAT4(frustum.planes[i].x / length,
-			                                      frustum.planes[i].y / length,
-			                                      frustum.planes[i].z / length,
-			                                      frustum.planes[i].w / length);
+				frustum.planes[i].y / length,
+				frustum.planes[i].z / length,
+				frustum.planes[i].w / length);
 		}
 
 		return frustum;

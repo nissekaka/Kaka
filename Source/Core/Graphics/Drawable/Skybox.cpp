@@ -10,33 +10,38 @@ namespace Kaka
 		dayTexture.LoadTextures(aGfx, aDayPath);
 		nightTexture.LoadTextures(aGfx, aNightPath);
 
-		sampler.Init(aGfx, 0u);
 
 		vertexBuffer.Init(aGfx, vertices);
 		indexBuffer.Init(aGfx, indices);
 
-		pixelShader.Init(aGfx, L"Shaders\\Skybox_PS.cso");
-		vertexShader.Init(aGfx, L"Shaders\\Skybox_VS.cso");
 
-		inputLayout.Init(aGfx, ied, vertexShader.GetBytecode());
+		pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Skybox_PS.cso");
+		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Skybox_VS.cso");
+
+		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
 		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		//skyboxTransformConstantBuffer.Init(aGfx.pDevice.Get(), sizeof(DirectX::XMMATRIX), 0u);
 	}
 
 	void Skybox::Draw(Graphics& aGfx)
 	{
-		UNREFERENCED_PARAMETER(aGfx);
-
 		dayTexture.Bind(aGfx);
 		nightTexture.Bind(aGfx);
 
 		vertexBuffer.Bind(aGfx);
 		indexBuffer.Bind(aGfx);
 
+		//SkyboxTransformConstantBuffer skyboxTransformConstantBuffer(aGfx, *this, 0u);
 		SkyboxTransformConstantBuffer skyboxTransformConstantBuffer(aGfx, *this, 0u);
+		//TransformConstantBuffer transformConstantBuffer(aGfx, *this, 1u);
 		skyboxTransformConstantBuffer.Bind(aGfx);
+		//DirectX::XMMATRIX transform = DirectX::XMMatrixTranspose(GetTransform() * aGfx.GetCameraInverseView() * aGfx.GetProjection());
+		//skyboxTransformConstantBuffer.MapBuffer(&transform, sizeof(DirectX::XMMATRIX), aGfx.pContext.Get());
+		//skyboxTransformConstantBuffer.BindForVS(aGfx.pContext.Get());
 
-		pixelShader.Bind(aGfx);
-		vertexShader.Bind(aGfx);
+		pixelShader->Bind(aGfx);
+		vertexShader->Bind(aGfx);
 
 		inputLayout.Bind(aGfx);
 		topology.Bind(aGfx);

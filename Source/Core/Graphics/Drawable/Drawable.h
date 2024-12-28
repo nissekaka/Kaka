@@ -1,10 +1,10 @@
 #pragma once
-#include "Core/Graphics/Graphics.h"
-
+//#include "Core/Graphics/Graphics.h"
+#include <DirectXMath.h>
 
 namespace Kaka
 {
-	class Bindable;
+	//class Bindable;
 
 	class Drawable
 	{

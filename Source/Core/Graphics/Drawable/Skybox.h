@@ -1,6 +1,6 @@
 #pragma once
-#include "Drawable.h"
-#include "Core/Graphics/Bindable/BindableCommon.h"
+#include "Core/Graphics/Drawable/Drawable.h"
+#include "Core/Graphics/Bindable/CubeTexture.h"
 
 namespace Kaka
 {
@@ -36,11 +36,11 @@ namespace Kaka
 			DirectX::XMMATRIX projection;
 		};
 
-		Sampler sampler = {};
+		//Sampler sampler = {};
 		VertexBuffer vertexBuffer = {};
 		IndexBuffer indexBuffer = {};
-		PixelShader pixelShader;
-		VertexShader vertexShader;
+		PixelShader* pixelShader;
+		VertexShader* vertexShader;
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 		{
 			{

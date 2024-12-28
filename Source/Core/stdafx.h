@@ -26,7 +26,7 @@
 #include "Core/Graphics/Drawable/Model.h"
 #include "Core/Graphics/Drawable/ModelData.h"
 #include "Core/Graphics/Drawable/Vertex.h"
-//#include "Core/Graphics/Graphics.h"
+#include "Core/Graphics/Graphics.h"
 //#include "Core/Input/Keyboard.h"
 //#include "Core/Input/Mouse.h"
 //#include "Windows/KakaWin.h"
