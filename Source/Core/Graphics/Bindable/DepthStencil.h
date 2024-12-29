@@ -1,30 +1,27 @@
 #pragma once
-#include "Bindable.h"
-
 
 namespace Kaka
 {
-	class DepthStencil : public Bindable
+	enum class eDepthStencilStates
+	{
+		Normal,
+		ReadOnlyGreater,
+		ReadOnlyLessEqual,
+		ReadOnlyEmpty,
+		Count,
+	};
+
+	class DepthStencil
 	{
 	public:
-		enum class Mode
-		{
-			Off,
-			Normal,
-			Write,
-			Mask,
-			DepthOff,
-			DepthReversed,
-			DepthFirst // For skybox render
-		};
 
 		DepthStencil() = default;
-		DepthStencil(const Graphics& aGfx, const Mode aMode);
-		void Init(const Graphics& aGfx, const Mode aMode);
-		void Bind(const Graphics& aGfx) override;
+		~DepthStencil() = default;
+		void Init(ID3D11Device* aDevice, const eDepthStencilStates aState);
+		void SetDepthStencilState(ID3D11DeviceContext* aContext, eDepthStencilStates aDepthStencilState);
 
 	private:
-		Mode mode = Mode::Off;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pStencil;
+		eDepthStencilStates state = eDepthStencilStates::Normal;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDepthStencilStates[(int)eDepthStencilStates::Count];
 	};
 }

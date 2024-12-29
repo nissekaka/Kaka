@@ -8,9 +8,7 @@
 
 namespace Kaka
 {
-	PostProcessing::PostProcessing() {}
-
-	void PostProcessing::Init(const Graphics& aGfx)
+	void PostProcessing::Init(const Graphics& aGfx, const UINT aWidth, const UINT aHeight)
 	{
 		postProcessVS = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Fullscreen_VS.cso");
 		postProcessPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\PostProcessing_PS.cso");
@@ -78,7 +76,33 @@ namespace Kaka
 		};
 
 		inputLayout.Init(aGfx, ied, postProcessVS->GetBytecode());
-		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		HRESULT result;
+
+		// Post processing
+		{
+			ID3D11Texture2D* postTexture;
+			D3D11_TEXTURE2D_DESC ppDesc = { 0 };
+			ppDesc.Width = aWidth;
+			ppDesc.Height = aHeight;
+			ppDesc.MipLevels = 1u;
+			ppDesc.ArraySize = 1u;
+			ppDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+			ppDesc.SampleDesc.Count = 1u;
+			ppDesc.SampleDesc.Quality = 0u;
+			ppDesc.Usage = D3D11_USAGE_DEFAULT;
+			ppDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			ppDesc.CPUAccessFlags = 0u;
+			ppDesc.MiscFlags = 0u;
+			result = aGfx.pDevice->CreateTexture2D(&ppDesc, nullptr, &postTexture);
+			assert(SUCCEEDED(result));
+			result = aGfx.pDevice->CreateShaderResourceView(postTexture, nullptr, &pResource);
+			assert(SUCCEEDED(result));
+			result = aGfx.pDevice->CreateRenderTargetView(postTexture, nullptr, &pTarget);
+			assert(SUCCEEDED(result));
+
+			postTexture->Release();
+		}
 	}
 
 	void PostProcessing::Draw(Graphics& aGfx)
@@ -88,7 +112,6 @@ namespace Kaka
 		currentPS->Bind(aGfx);
 		postProcessVS->Bind(aGfx);
 		inputLayout.Bind(aGfx);
-		topology.Bind(aGfx);
 
 		aGfx.DrawIndexed(6u);
 		// Unbind shader resources

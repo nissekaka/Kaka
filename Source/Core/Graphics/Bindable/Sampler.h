@@ -1,5 +1,4 @@
 #pragma once
-#include "Bindable.h"
 
 namespace Kaka
 {
@@ -16,7 +15,7 @@ namespace Kaka
 		};
 
 		Sampler() = default;
-		Sampler(ID3D11Device* aDevice, const UINT aSlot = 0u);
+		~Sampler() = default;
 		void Init(ID3D11Device* aDevice, const UINT aSlot = 0u, const eSamplerType aType = eSamplerType::Anisotropic);
 		void Bind(ID3D11DeviceContext* aContext);
 

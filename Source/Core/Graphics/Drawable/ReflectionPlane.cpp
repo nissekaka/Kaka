@@ -59,10 +59,6 @@ namespace Kaka
 		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\ReflectionPlane_VS.cso");
 
 		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
-		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		rasterizer.Init(aGfx, eCullingMode::None);
-		depthStencil.Init(aGfx, DepthStencil::Mode::Off);
 	}
 
 	void ReflectionPlane::Draw(Graphics& aGfx)
@@ -82,9 +78,6 @@ namespace Kaka
 
 		vertexShader->Bind(aGfx);
 		inputLayout.Bind(aGfx);
-		topology.Bind(aGfx);
-		rasterizer.Bind(aGfx);
-		depthStencil.Bind(aGfx);
 
 		aGfx.DrawIndexed(static_cast<UINT>(std::size(indices)));
 

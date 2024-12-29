@@ -1,27 +1,27 @@
 #pragma once
 
-#include "Bindable.h"
 #include <string>
-
 
 namespace Kaka
 {
-	enum class eCullingMode { None, Back, Front };
+	enum class eRasterizerStates
+	{
+		BackfaceCulling,
+		FrontfaceCulling,
+		NoCulling,
+		Count,
+	};
 
-	class Rasterizer : public Bindable
+	class Rasterizer
 	{
 	public:
 		Rasterizer() = default;
-		Rasterizer(const Graphics& aGfx, eCullingMode aMode = eCullingMode::Back);
-		void Init(const Graphics& aGfx, eCullingMode aMode = eCullingMode::Back);
-		void SetCullingMode(eCullingMode aMode);
-		void Bind(const Graphics& aGfx) override;
+		~Rasterizer() = default;
+		void Init(ID3D11Device* aDevice, eRasterizerStates aState = eRasterizerStates::BackfaceCulling);
+		void SetRasterizerState(ID3D11DeviceContext* aContext, eRasterizerStates aRasterizerState);
 
-	protected:
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizer;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerNone;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerBack;
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerFront;
-		eCullingMode cullingMode = eCullingMode::Back;
+	private:
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerStates[(int)eRasterizerStates::Count];
+		eRasterizerStates rasterizerState = eRasterizerStates::BackfaceCulling;
 	};
 }

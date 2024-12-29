@@ -15,10 +15,23 @@ namespace Kaka
 
 	class PostProcessing
 	{
+		friend class Graphics;
 	public:
-		PostProcessing();
+		struct PostProcessingData
+		{
+			DirectX::XMFLOAT3 tint; // RGB values for tint adjustment
+			float exposure; // Exposure adjustment
+			DirectX::XMFLOAT3 blackpoint; // Blackpoint adjustment
+			float contrast; // Contrast adjustment
+			float saturation; // Saturation adjustment
+			float blur; // Blur adjustment
+			float sharpness; // Sharpness adjustment
+			float padding;
+		} ppData;
 
-		void Init(const Graphics& aGfx);
+		PostProcessing() = default;
+		~PostProcessing() = default;
+		void Init(const Graphics& aGfx, const UINT aWidth, const UINT aHeight);
 		void Draw(Graphics& aGfx);
 		void SetDownsamplePS();
 		void SetUpsamplePS();
@@ -38,8 +51,10 @@ namespace Kaka
 
 		PixelShader* currentPS = nullptr;
 
+		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pTarget;
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pResource;
+
 		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
 		InputLayout inputLayout;
-		Topology topology = {};
 	};
 }

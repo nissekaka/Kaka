@@ -3,48 +3,68 @@
 
 namespace Kaka
 {
-	Rasterizer::Rasterizer(const Graphics& aGfx, const eCullingMode aMode)
-		:
-		cullingMode(aMode)
+	void Rasterizer::Init(ID3D11Device* aDevice, eRasterizerStates aState)
 	{
-		Init(aGfx, aMode);
-	}
-
-	void Rasterizer::Init(const Graphics& aGfx, const eCullingMode aMode)
-	{
-		cullingMode = aMode;
+		rasterizerState = aState;
 		D3D11_RASTERIZER_DESC rasterDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT{});
 
-		rasterDesc.CullMode = D3D11_CULL_NONE;
-		GetDevice(aGfx)->CreateRasterizerState(&rasterDesc, &pRasterizerNone);
+		HRESULT hr = S_OK;
 
-		rasterDesc.CullMode = D3D11_CULL_BACK;
-		GetDevice(aGfx)->CreateRasterizerState(&rasterDesc, &pRasterizerBack);
+		D3D11_RASTERIZER_DESC rasterizerDesc = {};
 
-		rasterDesc.CullMode = D3D11_CULL_FRONT;
-		GetDevice(aGfx)->CreateRasterizerState(&rasterDesc, &pRasterizerFront);
+		pRasterizerStates[(int)eRasterizerStates::BackfaceCulling] = nullptr;
 
-		SetCullingMode(cullingMode);
+		rasterizerDesc.AntialiasedLineEnable = false;
+		rasterizerDesc.CullMode = D3D11_CULL_FRONT;
+		rasterizerDesc.DepthBias = 0;
+		rasterizerDesc.DepthBiasClamp = 0.0f;
+		rasterizerDesc.DepthClipEnable = true;
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.FrontCounterClockwise = false;
+		rasterizerDesc.MultisampleEnable = true;
+		rasterizerDesc.ScissorEnable = false;
+		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+		hr = aDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerStates[(int)eRasterizerStates::FrontfaceCulling]);
+
+		assert(SUCCEEDED(hr));
+
+		rasterizerDesc.AntialiasedLineEnable = false;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;
+		rasterizerDesc.DepthBias = 0;
+		rasterizerDesc.DepthBiasClamp = 0.0f;
+		rasterizerDesc.DepthClipEnable = true;
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.FrontCounterClockwise = false;
+		rasterizerDesc.MultisampleEnable = true;
+		rasterizerDesc.ScissorEnable = false;
+		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+		hr = aDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerStates[(int)eRasterizerStates::NoCulling]);
+
+		assert(SUCCEEDED(hr));
 	}
 
-	void Rasterizer::SetCullingMode(const eCullingMode aMode)
+	void Rasterizer::SetRasterizerState(ID3D11DeviceContext* aContext, eRasterizerStates aRasterizerState)
 	{
-		switch (aMode)
+		rasterizerState = aRasterizerState;
+
+		switch (aRasterizerState)
 		{
-			case eCullingMode::None:
-				pRasterizer = pRasterizerNone;
-				break;
-			case eCullingMode::Back:
-				pRasterizer = pRasterizerBack;
-				break;
-			case eCullingMode::Front:
-				pRasterizer = pRasterizerFront;
-				break;
+			case eRasterizerStates::BackfaceCulling:
+			{
+				aContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::BackfaceCulling].Get());
+			}
+			break;
+			case eRasterizerStates::FrontfaceCulling:
+			{
+				aContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::FrontfaceCulling].Get());
+			}
+			break;
+			case eRasterizerStates::NoCulling:
+			{
+				aContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::NoCulling].Get());
+			}
+			break;
+			default:;
 		}
-	}
-
-	void Rasterizer::Bind(const Graphics& aGfx)
-	{
-		GetContext(aGfx)->RSSetState(pRasterizer.Get());
 	}
 }

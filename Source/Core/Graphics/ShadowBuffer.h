@@ -6,7 +6,18 @@ namespace Kaka
 	class ShadowBuffer
 	{
 	public:
+		struct ShadowData
+		{
+			BOOL usePCF = false;
+			float offsetScalePCF = 0.004f;
+			int sampleCountPCF = 5;
+			BOOL usePoisson = true;
+			float offsetScalePoissonDisk = 0.0019f;
+			float padding[3];
+		} shadowData;
+
 		static ShadowBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);
+		~ShadowBuffer() = default;
 		Camera& GetCamera() { return camera; }
 
 		void Clear(ID3D11DeviceContext* aContext) const;

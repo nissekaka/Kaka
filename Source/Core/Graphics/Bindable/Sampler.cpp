@@ -3,13 +3,6 @@
 
 namespace Kaka
 {
-	Sampler::Sampler(ID3D11Device* aDevice, const UINT aSlot)
-		:
-		slot(aSlot)
-	{
-		Init(aDevice, aSlot);
-	}
-
 	void Sampler::Init(ID3D11Device* aDevice, const UINT aSlot, const eSamplerType aType)
 	{
 		slot = aSlot;

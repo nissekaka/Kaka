@@ -62,7 +62,7 @@ namespace Kaka
 		void Move(DirectX::XMFLOAT3 aDistance);
 		void FlipScale(float aHeight, bool aReset);
 		void SetReflectShader(const Graphics& aGfx, bool aValue);
-		void SetCullingMode(eCullingMode aMode);
+
 		DirectX::XMFLOAT3 GetRandomVertexPosition() const;
 		DirectX::XMMATRIX GetTransform() const override;
 		std::vector<TerrainSubset>& GetTerrainSubsets();
@@ -98,9 +98,6 @@ namespace Kaka
 			},
 		};
 		InputLayout inputLayout;
-		Topology topology = {};
-		Rasterizer rasterizer = {};
-		DepthStencil depthStencil = {};
 
 	private:
 		std::vector<TerrainSubset> terrainSubsets = {};

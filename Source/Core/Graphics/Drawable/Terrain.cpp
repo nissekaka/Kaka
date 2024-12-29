@@ -397,10 +397,6 @@ namespace Kaka
 		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainReflect_VS.cso");
 
 		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
-		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		rasterizer.Init(aGfx);
-		depthStencil.Init(aGfx, DepthStencil::Mode::Write);
 
 		OutputDebugStringA("\nDone!");
 	}
@@ -431,9 +427,6 @@ namespace Kaka
 		}
 
 		inputLayout.Bind(aGfx);
-		topology.Bind(aGfx);
-		rasterizer.Bind(aGfx);
-		depthStencil.Bind(aGfx);
 
 		for (int i = 0; i < terrainSubsets.size(); ++i)
 		{
@@ -499,11 +492,6 @@ namespace Kaka
 		{
 			vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainPBR_VS.cso");
 		}
-	}
-
-	void Terrain::SetCullingMode(const eCullingMode aMode)
-	{
-		rasterizer.SetCullingMode(aMode);
 	}
 
 	DirectX::XMFLOAT3 Terrain::GetRandomVertexPosition() const

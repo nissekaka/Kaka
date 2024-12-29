@@ -16,6 +16,8 @@
 #include "Core/Graphics/Lighting/DeferredLights.h"
 #include "Core/Graphics/Lighting/IndirectLighting.h"
 #include "Core/Graphics/Bindable/ConstantBuffers.h"
+#include "Core/Graphics/Bindable/DepthStencil.h"
+#include "Core/Graphics/Bindable/BlendState.h"
 #include "Core/Graphics/Drawable/Skybox.h"
 #include "Core/Graphics/Drawable/Model.h"
 
@@ -38,39 +40,9 @@ namespace Kaka
 	{
 		None,
 		Default,
-		WaterReflect,
 		PostProcessing,
-		IndirectLight,
-		RSMFullscaleSpot,
 		HistoryN1,
 		HistoryN
-	};
-
-	enum class eBlendStates
-	{
-		Disabled,
-		Alpha,
-		Additive,
-		TransparencyBlend,
-		VFX,
-		Count,
-	};
-
-	enum class eDepthStencilStates
-	{
-		Normal,
-		ReadOnlyGreater,
-		ReadOnlyLessEqual,
-		ReadOnlyEmpty,
-		Count,
-	};
-
-	enum class eRasterizerStates
-	{
-		BackfaceCulling,
-		FrontfaceCulling,
-		NoCulling,
-		Count,
 	};
 
 	struct RenderTarget
@@ -123,10 +95,6 @@ namespace Kaka
 		void SetBlendState(eBlendStates aBlendState);
 		void SetDepthStencilState(eDepthStencilStates aDepthStencilState);
 		void SetRasterizerState(eRasterizerStates aRasterizerState);
-
-		bool CreateBlendStates();
-		bool CreateDepthStencilStates();
-		bool CreateRasterizerStates();
 
 		void BindPostProcessingTexture();
 		void BindBloomDownscaleTexture(const int aIndex);
@@ -189,9 +157,6 @@ namespace Kaka
 
 		DeferredLights deferredLights;
 
-		RenderTarget postProcessingTarget;
-		RenderTarget indirectLightTarget;
-
 		RenderTarget historyNTarget;
 		RenderTarget historyN1Target;
 
@@ -213,14 +178,14 @@ namespace Kaka
 
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pDefaultTarget;
 
-		Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendStates[(int)eBlendStates::Count];
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDepthStencilStates[(int)eDepthStencilStates::Count];
-		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerStates[(int)eRasterizerStates::Count];
-
 		Sampler defaultSampler;
 		Sampler linearSampler;
 		Sampler pointClampedSampler;
 		Sampler shadowSampler;
+
+		BlendState blendState;
+		Rasterizer rasterizer;
+		DepthStencil depthStencil;
 
 		UINT width;
 		UINT height;
@@ -259,28 +224,6 @@ namespace Kaka
 	private:
 		PostProcessing postProcessing;
 
-		struct PostProcessingData
-		{
-			DirectX::XMFLOAT3 tint; // RGB values for tint adjustment
-			float exposure; // Exposure adjustment
-			DirectX::XMFLOAT3 blackpoint; // Blackpoint adjustment
-			float contrast; // Contrast adjustment
-			float saturation; // Saturation adjustment
-			float blur; // Blur adjustment
-			float sharpness; // Sharpness adjustment
-			float padding;
-		} ppData;
-
-		struct ShadowData
-		{
-			BOOL usePCF = false;
-			float offsetScalePCF = 0.004f;
-			int sampleCountPCF = 5;
-			BOOL usePoisson = true;
-			float offsetScalePoissonDisk = 0.0019f;
-			float padding[3];
-		} shadowData;
-
 		struct TAAData
 		{
 			DirectX::XMFLOAT2 jitter;
@@ -305,8 +248,8 @@ namespace Kaka
 		VertexConstantBuffer<CommonData> vcb { VS_CBUFFER_SLOT_COMMON };
 		PixelConstantBuffer<CommonData> pcb { PS_CBUFFER_SLOT_COMMON };
 		PixelConstantBuffer<TAAData> tab { 1u };
-		PixelConstantBuffer<ShadowData> shadowPixelBuffer { PS_CBUFFER_SLOT_SHADOW };
-		PixelConstantBuffer<PostProcessingData> ppb { 1u };
+		PixelConstantBuffer<ShadowBuffer::ShadowData> shadowPixelBuffer { PS_CBUFFER_SLOT_SHADOW };
+		PixelConstantBuffer<PostProcessing::PostProcessingData> ppb { 1u };
 
 		static constexpr unsigned int SAMPLE_COUNT_DIRECTIONAL = 10u;
 		static constexpr unsigned int SAMPLE_COUNT_SPOT = 4u;

@@ -47,9 +47,6 @@ namespace Kaka
 			},
 		};
 		InputLayout inputLayout;
-		Topology topology = {};
-		Rasterizer rasterizer = {};
-		DepthStencil depthStencil = {};
 
 	private:
 		std::vector<Vertex> vertices = {};

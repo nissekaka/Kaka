@@ -105,31 +105,6 @@ namespace Kaka
 		gBuffer = GBuffer::Create(*this, width, height);
 		shadowBuffer = ShadowBuffer::Create(*this, width, height);
 
-		// Post processing
-		{
-			ID3D11Texture2D* postTexture;
-			D3D11_TEXTURE2D_DESC ppDesc = { 0 };
-			ppDesc.Width = width;
-			ppDesc.Height = height;
-			ppDesc.MipLevels = 1u;
-			ppDesc.ArraySize = 1u;
-			ppDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-			ppDesc.SampleDesc.Count = 1u;
-			ppDesc.SampleDesc.Quality = 0u;
-			ppDesc.Usage = D3D11_USAGE_DEFAULT;
-			ppDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			ppDesc.CPUAccessFlags = 0u;
-			ppDesc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&ppDesc, nullptr, &postTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(postTexture, nullptr, &postProcessingTarget.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(postTexture, nullptr, &postProcessingTarget.pTarget);
-			assert(SUCCEEDED(result));
-
-			postTexture->Release();
-		}
-
 		// Bloom
 		{
 			UINT bloomWidth = width;
@@ -162,34 +137,6 @@ namespace Kaka
 				assert(SUCCEEDED(result));
 				bloomTexture->Release();
 			}
-		}
-
-		// Indirect light
-		{
-			UINT rsmWidth = width;
-			UINT rsmHeight = height;
-
-			ID3D11Texture2D* rsmTexture;
-			D3D11_TEXTURE2D_DESC rsmDesc = { 0 };
-			rsmDesc.Width = rsmWidth;
-			rsmDesc.Height = rsmHeight;
-			rsmDesc.MipLevels = 1u;
-			rsmDesc.ArraySize = 1u;
-			rsmDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-			rsmDesc.SampleDesc.Count = 1u;
-			rsmDesc.SampleDesc.Quality = 0u;
-			rsmDesc.Usage = D3D11_USAGE_DEFAULT;
-			rsmDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			rsmDesc.CPUAccessFlags = 0u;
-			rsmDesc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&rsmDesc, nullptr, &rsmTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(rsmTexture, nullptr, &indirectLightTarget.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(rsmTexture, nullptr, &indirectLightTarget.pTarget);
-			assert(SUCCEEDED(result));
-
-			rsmTexture->Release();
 		}
 
 		// Fullscreen
@@ -243,9 +190,9 @@ namespace Kaka
 		}
 
 		// TODO bools
-		CreateBlendStates();
-		CreateDepthStencilStates();
-		CreateRasterizerStates();
+		blendState.Init(pDevice.Get(), eBlendStates::Disabled);
+		rasterizer.Init(pDevice.Get(), eRasterizerStates::BackfaceCulling);
+		depthStencil.Init(pDevice.Get(), eDepthStencilStates::Normal);
 
 		// Init imgui d3d impl
 		ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
@@ -257,15 +204,15 @@ namespace Kaka
 		// TODO New refactor stuff
 
 		deferredLights.Init(*this);
-		postProcessing.Init(*this);
+		postProcessing.Init(*this, width, height);
 
-		ppData.tint = { 1.0f, 1.0f, 1.0f };
-		ppData.blackpoint = { 0.0f, 0.0f, 0.0f };
-		ppData.exposure = 0.0f;
-		ppData.contrast = 1.0f;
-		ppData.saturation = 1.0f;
-		ppData.blur = 0.0f;
-		ppData.sharpness = 1.0f;
+		postProcessing.ppData.tint = { 1.0f, 1.0f, 1.0f };
+		postProcessing.ppData.blackpoint = { 0.0f, 0.0f, 0.0f };
+		postProcessing.ppData.exposure = 0.0f;
+		postProcessing.ppData.contrast = 1.0f;
+		postProcessing.ppData.saturation = 1.0f;
+		postProcessing.ppData.blur = 0.0f;
+		postProcessing.ppData.sharpness = 1.0f;
 
 		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
 
@@ -277,8 +224,8 @@ namespace Kaka
 		vcb.Init(*this, commonData);
 		pcb.Init(*this, commonData);
 		tab.Init(*this, taaData);
-		shadowPixelBuffer.Init(*this, shadowData);
-		ppb.Init(*this, ppData);
+		shadowPixelBuffer.Init(*this, shadowBuffer.shadowData);
+		ppb.Init(*this, postProcessing.ppData);
 
 		skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
 
@@ -306,7 +253,7 @@ namespace Kaka
 		}
 
 		constexpr float colour[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		pContext->ClearRenderTargetView(postProcessingTarget.pTarget.Get(), colour);
+		pContext->ClearRenderTargetView(postProcessing.pTarget.Get(), colour);
 		//pContext->ClearDepthStencilView(pDepth.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
 	}
 
@@ -387,19 +334,9 @@ namespace Kaka
 				pContext->OMSetRenderTargets(1u, pDefaultTarget.GetAddressOf(), aDepth);
 			}
 			break;
-			case eRenderTargetType::WaterReflect:
-			{
-				//pContext->OMSetRenderTargets(1u, renderWaterReflect.pTarget.GetAddressOf(), aDepth);
-			}
-			break;
 			case eRenderTargetType::PostProcessing:
 			{
-				pContext->OMSetRenderTargets(1u, postProcessingTarget.pTarget.GetAddressOf(), aDepth);
-			}
-			break;
-			case eRenderTargetType::IndirectLight:
-			{
-				pContext->OMSetRenderTargets(1u, indirectLightTarget.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, postProcessing.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::HistoryN1:
@@ -412,11 +349,6 @@ namespace Kaka
 				pContext->OMSetRenderTargets(1u, historyNTarget.pTarget.GetAddressOf(), aDepth);
 			}
 			break;
-			//case eRenderTargetType::ShadowMap:
-			//{
-			//	pContext->OMSetRenderTargets(0u, nullptr, rsmBuffer.GetDepthStencilView());
-			//}
-			//break;
 		}
 	}
 
@@ -522,273 +454,22 @@ namespace Kaka
 
 	void Graphics::SetBlendState(eBlendStates aBlendState)
 	{
-		switch (aBlendState)
-		{
-			case eBlendStates::Disabled:
-			{
-				pContext->OMSetBlendState(pBlendStates[(int)eBlendStates::Disabled].Get(), nullptr, 0x0f);
-			}
-			break;
-			case eBlendStates::Alpha:
-			{
-				pContext->OMSetBlendState(pBlendStates[(int)eBlendStates::Alpha].Get(), nullptr, 0x0f);
-			}
-			break;
-			case eBlendStates::VFX:
-			{
-				pContext->OMSetBlendState(pBlendStates[(int)eBlendStates::VFX].Get(), nullptr, 0x0f);
-			}
-			break;
-			case eBlendStates::Additive:
-			{
-				pContext->OMSetBlendState(pBlendStates[(int)eBlendStates::Additive].Get(), nullptr, 0x0f);
-			}
-			break;
-		}
+		blendState.SetBlendState(pContext.Get(), aBlendState);
 	}
 
 	void Graphics::SetDepthStencilState(const eDepthStencilStates aDepthStencilState)
 	{
-		switch (aDepthStencilState)
-		{
-			case eDepthStencilStates::Normal:
-			{
-				pContext->OMSetDepthStencilState(pDepthStencilStates[(int)eDepthStencilStates::Normal].Get(), 0u);
-			}
-			break;
-			case eDepthStencilStates::ReadOnlyGreater:
-			{
-				pContext->OMSetDepthStencilState(pDepthStencilStates[(int)eDepthStencilStates::ReadOnlyGreater].Get(), 0u);
-			}
-			break;
-			case eDepthStencilStates::ReadOnlyLessEqual:
-			{
-				pContext->OMSetDepthStencilState(pDepthStencilStates[(int)eDepthStencilStates::ReadOnlyLessEqual].Get(), 0u);
-			}
-			break;
-			case eDepthStencilStates::ReadOnlyEmpty:
-			{
-				pContext->OMSetDepthStencilState(pDepthStencilStates[(int)eDepthStencilStates::ReadOnlyEmpty].Get(), 0u);
-			}
-			break;
-			default:;
-		}
+		depthStencil.SetDepthStencilState(pContext.Get(), aDepthStencilState);
 	}
 
 	void Graphics::SetRasterizerState(eRasterizerStates aRasterizerState)
 	{
-		switch (aRasterizerState)
-		{
-			case eRasterizerStates::BackfaceCulling:
-			{
-				pContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::BackfaceCulling].Get());
-			}
-			break;
-			case eRasterizerStates::FrontfaceCulling:
-			{
-				pContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::FrontfaceCulling].Get());
-			}
-			break;
-			case eRasterizerStates::NoCulling:
-			{
-				pContext->RSSetState(pRasterizerStates[(int)eRasterizerStates::NoCulling].Get());
-			}
-			break;
-			default:;
-		}
-	}
-
-	bool Graphics::CreateBlendStates()
-	{
-		HRESULT hr = S_OK;
-		D3D11_BLEND_DESC blendStateDesc = {};
-
-		// DISABLED BLEND STATE -> DEFAULT
-		blendStateDesc.RenderTarget[0].BlendEnable = FALSE;
-		blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ZERO;
-		blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
-		blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-		blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		hr = pDevice->CreateBlendState(&blendStateDesc, pBlendStates[(int)eBlendStates::Disabled].ReleaseAndGetAddressOf());
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		// ALPHA BLEND
-		blendStateDesc = {};
-		blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
-		blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		hr = pDevice->CreateBlendState(&blendStateDesc, pBlendStates[(int)eBlendStates::Alpha].ReleaseAndGetAddressOf());
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		// VFX BLEND whatever you wanna call it
-		blendStateDesc = {};
-		blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
-
-		blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-
-		blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-		blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-
-		blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		hr = pDevice->CreateBlendState(&blendStateDesc,
-			pBlendStates[(int)eBlendStates::VFX].ReleaseAndGetAddressOf());
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		// ADDITIVE BLEND
-		blendStateDesc = {};
-		blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
-		blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_MAX;
-		blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		hr = pDevice->CreateBlendState(&blendStateDesc, pBlendStates[(int)eBlendStates::Additive].ReleaseAndGetAddressOf());
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		// TRANSPARENCY BLEND
-		blendStateDesc = {};
-		blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
-		blendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-		blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-		blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-		blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-		hr = pDevice->CreateBlendState(&blendStateDesc, pBlendStates[(int)eBlendStates::TransparencyBlend].ReleaseAndGetAddressOf());
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	bool Graphics::CreateDepthStencilStates()
-	{
-		HRESULT hr = S_OK;
-
-		// NORMAL
-		D3D11_DEPTH_STENCIL_DESC dsDesc = CD3D11_DEPTH_STENCIL_DESC{ CD3D11_DEFAULT{} };
-		dsDesc.DepthEnable = TRUE;
-		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
-
-		hr = pDevice->CreateDepthStencilState(&dsDesc, pDepthStencilStates[(int)eDepthStencilStates::Normal].ReleaseAndGetAddressOf());
-
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		// READ ONLY GREATER
-		dsDesc = {};
-		dsDesc.DepthEnable = TRUE;
-		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-		dsDesc.DepthFunc = D3D11_COMPARISON_GREATER;
-		dsDesc.StencilEnable = FALSE;
-
-		hr = pDevice->CreateDepthStencilState(&dsDesc, pDepthStencilStates[(int)eDepthStencilStates::ReadOnlyGreater].ReleaseAndGetAddressOf());
-
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		// READ ONLY LESS EQUAL
-		dsDesc = {};
-		dsDesc.DepthEnable = TRUE;
-		dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-		dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		dsDesc.StencilEnable = FALSE;
-
-		hr = pDevice->CreateDepthStencilState(
-			&dsDesc, pDepthStencilStates[(int)eDepthStencilStates::ReadOnlyLessEqual].ReleaseAndGetAddressOf());
-
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	bool Graphics::CreateRasterizerStates()
-	{
-		HRESULT hr = S_OK;
-
-		D3D11_RASTERIZER_DESC rasterizerDesc = {};
-
-		pRasterizerStates[(int)eRasterizerStates::BackfaceCulling] = nullptr;
-
-		rasterizerDesc.AntialiasedLineEnable = false;
-		rasterizerDesc.CullMode = D3D11_CULL_FRONT;
-		rasterizerDesc.DepthBias = 0;
-		rasterizerDesc.DepthBiasClamp = 0.0f;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.FrontCounterClockwise = false;
-		rasterizerDesc.MultisampleEnable = true;
-		rasterizerDesc.ScissorEnable = false;
-		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-		hr = pDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerStates[(int)eRasterizerStates::FrontfaceCulling]);
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		rasterizerDesc.AntialiasedLineEnable = false;
-		rasterizerDesc.CullMode = D3D11_CULL_NONE;
-		rasterizerDesc.DepthBias = 0;
-		rasterizerDesc.DepthBiasClamp = 0.0f;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.FrontCounterClockwise = false;
-		rasterizerDesc.MultisampleEnable = true;
-		rasterizerDesc.ScissorEnable = false;
-		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-		hr = pDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerStates[(int)eRasterizerStates::NoCulling]);
-		if (FAILED(hr))
-		{
-			return false;
-		}
-
-		return true;
+		rasterizer.SetRasterizerState(pContext.Get(), aRasterizerState);
 	}
 
 	void Graphics::BindPostProcessingTexture()
 	{
-		pContext->PSSetShaderResources(0u, 1u, postProcessingTarget.pResource.GetAddressOf());
+		pContext->PSSetShaderResources(0u, 1u, postProcessing.pResource.GetAddressOf());
 	}
 
 	void Graphics::BindBloomDownscaleTexture(const int aIndex)
@@ -921,7 +602,7 @@ namespace Kaka
 		{
 			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
 
-			shadowPixelBuffer.Update(*this, shadowData);
+			shadowPixelBuffer.Update(*this, shadowBuffer.shadowData);
 			shadowPixelBuffer.Bind(*this);
 
 			BindShadows(shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
@@ -954,7 +635,7 @@ namespace Kaka
 			pContext->PSSetShaderResources(1u, 1u, historyN1Target.pResource.GetAddressOf());
 		}
 
-		pContext->PSSetShaderResources(0u, 1u, postProcessingTarget.pResource.GetAddressOf());
+		pContext->PSSetShaderResources(0u, 1u, postProcessing.pResource.GetAddressOf());
 
 		// Need world position for reprojection
 		pContext->PSSetShaderResources(2u, 1u, gBuffer.GetShaderResourceView(GBuffer::GBufferTexture::WorldPosition));
@@ -986,7 +667,7 @@ namespace Kaka
 
 		flipFlop = !flipFlop;
 
-		ppb.Update(*this, ppData);
+		ppb.Update(*this, postProcessing.ppData);
 		ppb.Bind(*this);
 
 		postProcessing.Draw(*this);
@@ -1026,13 +707,13 @@ namespace Kaka
 			if (ImGui::Begin("Post Processing"))
 			{
 				ImGui::Checkbox("Use PP", &usePostProcessing);
-				ImGui::ColorPicker3("Tint", &ppData.tint.x);
-				ImGui::DragFloat3("Blackpoint", &ppData.blackpoint.x, 0.01f, 0.0f, 1.0f, "%.2f");
-				ImGui::DragFloat("Exposure", &ppData.exposure, 0.01f, -10.0f, 10.0f, "%.2f");
-				ImGui::DragFloat("Contrast", &ppData.contrast, 0.01f, 0.0f, 10.0f, "%.2f");
-				ImGui::DragFloat("Saturation", &ppData.saturation, 0.01f, 0.0f, 10.0f, "%.2f");
-				ImGui::DragFloat("Blur", &ppData.blur, 0.01f, 0.0f, 64.0f, "%.2f");
-				ImGui::DragFloat("Sharpness", &ppData.sharpness, 0.01f, 0.0f, 10.0f, "%.2f");
+				ImGui::ColorPicker3("Tint", &postProcessing.ppData.tint.x);
+				ImGui::DragFloat3("Blackpoint", &postProcessing.ppData.blackpoint.x, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::DragFloat("Exposure", &postProcessing.ppData.exposure, 0.01f, -10.0f, 10.0f, "%.2f");
+				ImGui::DragFloat("Contrast", &postProcessing.ppData.contrast, 0.01f, 0.0f, 10.0f, "%.2f");
+				ImGui::DragFloat("Saturation", &postProcessing.ppData.saturation, 0.01f, 0.0f, 10.0f, "%.2f");
+				ImGui::DragFloat("Blur", &postProcessing.ppData.blur, 0.01f, 0.0f, 64.0f, "%.2f");
+				ImGui::DragFloat("Sharpness", &postProcessing.ppData.sharpness, 0.01f, 0.0f, 10.0f, "%.2f");
 				ImGui::Text("Bloom");
 				ImGui::SetNextItemWidth(100);
 				ImGui::SliderFloat("Bloom blending", &downSampleData.bloomBlending, 0.0f, 1.0f);
@@ -1046,12 +727,12 @@ namespace Kaka
 			if (ImGui::Begin("Shadows"))
 			{
 				ImGui::Text("PCF");
-				ImGui::Checkbox("Use PCF", (bool*)&shadowData.usePCF);
-				ImGui::DragFloat("Offset scale##OffsetPCF", &shadowData.offsetScalePCF, 0.0001f, 0.0f, 1.0f, "%.6f");
-				ImGui::DragInt("Sample count", &shadowData.sampleCountPCF, 1, 1, 25);
+				ImGui::Checkbox("Use PCF", (bool*)&shadowBuffer.shadowData.usePCF);
+				ImGui::DragFloat("Offset scale##OffsetPCF", &shadowBuffer.shadowData.offsetScalePCF, 0.0001f, 0.0f, 1.0f, "%.6f");
+				ImGui::DragInt("Sample count", &shadowBuffer.shadowData.sampleCountPCF, 1, 1, 25);
 				ImGui::Text("Poisson");
-				ImGui::Checkbox("Use Poisson##Shadow", (bool*)&shadowData.usePoisson);
-				ImGui::DragFloat("Offset scale##OffsetPoisson", &shadowData.offsetScalePoissonDisk, 0.0001f, 0.0f, 1.0f, "%.6f");
+				ImGui::Checkbox("Use Poisson##Shadow", (bool*)&shadowBuffer.shadowData.usePoisson);
+				ImGui::DragFloat("Offset scale##OffsetPoisson", &shadowBuffer.shadowData.offsetScalePoissonDisk, 0.0001f, 0.0f, 1.0f, "%.6f");
 			}
 			ImGui::End();
 
