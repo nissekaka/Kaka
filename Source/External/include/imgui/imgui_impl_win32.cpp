@@ -1038,18 +1038,18 @@ void ImGui_ImplWin32_EnableAlphaCompositing(void* hwnd)
 	if (_IsWindows8OrGreater() || (SUCCEEDED(::DwmGetColorizationColor(&color, &opaque)) && !opaque))
 	{
 		HRGN region = ::CreateRectRgn(0, 0, -1, -1);
-		DWM_BLURBEHIND bb = {};
-		bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
-		bb.hRgnBlur = region;
-		bb.fEnable = TRUE;
-		::DwmEnableBlurBehindWindow((HWND)hwnd, &bb);
+		DWM_BLURBEHIND downSampleData = {};
+		downSampleData.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+		downSampleData.hRgnBlur = region;
+		downSampleData.fEnable = TRUE;
+		::DwmEnableBlurBehindWindow((HWND)hwnd, &downSampleData);
 		::DeleteObject(region);
 	}
 	else
 	{
-		DWM_BLURBEHIND bb = {};
-		bb.dwFlags = DWM_BB_ENABLE;
-		::DwmEnableBlurBehindWindow((HWND)hwnd, &bb);
+		DWM_BLURBEHIND downSampleData = {};
+		downSampleData.dwFlags = DWM_BB_ENABLE;
+		::DwmEnableBlurBehindWindow((HWND)hwnd, &downSampleData);
 	}
 }
 

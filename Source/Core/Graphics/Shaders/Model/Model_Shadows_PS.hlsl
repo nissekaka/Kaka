@@ -1,5 +1,5 @@
-#include "common.hlsli"
-#include "deferred_common.hlsli"
+#include "../Common/common.hlsli"
+#include "../Common/deferred_common.hlsli"
 
 struct PixelInput
 {
@@ -17,7 +17,7 @@ Texture2D colourTex : register(t1);
 
 void main(PixelInput aInput)
 {
-    float4 albedo = colourTex.Sample(defaultSampler, aInput.texCoord).rgba;
+    float4 albedo = colourTex.Sample(pointSampler, aInput.texCoord).rgba;
 
     if (albedo.a < 0.5f)
     {

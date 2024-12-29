@@ -1,7 +1,5 @@
-
-//#include "PCSS.hlsli"
-#include "Poisson.hlsli"
-#include "common.hlsli"
+#include "../Math/Poisson.hlsli"
+#include "../Common/common.hlsli"
 
 Texture2D directionalLightShadowMap : register(t14);
 Texture2D spotLightShadowMap : register(t15);
@@ -33,7 +31,7 @@ float PoissonDisk(float3 aLightProjectedPosition, Texture2D aTexture)
 		// Adjust sampleUV based on facing direction
         const float2 sampleUV = 0.5f + float2(0.5f, -0.5f) * (aLightProjectedPosition.xy) + sampleOffset * offsetScale;
 
-        const float shadowMapZ = aTexture.Sample(linearSampler, sampleUV);
+        const float shadowMapZ = aTexture.Sample(shadowSampler, sampleUV);
 
         //shadowFactor -= (1.0f / 16.0f) * clamp(1.0f - shadowMapZ + bias, 0.0f, 1.0f);
         shadowFactor += (computedZ < shadowMapZ + bias) ? 1.0f : 0.0f;
@@ -62,7 +60,7 @@ float PCF(float3 aLightProjectedPosition, Texture2D aTexture)
         {
             const float2 sampleOffset = float2(i, j) / float(sampleCount);
             const float2 sampleUV = 0.5f + float2(0.5f, -0.5f) * (aLightProjectedPosition.xy + sampleOffset * offsetScale);
-            const float shadowMapZ = aTexture.Sample(linearSampler, sampleUV);
+            const float shadowMapZ = aTexture.Sample(shadowSampler, sampleUV);
 
             shadowFactor += (computedZ < shadowMapZ + bias) ? 1.0f : 0.0f;
         }

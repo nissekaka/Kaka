@@ -52,8 +52,6 @@ namespace Kaka
 		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Water\\Water_n.jpg");
 		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Water\\Water_m.jpg");
 
-		sampler.Init(aGfx, 0u);
-
 		vertexBuffer.Init(aGfx, vertices);
 		indexBuffer.Init(aGfx, indices);
 
@@ -69,7 +67,6 @@ namespace Kaka
 
 	void ReflectionPlane::Draw(Graphics& aGfx)
 	{
-		sampler.Bind(aGfx);
 		texture.Bind(aGfx);
 
 		vertexBuffer.Bind(aGfx);

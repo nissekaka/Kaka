@@ -45,8 +45,8 @@ namespace Kaka
 					mesh.indexBuffer.Init(aGfx, mesh.indices);
 				}
 
-				pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\ModelPBR_Deferred_PS.cso");
-				vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\ModelPBR_Deferred_VS.cso");
+				pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Model_TAA_PS.cso");
+				vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Model_TAA_VS.cso");
 
 				ied =
 				{
@@ -81,8 +81,8 @@ namespace Kaka
 				ModelLoader::LoadAnimatedModel(animatedModelData, aFilePath);
 				ModelLoader::LoadTexture(aGfx, animatedModelData, aFilePath);
 
-				pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\ModelPBR_PS.cso");
-				vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\AnimModelPBR_VS.cso");
+				pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Model\\Model_TAA_PS.cso");
+				vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Model\\Model_Anim_VS.cso");
 
 				ied =
 				{

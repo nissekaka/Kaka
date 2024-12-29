@@ -382,8 +382,6 @@ namespace Kaka
 
 		OutputDebugStringA("\nLoaded textures...");
 
-		sampler.Init(aGfx, 0u);
-
 		for (auto& subset : terrainSubsets)
 		{
 			if (subset.indices.empty())
@@ -409,7 +407,6 @@ namespace Kaka
 
 	void Terrain::Draw(Graphics& aGfx)
 	{
-		sampler.Bind(aGfx);
 		texture.Bind(aGfx);
 
 		if (aGfx.HasPixelShaderOverride())

@@ -1,7 +1,7 @@
-#include "common.hlsli"
-#include "deferred_common.hlsli"
-#include "Light.hlsli"
-#include "PBRFunctions.hlsli"
+#include "Common/common.hlsli"
+#include "Common/deferred_common.hlsli"
+#include "Light/Light.hlsli"
+#include "Light/PBRFunctions.hlsli"
 
 static const uint MAX_LIGHTS = 50u; // Needs to be the same in PointLight
 

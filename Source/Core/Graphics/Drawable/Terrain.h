@@ -72,7 +72,6 @@ namespace Kaka
 		void ShowControlWindow(const char* aWindowName = nullptr);
 
 	private:
-		Sampler sampler = {};
 		PixelShader* pixelShader = nullptr;
 		VertexShader* vertexShader = nullptr;
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =

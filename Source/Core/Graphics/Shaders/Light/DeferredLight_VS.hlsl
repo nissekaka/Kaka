@@ -1,4 +1,4 @@
-#include "deferred_common.hlsli"
+#include "../Common/deferred_common.hlsli"
 
 cbuffer DeferredVertexConstantBuffer : register(b1)
 {

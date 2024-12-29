@@ -1,6 +1,6 @@
-#include "common.hlsli"
-#include "deferred_common.hlsli"
-#include "PostprocessTonemap.hlsli"
+#include "../Common/common.hlsli"
+#include "../Common/deferred_common.hlsli"
+#include "../Math/PostprocessTonemap.hlsli"
 
 struct PixelInput
 {

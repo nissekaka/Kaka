@@ -1,6 +1,3 @@
-//#include "PostprocessStructs.hlsli"
-//#include "Common.hlsli"
-
 // Origin: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 float3 s_curve(float3 x)
 {
@@ -11,7 +8,6 @@ float3 s_curve(float3 x)
     float e = 0.14f;
     return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
-
 
 float3 tonemap_s_gamut3_cine(float3 c)
 {
@@ -28,14 +24,3 @@ float3 tonemap_s_gamut3_cine(float3 c)
 
     return mul(toSrgb, s_curve(mul(fromSrgb, c)));
 }
-
-//PostProcessPixelOutput main(PostProcessVertexToPixel input)
-//{
-//    PostProcessPixelOutput returnValue;
-//	float3 resource = FullscreenTexture1.Sample(DefaultSampler, input.myUV.xy).rgb;
-
-//	returnValue.myColor.rgb = tonemap_s_gamut3_cine(resource);
-
-//	returnValue.myColor.a = 1.0f;
-//	return returnValue;
-//}

@@ -114,7 +114,6 @@ namespace Kaka
 		//Camera& GetCamera() { return &currentCamera; }
 		DirectX::XMMATRIX GetCameraInverseView() const;
 		UINT GetDrawcallCount() const;
-		void SetRenderTarget(eRenderTargetType aRenderTargetType, const bool aUseDepth = true) const;
 		void SetRenderTarget(eRenderTargetType aRenderTargetType, ID3D11DepthStencilView* aDepth) const;
 		void SetRenderTargetShadow(const RSMBuffer& aBuffer) const;
 		void ApplyProjectionJitter();
@@ -129,15 +128,12 @@ namespace Kaka
 		bool CreateDepthStencilStates();
 		bool CreateRasterizerStates();
 
-		void BindWaterReflectionTexture();
 		void BindPostProcessingTexture();
 		void BindBloomDownscaleTexture(const int aIndex);
 		DirectX::XMFLOAT2 GetCurrentResolution() const;
 
-		void StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer, UINT aSlot);
 		void StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const ShadowBuffer& aBuffer, UINT aSlot);
 		void ResetShadows(Camera& aCamera);
-		void BindShadows(const RSMBuffer& aBuffer, UINT aSlot);
 		void BindShadows(const ShadowBuffer& aBuffer, UINT aSlot);
 		void UnbindShadows(UINT aSlot);
 
@@ -149,7 +145,6 @@ namespace Kaka
 		bool HasVertexShaderOverride() const { return vertexShaderOverride != nullptr; }
 		void ClearPixelShaderOverride() { pixelShaderOverride = nullptr; }
 		void ClearVertexShaderOverride() { vertexShaderOverride = nullptr; }
-
 
 		void ShowImGui(const float aFPS);
 		void ShowStatsWindow(const float aFPS);
@@ -204,30 +199,28 @@ namespace Kaka
 
 		std::vector<RenderTarget> bloomDownscaleTargets = {};
 
-		struct DownSampleBuffer
+		struct DownSampleData
 		{
 			float bloomBlending = 0.0f;
 			float bloomThreshold = 0.1f;
 			int uvScale = 2;
 			float padding;
-		} bb;
+		} downSampleData;
 
 		int bloomDivideFactor = 2;
 		bool usePostProcessing = true;
 		int bloomSteps = 5;
 
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> pDefaultTarget;
-		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pDepthShaderResourceView;
-		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDepth;
 
 		Microsoft::WRL::ComPtr<ID3D11BlendState> pBlendStates[(int)eBlendStates::Count];
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> pDepthStencilStates[(int)eDepthStencilStates::Count];
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> pRasterizerStates[(int)eRasterizerStates::Count];
 
-		Microsoft::WRL::ComPtr<ID3D11SamplerState> pDefaultSampler;
-		Microsoft::WRL::ComPtr<ID3D11SamplerState> pLinearSampler;
-		Microsoft::WRL::ComPtr<ID3D11SamplerState> pPointClampedSampler;
-		Microsoft::WRL::ComPtr<ID3D11SamplerState> pVFXSampler;
+		Sampler defaultSampler;
+		Sampler linearSampler;
+		Sampler pointClampedSampler;
+		Sampler shadowSampler;
 
 		UINT width;
 		UINT height;
@@ -321,7 +314,6 @@ namespace Kaka
 		bool flipFlop = false;
 
 	private:
-		//bool drawRSM = true;
 		Skybox skybox = {};
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};

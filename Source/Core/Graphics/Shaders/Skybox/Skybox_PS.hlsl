@@ -1,4 +1,4 @@
-#include "common.hlsli"
+#include "../Common/common.hlsli"
 
 TextureCube daySkyTex : register(t12);
 TextureCube nightSkyTex : register(t13);

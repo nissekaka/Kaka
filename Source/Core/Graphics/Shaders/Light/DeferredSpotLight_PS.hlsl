@@ -1,7 +1,7 @@
+//#include "../Common/common.hlsli"
+#include "../Common/deferred_common.hlsli"
+#include "../Common/GBuffer.hlsli"
 #include "PBRFunctions.hlsli"
-//#include "RSM.hlsli"
-#include "deferred_common.hlsli"
-#include "GBuffer.hlsli"
 #include "Shadows.hlsli"
 #include "Volumetric.hlsli"
 

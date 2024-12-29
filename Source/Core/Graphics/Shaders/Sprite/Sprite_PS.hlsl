@@ -1,4 +1,4 @@
-#include "Shadows.hlsli"
+#include "../Light/Shadows.hlsli"
 
 struct PixelInput
 {

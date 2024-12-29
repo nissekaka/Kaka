@@ -1,4 +1,4 @@
-#include "common.hlsli"
+#include "../Common/common.hlsli"
 
 cbuffer Bloom : register(b1)
 {

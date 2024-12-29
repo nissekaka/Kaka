@@ -1,6 +1,6 @@
-#include "common.hlsli"
-#include "deferred_common.hlsli"
-#include "GBuffer.hlsli"
+#include "../Common/common.hlsli"
+#include "../Common/deferred_common.hlsli"
+#include "../Common/GBuffer.hlsli"
 #include "PBRFunctions.hlsli"
 
 cbuffer PointlightData : register(b2)

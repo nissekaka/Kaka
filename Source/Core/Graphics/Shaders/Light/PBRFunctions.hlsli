@@ -1,5 +1,4 @@
-//// BRDF Globals
-//#include "common.hlsli"
+// BRDF Globals
 #define FLT_EPSILON 1.192092896e-07f
 #define nMipOffset 3
 #define PI 3.14159265358979323846f
