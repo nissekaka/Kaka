@@ -31,8 +31,6 @@ struct PixelInput
 PixelInput main(const VertexInput aInput)
 {
     PixelInput output;
-    //const matrix currentObjectToClip = mul(viewProjection, objectToWorld);
-    //const matrix previousObjectToClip = mul(historyViewProjection, objectToWorld);
 
     const float3x3 objectToWorldRotation = objectToWorld;
     const float4 position = { aInput.position, 1.0f };

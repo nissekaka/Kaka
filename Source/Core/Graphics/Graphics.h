@@ -5,24 +5,19 @@
 #include <d3dcompiler.h>
 #include <memory>
 #include <vector>
-#include "GBuffer.h"
-#include "RSMBuffer.h"
-#include "ShaderFactory.h"
 #include <External/Include/FileWatch/FileWatch.hpp>
 
-#include "Core/Utility/ImGuiManager.h"
-
+#include "Core/Graphics/GraphicsConstants.h"
+#include "Core/Graphics/GBuffer.h"
+#include "Core/Graphics/RSMBuffer.h"
+#include "Core/Graphics/ShadowBuffer.h"
+#include "Core/Graphics/ShaderFactory.h"
 #include "Core/Graphics/PostProcessing/PostProcessing.h"
-
 #include "Core/Graphics/Lighting/DeferredLights.h"
 #include "Core/Graphics/Lighting/IndirectLighting.h"
-
 #include "Core/Graphics/Bindable/ConstantBuffers.h"
-
 #include "Core/Graphics/Drawable/Skybox.h"
 #include "Core/Graphics/Drawable/Model.h"
-
-#include "GraphicsConstants.h"
 
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
@@ -88,6 +83,7 @@ namespace Kaka
 	{
 		friend class GBuffer;
 		friend class RSMBuffer;
+		friend class ShadowBuffer;
 		friend class IndirectLighting;
 		friend class DeferredLights;
 		friend class Model;
@@ -139,8 +135,10 @@ namespace Kaka
 		DirectX::XMFLOAT2 GetCurrentResolution() const;
 
 		void StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer, UINT aSlot);
+		void StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const ShadowBuffer& aBuffer, UINT aSlot);
 		void ResetShadows(Camera& aCamera);
 		void BindShadows(const RSMBuffer& aBuffer, UINT aSlot);
+		void BindShadows(const ShadowBuffer& aBuffer, UINT aSlot);
 		void UnbindShadows(UINT aSlot);
 
 		void SetPixelShaderOverride(const std::wstring& aFileName) { pixelShaderOverride = ShaderFactory::GetPixelShader(*this, aFileName); }
@@ -190,22 +188,14 @@ namespace Kaka
 
 		Camera camera;
 		Camera* currentCamera = nullptr;
-		//Camera* currentCamera = nullptr;
 		Microsoft::WRL::ComPtr<ID3D11Device> pDevice;
 		Microsoft::WRL::ComPtr<IDXGISwapChain> pSwap;
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> pContext;
 
-		ImGuiManager imGui;
-
 		DeferredLights deferredLights;
 
-		//RenderTarget renderWaterReflect;
 		RenderTarget postProcessingTarget;
-
 		RenderTarget indirectLightTarget;
-		//RenderTarget indirectLightN;
-		//RenderTarget indirectLightN1;
-		//RenderTarget rsmFullscaleSpot;
 
 		RenderTarget historyNTarget;
 		RenderTarget historyN1Target;
@@ -246,8 +236,7 @@ namespace Kaka
 		VertexShader* vertexShaderOverride = nullptr;
 
 		GBuffer gBuffer;
-		RSMBuffer directionalLightRSMBuffer;
-		//std::vector<RSMBuffer> spotLightRSMBuffer;
+		ShadowBuffer shadowBuffer;
 
 		DirectX::XMFLOAT2 halton23[16] = {
 			{0.5f, 0.333333f},
@@ -276,9 +265,8 @@ namespace Kaka
 
 	private:
 		PostProcessing postProcessing;
-		IndirectLighting indirectLighting;
 
-		struct PostProcessingBuffer
+		struct PostProcessingData
 		{
 			DirectX::XMFLOAT3 tint; // RGB values for tint adjustment
 			float exposure; // Exposure adjustment
@@ -288,13 +276,9 @@ namespace Kaka
 			float blur; // Blur adjustment
 			float sharpness; // Sharpness adjustment
 			float padding;
-		};
+		} ppData;
 
-		PostProcessingBuffer ppBuffer = {};
-
-		float cameraMoveSpeed = 10.0f;
-
-		struct ShadowBuffer
+		struct ShadowData
 		{
 			BOOL usePCF = false;
 			float offsetScalePCF = 0.004f;
@@ -302,46 +286,17 @@ namespace Kaka
 			BOOL usePoisson = true;
 			float offsetScalePoissonDisk = 0.0019f;
 			float padding[3];
-		};
+		} shadowData;
 
-		ShadowBuffer shadowBuffer = {};
-
-		struct RSMConstantBuffer
-		{
-			BOOL isDirectionalLight = true;
-			UINT sampleCount = 12u;
-			float rMax = 0.04f; // Maximum sampling radius
-			float rsmIntensity = 750.0f;
-			DirectX::XMMATRIX lightCameraTransform;
-		};
-
-		RSMConstantBuffer rsmBufferDirectional = {};
-
-		struct RSMLightData
-		{
-			float colourAndIntensity[4];
-			float directionAndInnerAngle[4];
-			float lightPositionAndOuterAngle[4];
-			float range;
-			BOOL isDirectionalLight;
-			float padding[2];
-		} rsmLightData;
-
-		struct RSMCombinedBuffer
-		{
-			UINT currentPass = 0;
-			float padding[3];
-		} rsmCombinedBuffer;
-
-		struct TAABuffer
+		struct TAAData
 		{
 			DirectX::XMFLOAT2 jitter;
 			DirectX::XMFLOAT2 previousJitter;
 			BOOL useTAA = true;
 			float padding[3];
-		} taaBuffer;
+		} taaData;
 
-		struct CommonBuffer
+		struct CommonData
 		{
 			DirectX::XMMATRIX viewProjection;
 			DirectX::XMMATRIX historyViewProjection;
@@ -352,23 +307,13 @@ namespace Kaka
 			DirectX::XMFLOAT2 resolution;
 			float currentTime;
 			float padding;
-		};
+		} commonData;
 
-		CommonBuffer commonBuffer = {};
-		//KonstantBuffer vcb;
-		//KonstantBuffer pcb;
-		//KonstantBuffer rsmLightDataBuffer;
-		//KonstantBuffer tab;
-		//KonstantBuffer rsmPixelBuffer;
-		//KonstantBuffer shadowPixelBuffer;
-		//KonstantBuffer ppb;
-		VertexConstantBuffer<CommonBuffer> vcb { VS_CBUFFER_SLOT_COMMON };
-		PixelConstantBuffer<CommonBuffer> pcb { PS_CBUFFER_SLOT_COMMON };
-		PixelConstantBuffer<RSMLightData> rsmLightDataBuffer { PS_CBUFFER_SLOT_RSM_LIGHT };
-		PixelConstantBuffer<TAABuffer> tab { 1u };
-		PixelConstantBuffer<RSMConstantBuffer> rsmPixelBuffer { PS_CBUFFER_SLOT_RSM_DIRECTIONAL };
-		PixelConstantBuffer<ShadowBuffer> shadowPixelBuffer { PS_CBUFFER_SLOT_SHADOW };
-		PixelConstantBuffer<PostProcessingBuffer> ppb { 1u };
+		VertexConstantBuffer<CommonData> vcb { VS_CBUFFER_SLOT_COMMON };
+		PixelConstantBuffer<CommonData> pcb { PS_CBUFFER_SLOT_COMMON };
+		PixelConstantBuffer<TAAData> tab { 1u };
+		PixelConstantBuffer<ShadowData> shadowPixelBuffer { PS_CBUFFER_SLOT_SHADOW };
+		PixelConstantBuffer<PostProcessingData> ppb { 1u };
 
 		static constexpr unsigned int SAMPLE_COUNT_DIRECTIONAL = 10u;
 		static constexpr unsigned int SAMPLE_COUNT_SPOT = 4u;
@@ -376,7 +321,7 @@ namespace Kaka
 		bool flipFlop = false;
 
 	private:
-		bool drawRSM = true;
+		//bool drawRSM = true;
 		Skybox skybox = {};
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};

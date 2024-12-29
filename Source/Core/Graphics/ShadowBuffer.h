@@ -3,10 +3,10 @@
 
 namespace Kaka
 {
-	class RSMBuffer
+	class ShadowBuffer
 	{
 	public:
-		static RSMBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);
+		static ShadowBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);
 		Camera& GetCamera() { return camera; }
 
 		void Clear(ID3D11DeviceContext* aContext) const;
