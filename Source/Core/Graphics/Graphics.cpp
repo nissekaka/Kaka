@@ -8,17 +8,12 @@
 
 #include <complex>
 #include <DirectXMath.h>
-#include <array>
-
 
 namespace WRL = Microsoft::WRL;
 
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "D3DCompiler.lib")
-
 namespace Kaka
 {
-	Graphics::Graphics(HWND aHWnd, UINT aWidth, UINT aHeight)
+	Graphics::Graphics(const HWND aHWnd, const UINT aWidth, const UINT aHeight)
 		:
 		width(aWidth),
 		height(aHeight),
@@ -116,7 +111,7 @@ namespace Kaka
 		{
 			blendState.Init(pDevice.Get(), eBlendStates::Disabled);
 			rasterizer.Init(pDevice.Get(), eRasterizerStates::BackfaceCulling);
-			depthStencil.Init(pDevice.Get(), eDepthStencilStates::Normal);
+			depthStencil.Init(pDevice.Get());
 		}
 
 		// Init imgui d3d impl
@@ -219,7 +214,7 @@ namespace Kaka
 		{
 			SetCamera(camera);
 
-			CommonBuffer::CommonContext context = { camera, aContext.totalTime, GetCurrentResolution() };
+			const CommonBuffer::CommonContext context = { &camera, aContext.totalTime, GetCurrentResolution() };
 			commonBuffer.UpdateAndBindBuffers(*this, context);
 
 			SetDepthStencilState(eDepthStencilStates::Normal);
@@ -239,11 +234,12 @@ namespace Kaka
 		/// ---------- SETUP ---------- END
 
 
+
 		if (useReflectiveShadowMap)
 		{
 			/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- BEGIN
 			{
-				StartShadows(rsmBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, rsmBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+				StartShadows(rsmBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, rsmBuffer);
 				lightManager.SetShadowCamera(rsmBuffer.GetCamera().GetInverseView() * rsmBuffer.GetCamera().GetProjection());
 				rsmBuffer.ClearTextures(pContext.Get());
 				rsmBuffer.SetAsActiveTarget(pContext.Get());
@@ -271,7 +267,7 @@ namespace Kaka
 		else {
 			/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
 			{
-				StartShadows(shadowBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+				StartShadows(shadowBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, shadowBuffer);
 				lightManager.SetShadowCamera(shadowBuffer.GetCamera().GetInverseView() * shadowBuffer.GetCamera().GetProjection());
 
 				shadowBuffer.Clear(pContext.Get());
@@ -490,6 +486,11 @@ namespace Kaka
 		return currentCamera->GetInverseView();
 	}
 
+	bool Graphics::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const
+	{
+		return currentCamera->IsBoundingBoxInFrustum(aMin, aMax);
+	}
+
 	DirectX::XMFLOAT2 Graphics::GetCurrentResolution() const
 	{
 		return { static_cast<float>(width), static_cast<float>(height) };
@@ -564,7 +565,7 @@ namespace Kaka
 		rasterizer.SetRasterizerState(pContext.Get(), aRasterizerState);
 	}
 
-	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const ShadowBuffer& aBuffer, UINT aSlot)
+	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const ShadowBuffer& aBuffer)
 	{
 		pContext->ClearDepthStencilView(aBuffer.GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -575,7 +576,7 @@ namespace Kaka
 		SetPixelShaderOverride(L"Shaders\\Model_Shadows_PS.cso");
 	}
 
-	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer, UINT aSlot)
+	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer)
 	{
 		pContext->ClearDepthStencilView(aBuffer.GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
@@ -768,77 +769,7 @@ namespace Kaka
 
 					ShaderFactory::RecompileShader(sub, pDevice.Get());
 				}
-
 				break;
 		}
-	}
-
-	Graphics::FrustumPlanes Graphics::ExtractFrustumPlanes() const
-	{
-		FrustumPlanes frustum;
-
-		// Extract the rows of the view-projection matrix
-		DirectX::XMFLOAT4X4 VP;
-		const DirectX::XMMATRIX viewProjectionMatrix = camera.GetInverseView() * camera.GetProjection();
-		DirectX::XMStoreFloat4x4(&VP, viewProjectionMatrix);
-
-		// Extract the frustum planes from the view-projection matrix
-		frustum.planes[0] = DirectX::XMFLOAT4(VP._14 + VP._11, VP._24 + VP._21, VP._34 + VP._31, VP._44 + VP._41);
-		// Left plane
-		frustum.planes[1] = DirectX::XMFLOAT4(VP._14 - VP._11, VP._24 - VP._21, VP._34 - VP._31, VP._44 - VP._41);
-		// Right plane
-		frustum.planes[2] = DirectX::XMFLOAT4(VP._14 - VP._12, VP._24 - VP._22, VP._34 - VP._32, VP._44 - VP._42);
-		// Top plane
-		frustum.planes[3] = DirectX::XMFLOAT4(VP._14 + VP._12, VP._24 + VP._22, VP._34 + VP._32, VP._44 + VP._42);
-		// Bottom plane
-		frustum.planes[4] = DirectX::XMFLOAT4(VP._13, VP._23, VP._33, VP._43); // Near plane
-		frustum.planes[5] = DirectX::XMFLOAT4(VP._14 - VP._13, VP._24 - VP._23, VP._34 - VP._33, VP._44 - VP._43);
-		// Far plane
-
-		// Normalize the frustum planes
-		for (int i = 0; i < 6; ++i)
-		{
-			float length = std::sqrt(
-				frustum.planes[i].x * frustum.planes[i].x +
-				frustum.planes[i].y * frustum.planes[i].y +
-				frustum.planes[i].z * frustum.planes[i].z);
-
-			frustum.planes[i] = DirectX::XMFLOAT4(frustum.planes[i].x / length,
-				frustum.planes[i].y / length,
-				frustum.planes[i].z / length,
-				frustum.planes[i].w / length);
-		}
-
-		return frustum;
-	}
-
-	bool Graphics::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const
-	{
-		const FrustumPlanes frustum = ExtractFrustumPlanes();
-		for (int i = 0; i < 6; ++i)
-		{
-			if (frustum.planes[i].x * aMin.x + frustum.planes[i].y * aMin.y + frustum.planes[i].z * aMin.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMax.x + frustum.planes[i].y * aMin.y + frustum.planes[i].z * aMin.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMin.x + frustum.planes[i].y * aMax.y + frustum.planes[i].z * aMin.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMax.x + frustum.planes[i].y * aMax.y + frustum.planes[i].z * aMin.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMin.x + frustum.planes[i].y * aMin.y + frustum.planes[i].z * aMax.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMax.x + frustum.planes[i].y * aMin.y + frustum.planes[i].z * aMax.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMin.x + frustum.planes[i].y * aMax.y + frustum.planes[i].z * aMax.z + frustum.planes[i].w > 0.0f)
-				continue;
-			if (frustum.planes[i].x * aMax.x + frustum.planes[i].y * aMax.y + frustum.planes[i].z * aMax.z + frustum.planes[i].w > 0.0f)
-				continue;
-
-			// If the bounding box is completely outside any frustum plane, it is not visible
-			return false;
-		}
-
-		// If the bounding box is not completely outside any frustum plane, it is visible
-		return true;
 	}
 }

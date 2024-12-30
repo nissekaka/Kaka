@@ -29,7 +29,7 @@ namespace Kaka
 		desc.CPUAccessFlags = 0;
 		desc.MiscFlags = 0;
 
-		for (unsigned int idx = 0; idx < static_cast<int>(RSMBufferTexture::Count); idx++)
+		for (unsigned int idx = 0; idx < static_cast<int>(eRSMBufferTexture::Count); idx++)
 		{
 			desc.Format = textureFormats[idx];
 			hr = aGfx.pDevice->CreateTexture2D(&desc, nullptr, &returnRSMBuffer.textures[idx]);
@@ -150,7 +150,7 @@ namespace Kaka
 	{
 		constexpr float colour[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-		for (unsigned int idx = 0; idx < static_cast<int>(RSMBufferTexture::Count); idx++)
+		for (unsigned int idx = 0; idx < static_cast<int>(eRSMBufferTexture::Count); idx++)
 		{
 			aContext->ClearRenderTargetView(renderTargetViews[idx].Get(), &colour[0]);
 		}
@@ -160,25 +160,25 @@ namespace Kaka
 
 	void RSMBuffer::SetAsActiveTarget(ID3D11DeviceContext* aContext)
 	{
-		aContext->OMSetRenderTargets(static_cast<int>(RSMBufferTexture::Count), renderTargetViews[0].GetAddressOf(),
+		aContext->OMSetRenderTargets(static_cast<int>(eRSMBufferTexture::Count), renderTargetViews[0].GetAddressOf(),
 			depthStencilView.Get());
 	}
 
-	void RSMBuffer::SetAsResourceOnSlot(ID3D11DeviceContext* aContext, RSMBufferTexture aTexture, const unsigned int aSlot)
+	void RSMBuffer::SetAsResourceOnSlot(ID3D11DeviceContext* aContext, eRSMBufferTexture aTexture, const unsigned int aSlot)
 	{
 		aContext->PSSetShaderResources(aSlot, 1, shaderResourceViews[static_cast<int>(aTexture)].GetAddressOf());
 	}
 
 	void RSMBuffer::SetAllAsResources(ID3D11DeviceContext* aContext, const unsigned int aSlot)
 	{
-		aContext->PSSetShaderResources(aSlot, static_cast<int>(RSMBufferTexture::Count), shaderResourceViews[0].GetAddressOf());
+		aContext->PSSetShaderResources(aSlot, static_cast<int>(eRSMBufferTexture::Count), shaderResourceViews[0].GetAddressOf());
 	}
 
 	void RSMBuffer::ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot)
 	{
-		ID3D11ShaderResourceView* const nullSRV[static_cast<int>(RSMBufferTexture::Count)] = { nullptr };
+		ID3D11ShaderResourceView* const nullSRV[static_cast<int>(eRSMBufferTexture::Count)] = { nullptr };
 
-		aContext->PSSetShaderResources(aSlot, static_cast<int>(RSMBufferTexture::Count), nullSRV);
+		aContext->PSSetShaderResources(aSlot, static_cast<int>(eRSMBufferTexture::Count), nullSRV);
 	}
 
 	ID3D11Texture2D* RSMBuffer::GetTexture(const unsigned int aIndex)

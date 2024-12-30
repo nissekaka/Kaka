@@ -14,7 +14,7 @@ namespace Kaka
 {
 	static constexpr UINT MAX_LIGHTS = 50u;
 
-	Model::Model(const Graphics& aGfx, const std::string& aFilePath, const eShaderType aShaderType)
+	Model::Model(const eShaderType aShaderType)
 		:
 		shaderType(aShaderType) { }
 
@@ -549,14 +549,14 @@ namespace Kaka
 
 	AABB Model::GetTranslatedAABB(const Mesh& aMesh) const
 	{
-		const DirectX::XMMATRIX transform = GetTransform();
+		const DirectX::XMMATRIX meshTransform = GetTransform();
 		const DirectX::XMVECTOR minBound = DirectX::XMVector3Transform(
 			DirectX::XMLoadFloat3(&aMesh.aabb.minBound),
-			transform
+			meshTransform
 		);
 		const DirectX::XMVECTOR maxBound = DirectX::XMVector3Transform(
 			DirectX::XMLoadFloat3(&aMesh.aabb.maxBound),
-			transform
+			meshTransform
 		);
 		AABB aabb;
 		DirectX::XMStoreFloat3(&aabb.minBound, minBound);

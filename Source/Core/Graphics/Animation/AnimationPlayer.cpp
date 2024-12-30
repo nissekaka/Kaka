@@ -55,12 +55,12 @@ namespace Kaka
 					if (UpdateAnimation(aDeltaTime, blendAnimation))
 					{
 						blendTimer += aDeltaTime;
-						const float blendFactor = (std::min)(1.0f, blendTimer / blendTime);
+						const float blend = (std::min)(1.0f, blendTimer / blendTime);
 
-						BlendPoses(currentAnimation, blendAnimation, blendFactor);
+						BlendPoses(currentAnimation, blendAnimation, blend);
 
 						// If blending is complete, reset variables
-						if (blendFactor >= 1.0f)
+						if (blend >= 1.0f)
 						{
 							isBlending = false;
 							blendTimer = 0.0f;

@@ -39,8 +39,8 @@ namespace Kaka
 		//Sampler sampler = {};
 		VertexBuffer vertexBuffer = {};
 		IndexBuffer indexBuffer = {};
-		PixelShader* pixelShader;
-		VertexShader* vertexShader;
+		PixelShader* pixelShader = nullptr;
+		VertexShader* vertexShader = nullptr;
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 		{
 			{
@@ -48,7 +48,7 @@ namespace Kaka
 				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
 			},
 		};
-		InputLayout inputLayout;
+		InputLayout inputLayout = {};
 		Topology topology = {};
 
 		struct Vertex

@@ -29,6 +29,11 @@ namespace Kaka
 
 	class Camera
 	{
+		struct FrustumPlanes
+		{
+			DirectX::XMFLOAT4 planes[6];
+		};
+
 	public:
 		Camera();
 		void ShowControlWindow();
@@ -63,6 +68,11 @@ namespace Kaka
 		float yaw;
 		static constexpr float TRAVEL_SPEED = 12.0f;
 		static constexpr float ROTATION_SPEED = 0.0008f;
+
+		FrustumPlanes ExtractFrustumPlanes() const;
+
+	public:
+		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const;
 
 	public:
 		DirectX::XMFLOAT3 cameraInput = { 0.0f, 0.0f, 0.0f };

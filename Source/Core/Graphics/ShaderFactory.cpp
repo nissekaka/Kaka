@@ -1,11 +1,12 @@
 #include "stdafx.h"
 #include "ShaderFactory.h"
 
+#include <d3dcompiler.h>
 #include <filesystem>
 
 #define HLSL_PATH "..\\Core\\Source\\Graphics\\Shaders\\"
-#define toWstr(str) std::wstring(str.begin(), str.end())
-#define toStr(wstr) std::string(wstr.begin(), wstr.end())
+#define TO_WSTR(str) std::wstring((str).begin(), (str).end())
+#define TO_STR(wstr) std::string((wstr).begin(), (wstr).end())
 
 namespace Kaka
 {
@@ -61,7 +62,7 @@ namespace Kaka
 		}
 
 		std::string filePath;
-		std::string fileName = toStr(aFileName);
+		std::string fileName = TO_STR(aFileName);
 		for (const auto& entry : std::filesystem::recursive_directory_iterator("..\\Source\\Core\\Graphics\\Shaders\\"))
 		{
 			if (entry.path().filename().string() == fileName)
@@ -73,7 +74,7 @@ namespace Kaka
 
 		if (pixelShaders.contains(path))
 		{
-			if (auto* newPixelShader = CreatePixelShaderFromFile(toWstr(filePath).c_str(), aDevice))
+			if (auto* newPixelShader = CreatePixelShaderFromFile(TO_WSTR(filePath).c_str(), aDevice))
 			{
 				pixelShaders[path].pPixelShader = nullptr;
 				pixelShaders[path].pPixelShader = newPixelShader;
@@ -83,7 +84,7 @@ namespace Kaka
 
 		if (vertexShaders.contains(path))
 		{
-			if (auto* newVertexShader = CreateVertexShaderFromFile(toWstr(filePath).c_str(), aDevice))
+			if (auto* newVertexShader = CreateVertexShaderFromFile(TO_WSTR(filePath).c_str(), aDevice))
 			{
 				vertexShaders[path].pVertexShader = nullptr;
 				vertexShaders[path].pVertexShader = newVertexShader;

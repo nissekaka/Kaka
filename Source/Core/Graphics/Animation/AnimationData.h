@@ -14,7 +14,7 @@ namespace Kaka
 	struct AnimationClip
 	{
 		std::string name = "None";
-		float length = 0.0f;
+		int frames = 0;
 		float fps = 0.0f;
 		float duration = 0.0f;
 		std::vector<Keyframe> keyframes{};

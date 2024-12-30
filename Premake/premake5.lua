@@ -211,7 +211,6 @@ project(PROJECT_CORE)
         links {
 			"d3d11",
 			"dxguid",
-            "DXGI", -- unsure
         }
 
 -- External Project

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ModelLoader.h"
 //#include "Core/Model/Mesh.h"
-#include "Core/Windows/Window.h"
+//#include "Core/Windows/Window.h"
 #include "Core/Graphics/Drawable/Vertex.h"
 #include <External/include/assimp/Importer.hpp>
 #include <External/include/assimp/scene.h>
@@ -111,10 +111,10 @@ namespace Kaka
 
 			mesh.vertices.reserve(aiMesh->mNumVertices);
 
-			for (unsigned int i = 0; i < aiMesh->mNumVertices; ++i)
+			for (unsigned int j = 0; j < aiMesh->mNumVertices; ++j)
 			{
-				const DirectX::XMFLOAT3 position{aiMesh->mVertices[i].x, aiMesh->mVertices[i].y, aiMesh->mVertices[i].z};
-				const DirectX::XMFLOAT3 normal = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mNormals[i]);
+				const DirectX::XMFLOAT3 position{aiMesh->mVertices[j].x, aiMesh->mVertices[j].y, aiMesh->mVertices[j].z};
+				const DirectX::XMFLOAT3 normal = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mNormals[j]);
 				DirectX::XMFLOAT2 texCoord{0.0f, 0.0f};
 				DirectX::XMFLOAT3 tangent{0.0f, 0.0f, 0.0f};
 				DirectX::XMFLOAT3 bitangent{0.0f, 0.0f, 0.0f};
@@ -148,15 +148,15 @@ namespace Kaka
 				if (aiMesh->HasTextureCoords(0))
 				{
 					// Retrieve the first set of texture coordinates
-					const aiVector3D& aiTexCoord = aiMesh->mTextureCoords[0][i];
+					const aiVector3D& aiTexCoord = aiMesh->mTextureCoords[0][j];
 					texCoord.x = aiTexCoord.x;
 					texCoord.y = aiTexCoord.y;
 				}
 
 				if (aiMesh->HasTangentsAndBitangents())
 				{
-					tangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mTangents[i]);
-					bitangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mBitangents[i]);
+					tangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mTangents[j]);
+					bitangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mBitangents[j]);
 				}
 
 				mesh.vertices.push_back({position, texCoord, normal, tangent, bitangent});
@@ -170,7 +170,7 @@ namespace Kaka
 
 				for (unsigned int k = 0; k < face.mNumIndices; k++)
 				{
-					mesh.indices.push_back(face.mIndices[k]);
+					mesh.indices.push_back(static_cast<unsigned short>(face.mIndices[k]));
 				}
 			}
 			//for (unsigned int j = 0; i < aiMesh->mNumFaces; j++)
@@ -448,7 +448,7 @@ namespace Kaka
 
 				for (const auto& index : fbxMesh.Indices)
 				{
-					mesh.indices.push_back(index);
+					mesh.indices.push_back(static_cast<unsigned short>(index));
 				}
 
 				// Assign material name
@@ -586,7 +586,7 @@ namespace Kaka
 
 				for (const auto& index : fbxMesh.Indices)
 				{
-					mesh.indices.push_back(index);
+					mesh.indices.push_back(static_cast<unsigned short>(index));
 				}
 
 				// Assign material name
@@ -662,7 +662,7 @@ namespace Kaka
 			const size_t index = newAnimation.name.find_last_of('\\');
 			newAnimation.name.erase(newAnimation.name.begin(), newAnimation.name.begin() + index + 1);
 
-			newAnimation.length = animation.Length;
+			newAnimation.frames = animation.Length;
 			newAnimation.fps = animation.FramesPerSecond;
 			newAnimation.duration = (float)animation.Duration;
 			newAnimation.keyframes.resize(animation.Frames.size());

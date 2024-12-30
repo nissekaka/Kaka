@@ -7,28 +7,28 @@ namespace Kaka
 	public:
 		struct CommonData
 		{
-			DirectX::XMMATRIX viewProjection;
-			DirectX::XMMATRIX historyViewProjection;
-			DirectX::XMMATRIX inverseViewProjection;
-			DirectX::XMMATRIX projection;
-			DirectX::XMMATRIX viewInverse;
-			DirectX::XMFLOAT4 cameraPosition;
-			DirectX::XMFLOAT2 resolution;
-			float currentTime;
-			float padding;
+			DirectX::XMMATRIX viewProjection = {};
+			DirectX::XMMATRIX historyViewProjection = {};
+			DirectX::XMMATRIX inverseViewProjection = {};
+			DirectX::XMMATRIX projection = {};
+			DirectX::XMMATRIX viewInverse = {};
+			DirectX::XMFLOAT4 cameraPosition = {};
+			DirectX::XMFLOAT2 resolution = {};
+			float currentTime = 0.0f;
+			float padding = {};
 		} commonData;
 
 		struct CommonContext
 		{
-			Camera& camera;
-			const float totalTime;
-			const DirectX::XMFLOAT2& currentResolution;
+			Camera* camera = nullptr;
+			float totalTime = 0.0f;
+			DirectX::XMFLOAT2 currentResolution = {};
 		};
 
 		CommonBuffer() = default;
 		~CommonBuffer() = default;
 		void InitBuffers(const Graphics& aGfx);
-		void UpdateAndBindBuffers(Graphics& aGfx, const CommonContext& aContext);
+		void UpdateAndBindBuffers(const Graphics& aGfx, const CommonContext& aContext);
 
 	private:
 

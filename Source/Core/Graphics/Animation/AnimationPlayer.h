@@ -42,9 +42,9 @@ namespace Kaka
 		AnimatedModelDataPtr* modelData = nullptr;
 
 		Animation currentAnimation;
-		int currentAnimationIndex;
+		int currentAnimationIndex = 0;
 		Animation blendAnimation;
-		int blendAnimationIndex;
+		int blendAnimationIndex = 0;
 
 		bool isAnimationPlaying = false;
 

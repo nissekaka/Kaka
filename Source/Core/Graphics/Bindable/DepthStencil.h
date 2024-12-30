@@ -17,7 +17,7 @@ namespace Kaka
 
 		DepthStencil() = default;
 		~DepthStencil() = default;
-		void Init(ID3D11Device* aDevice, const eDepthStencilStates aState);
+		void Init(ID3D11Device* aDevice);
 		void SetDepthStencilState(ID3D11DeviceContext* aContext, eDepthStencilStates aDepthStencilState);
 
 	private:

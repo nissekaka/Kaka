@@ -20,14 +20,14 @@ namespace Kaka
 	public:
 		struct PostProcessingData
 		{
-			DirectX::XMFLOAT3 tint; // RGB values for tint adjustment
-			float exposure; // Exposure adjustment
-			DirectX::XMFLOAT3 blackpoint; // Blackpoint adjustment
-			float contrast; // Contrast adjustment
-			float saturation; // Saturation adjustment
-			float blur; // Blur adjustment
-			float sharpness; // Sharpness adjustment
-			float padding;
+			DirectX::XMFLOAT3 tint = {};
+			float exposure = 0.0f;
+			DirectX::XMFLOAT3 blackpoint = {};
+			float contrast = 0.0f;
+			float saturation = 0.0f;
+			float blur = 0.0f;
+			float sharpness = 0.0f;
+			float padding = {};
 		} ppData;
 
 		struct DownSampleData
@@ -35,7 +35,7 @@ namespace Kaka
 			float bloomBlending = 0.0f;
 			float bloomThreshold = 0.1f;
 			int uvScale = 2;
-			float padding;
+			float padding = {};
 		} downSampleData;
 
 		PostProcessing() = default;

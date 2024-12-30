@@ -14,7 +14,7 @@ namespace Kaka
 			int sampleCountPCF = 5;
 			BOOL usePoisson = true;
 			float offsetScalePoissonDisk = 0.0019f;
-			float padding[3];
+			float padding[3] = {};
 		} shadowData;
 
 		static ShadowBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);

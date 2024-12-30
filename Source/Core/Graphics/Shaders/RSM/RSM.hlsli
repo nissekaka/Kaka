@@ -41,7 +41,6 @@ float2 hash23(float3 p3)
     return frac((p3.xx + p3.yz) * p3.zy);
 }
 
-
 float3 IndirectLighting(const float2 aUv, const float3 aN, const float3 aX, const float aRMax, const uint aSampleCount, const float aIntensity, const float2 aPixel)
 {
     // The irradiance at a surface point x with normal n due to pixel light p is

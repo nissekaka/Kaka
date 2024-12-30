@@ -30,8 +30,8 @@ struct DirectionalLightData
 	float volumetricScattering = {}; // 104
 	float volumetricIntensity = {}; // 108
 	float padding = {}; // 112
-	DirectX::XMFLOAT4 shadowColour; // 128
-	DirectX::XMFLOAT4 ambianceColour; // 144
+	DirectX::XMFLOAT4 shadowColour = {}; // 128
+	DirectX::XMFLOAT4 ambianceColour = {}; // 144
 };
 
 struct PointlightData

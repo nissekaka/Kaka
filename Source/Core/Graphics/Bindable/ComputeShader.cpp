@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ComputeShader.h"
+#include <d3dcompiler.h>
 
 namespace Kaka
 {

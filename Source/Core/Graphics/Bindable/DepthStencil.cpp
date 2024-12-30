@@ -3,7 +3,7 @@
 
 namespace Kaka
 {
-	void DepthStencil::Init(ID3D11Device* aDevice, const eDepthStencilStates aState)
+	void DepthStencil::Init(ID3D11Device* aDevice)
 	{
 		HRESULT hr = S_OK;
 

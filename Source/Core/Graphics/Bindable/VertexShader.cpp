@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "VertexShader.h"
+#include <d3dcompiler.h>
 
 namespace Kaka
 {

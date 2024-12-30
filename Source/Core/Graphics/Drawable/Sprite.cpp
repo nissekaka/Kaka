@@ -135,7 +135,7 @@ namespace Kaka
 
 		updateCounter += updateIncrease;
 
-		const unsigned int instanceCount = instanceData.size();
+		const unsigned int instanceCount = static_cast<unsigned int>(instanceData.size());
 		{
 			// Create instance buffer
 			D3D11_BUFFER_DESC instanceBufferDesc = {};
@@ -302,7 +302,7 @@ namespace Kaka
 		indexBuffer.Bind(aGfx);
 		inputLayout.Bind(aGfx);
 
-		const unsigned int instanceCount = instanceData.size();
+		const unsigned int instanceCount = static_cast<unsigned int>(instanceData.size());
 
 		TransformConstantBuffer transformConstantBuffer(aGfx, *this, 0u);
 		transformConstantBuffer.Bind(aGfx);
@@ -358,7 +358,7 @@ namespace Kaka
 		return position;
 	}
 
-	void Sprite::ShowControlWindow(const char* aWindowName)
+	void Sprite::ShowControlWindow(const char*)
 	{
 		//aWindowName = aWindowName ? aWindowName : "Sprite";
 
@@ -388,7 +388,7 @@ namespace Kaka
 
 	void Sprite::Update(const Graphics& aGfx, const float aDeltaTime, const DirectX::XMFLOAT3 aCameraPosition)
 	{
-		const unsigned int instanceCount = instanceData.size();
+		const unsigned int instanceCount = static_cast<unsigned int>(instanceData.size());
 
 		// Rotate the sprite to face the camera
 		const DirectX::XMVECTOR cameraForward = aGfx.camera.GetForwardVector();

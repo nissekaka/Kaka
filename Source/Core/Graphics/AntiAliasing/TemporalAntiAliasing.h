@@ -10,10 +10,10 @@ namespace Kaka
 	public:
 		struct TAAData
 		{
-			DirectX::XMFLOAT2 jitter;
-			DirectX::XMFLOAT2 previousJitter;
+			DirectX::XMFLOAT2 jitter = {};
+			DirectX::XMFLOAT2 previousJitter = {};
 			BOOL useTAA = true;
-			float padding[3];
+			float padding[3] = {};
 		} taaData;
 
 		TemporalAntiAliasing() = default;
@@ -49,7 +49,7 @@ namespace Kaka
 		RenderTarget historyNTarget;
 		RenderTarget historyN1Target;
 
-		DirectX::XMMATRIX historyViewProjection;
+		DirectX::XMMATRIX historyViewProjection = {};
 
 		PixelConstantBuffer<TAAData> tab{ 1u };
 

@@ -9,7 +9,7 @@ namespace Kaka
 	class RSMBuffer
 	{
 	public:
-		enum class RSMBufferTexture
+		enum class eRSMBufferTexture
 		{
 			WorldPosition,
 			Normal,
@@ -23,17 +23,17 @@ namespace Kaka
 			UINT sampleCount = 10u;
 			float rMax = 0.04f; // Maximum sampling radius
 			float rsmIntensity = 750.0f;
-			DirectX::XMMATRIX lightCameraTransform;
+			DirectX::XMMATRIX lightCameraTransform = {};
 		} rsmSamplingData;
 
 		struct RSMLightData
 		{
-			float colourAndIntensity[4];
-			float directionAndInnerAngle[4];
-			float lightPositionAndOuterAngle[4];
-			float range;
-			BOOL isDirectionalLight;
-			float padding[2];
+			float colourAndIntensity[4] = {};
+			float directionAndInnerAngle[4] = {};
+			float lightPositionAndOuterAngle[4] = {};
+			float range = 0.0f;
+			BOOL isDirectionalLight = TRUE;
+			float padding[2] = {};
 		} rsmLightData;
 
 		static RSMBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);
@@ -46,7 +46,7 @@ namespace Kaka
 
 		void ClearTextures(ID3D11DeviceContext* aContext) const;
 		void SetAsActiveTarget(ID3D11DeviceContext* aContext);
-		void SetAsResourceOnSlot(ID3D11DeviceContext* aContext, RSMBufferTexture aTexture, unsigned int aSlot);
+		void SetAsResourceOnSlot(ID3D11DeviceContext* aContext, eRSMBufferTexture aTexture, unsigned int aSlot);
 		void SetAllAsResources(ID3D11DeviceContext* aContext, unsigned int aSlot);
 		void ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot);
 
@@ -60,9 +60,9 @@ namespace Kaka
 		ID3D11Texture2D* GetTexture(const unsigned int aIndex);
 
 	private:
-		std::array<Microsoft::WRL::ComPtr<ID3D11Texture2D>, static_cast<size_t>(RSMBufferTexture::Count)> textures;
-		std::array<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, static_cast<size_t>(RSMBufferTexture::Count)> renderTargetViews;
-		std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, static_cast<size_t>(RSMBufferTexture::Count)> shaderResourceViews;
+		std::array<Microsoft::WRL::ComPtr<ID3D11Texture2D>, static_cast<size_t>(eRSMBufferTexture::Count)> textures;
+		std::array<Microsoft::WRL::ComPtr<ID3D11RenderTargetView>, static_cast<size_t>(eRSMBufferTexture::Count)> renderTargetViews;
+		std::array<Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>, static_cast<size_t>(eRSMBufferTexture::Count)> shaderResourceViews;
 
 		// Depth Stencil
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilTexture;

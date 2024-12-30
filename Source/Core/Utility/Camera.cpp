@@ -184,4 +184,73 @@ namespace Kaka
 
 		jitteredProjection = projection * offset;
 	}
+
+	Camera::FrustumPlanes Camera::ExtractFrustumPlanes() const
+	{
+		FrustumPlanes frustum;
+
+		// Extract the rows of the view-projection matrix
+		DirectX::XMFLOAT4X4 VP;
+		const DirectX::XMMATRIX viewProjectionMatrix = GetInverseView() * GetProjection();
+		DirectX::XMStoreFloat4x4(&VP, viewProjectionMatrix);
+
+		// Extract the frustum planes from the view-projection matrix
+		frustum.planes[0] = DirectX::XMFLOAT4(VP._14 + VP._11, VP._24 + VP._21, VP._34 + VP._31, VP._44 + VP._41);
+		// Left plane
+		frustum.planes[1] = DirectX::XMFLOAT4(VP._14 - VP._11, VP._24 - VP._21, VP._34 - VP._31, VP._44 - VP._41);
+		// Right plane
+		frustum.planes[2] = DirectX::XMFLOAT4(VP._14 - VP._12, VP._24 - VP._22, VP._34 - VP._32, VP._44 - VP._42);
+		// Top plane
+		frustum.planes[3] = DirectX::XMFLOAT4(VP._14 + VP._12, VP._24 + VP._22, VP._34 + VP._32, VP._44 + VP._42);
+		// Bottom plane
+		frustum.planes[4] = DirectX::XMFLOAT4(VP._13, VP._23, VP._33, VP._43); // Near plane
+		frustum.planes[5] = DirectX::XMFLOAT4(VP._14 - VP._13, VP._24 - VP._23, VP._34 - VP._33, VP._44 - VP._43);
+		// Far plane
+
+		// Normalize the frustum planes
+		for (DirectX::XMFLOAT4& plane : frustum.planes)
+		{
+			const float length = std::sqrt(
+				plane.x * plane.x +
+				plane.y * plane.y +
+				plane.z * plane.z);
+
+			plane = DirectX::XMFLOAT4(plane.x / length,
+				plane.y / length,
+				plane.z / length,
+				plane.w / length);
+		}
+
+		return frustum;
+	}
+
+	bool Camera::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const
+	{
+		const FrustumPlanes frustum = ExtractFrustumPlanes();
+		for (const DirectX::XMFLOAT4& plane : frustum.planes)
+		{
+			if (plane.x * aMin.x + plane.y * aMin.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMin.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMin.x + plane.y * aMax.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMax.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMin.x + plane.y * aMin.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMin.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMin.x + plane.y * aMax.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMax.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+
+			// If the bounding box is completely outside any frustum plane, it is not visible
+			return false;
+		}
+
+		// If the bounding box is not completely outside any frustum plane, it is visible
+		return true;
+	}
 }

@@ -9,14 +9,14 @@ namespace Kaka
 		pcb.Init(aGfx, commonData);
 	}
 
-	void CommonBuffer::UpdateAndBindBuffers(Graphics& aGfx, const CommonContext& aContext)
+	void CommonBuffer::UpdateAndBindBuffers(const Graphics& aGfx, const CommonContext& aContext)
 	{
 		commonData.historyViewProjection = commonData.viewProjection;
-		commonData.viewProjection = aContext.camera.GetInverseView() * aContext.camera.GetJitteredProjection();
+		commonData.viewProjection = aContext.camera->GetInverseView() * aContext.camera->GetJitteredProjection();
 		commonData.inverseViewProjection = DirectX::XMMatrixInverse(nullptr, commonData.viewProjection);
-		commonData.projection = DirectX::XMMatrixInverse(nullptr, aContext.camera.GetProjection());
-		commonData.viewInverse = aContext.camera.GetInverseView();
-		commonData.cameraPosition = { aContext.camera.GetPosition().x, aContext.camera.GetPosition().y, aContext.camera.GetPosition().z, 0.0f };
+		commonData.projection = DirectX::XMMatrixInverse(nullptr, aContext.camera->GetProjection());
+		commonData.viewInverse = aContext.camera->GetInverseView();
+		commonData.cameraPosition = { aContext.camera->GetPosition().x, aContext.camera->GetPosition().y, aContext.camera->GetPosition().z, 0.0f };
 		commonData.resolution = aContext.currentResolution;
 		commonData.currentTime = aContext.totalTime;
 

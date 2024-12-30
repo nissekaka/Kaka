@@ -77,7 +77,7 @@ namespace Kaka
 					hr = CreateShaderResourceView(GetDevice(aGfx), image.GetImages(), image.GetImageCount(), metadata,
 					                              pTextures.back().GetAddressOf());
 
-					const std::string text =
+					text =
 						"\n+++++++++++++++++++++++++++++++++++++++++++++++++"
 						"\nLoaded diffuse texture!"
 						"\nModel: " + aFilePath +
@@ -155,7 +155,7 @@ namespace Kaka
 					hr = CreateShaderResourceView(GetDevice(aGfx), image.GetImages(), image.GetImageCount(), metadata,
 					                              pTextures.back().GetAddressOf());
 
-					const std::string text =
+					text =
 						"\n+++++++++++++++++++++++++++++++++++++++++++++++++"
 						"\nLoaded normal texture!"
 						"\nModel: " + aFilePath +
@@ -233,7 +233,7 @@ namespace Kaka
 					hr = CreateShaderResourceView(GetDevice(aGfx), image.GetImages(), image.GetImageCount(), metadata,
 					                              pTextures.back().GetAddressOf());
 
-					const std::string text =
+					text =
 						"\n+++++++++++++++++++++++++++++++++++++++++++++++++"
 						"\nLoaded material texture!"
 						"\nModel: " + aFilePath +
@@ -394,7 +394,7 @@ namespace Kaka
 
 				if (FAILED(hr))
 				{
-					const std::string text =
+					std::string text =
 						"\n-------------------------------------------------"
 						"\nFailed to mipmap texture!"
 						"\nTexture: " + filePath +
@@ -410,7 +410,7 @@ namespace Kaka
 
 					if (SUCCEEDED(hr))
 					{
-						const std::string text =
+						text =
 							"\n+++++++++++++++++++++++++++++++++++++++++++++++++"
 							"\nLoaded non-mipmapped texture!"
 							"\nTexture: " + filePath +

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Mouse.h"
-#include "Core/Windows/KakaWin.h"
 
 namespace Kaka
 {

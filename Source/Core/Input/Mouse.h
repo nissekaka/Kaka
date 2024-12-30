@@ -2,7 +2,6 @@
 #include <queue>
 #include <optional>
 
-
 namespace Kaka
 {
 	class Mouse

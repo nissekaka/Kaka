@@ -3,7 +3,6 @@
 #include "Game/Resources/resource.h"
 #include <External/include/imgui/imgui_impl_win32.h>
 #include <cassert>
-#include <sstream>
 
 namespace Kaka
 {

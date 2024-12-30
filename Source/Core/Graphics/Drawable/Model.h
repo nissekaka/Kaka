@@ -19,7 +19,7 @@ namespace Kaka
 
 	public:
 		Model() = default;
-		Model(const Graphics& aGfx, const std::string& aFilePath, const eShaderType aShaderType);
+		Model(const eShaderType aShaderType);
 		~Model() override = default;
 		void Init();
 		void LoadModel(const Graphics& aGfx, const std::string& aFilePath, const eShaderType aShaderType);

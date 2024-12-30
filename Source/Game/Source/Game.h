@@ -2,8 +2,6 @@
 #include "Core/Windows/Window.h"
 #include "Core/Utility/ImGuiManager.h"
 #include "Core/Utility/Timer.h"
-#include "Core/Utility/Camera.h"
-#include <Core/Utility/KakaMath.h>
 
 namespace Kaka
 {
