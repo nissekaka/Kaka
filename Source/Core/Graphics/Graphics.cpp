@@ -23,7 +23,7 @@ namespace Kaka
 		width(aWidth),
 		height(aHeight),
 		shaderFileWatcher(
-			L"..\\Source\\Core\\Graphics\\Shaders",
+			L"..\\Source\\Core\\Graphics\\Shaders\\Fullscreen\\",
 			[this](const std::wstring& path, const filewatch::Event change_type)
 			{
 				ProcessFileChangeEngine(path, change_type);
@@ -100,134 +100,45 @@ namespace Kaka
 			shadowSampler.Bind(pContext.Get());
 		}
 
-		HRESULT result;
-
-		gBuffer = GBuffer::Create(*this, width, height);
-		shadowBuffer = ShadowBuffer::Create(*this, width, height);
-
-		// Bloom
+		// Buffers
 		{
-			UINT bloomWidth = width;
-			UINT bloomHeight = height;
+			gBuffer = GBuffer::Create(*this, width, height);
 
-			for (int i = 0; i < bloomSteps; ++i)
-			{
-				ID3D11Texture2D* bloomTexture;
-				bloomWidth /= bloomDivideFactor;
-				bloomHeight /= bloomDivideFactor;
-				bloomDownscaleTargets.emplace_back();
+			shadowBuffer = ShadowBuffer::Create(*this, width, height);
+			shadowBuffer.GetCamera().SetOrthographic(static_cast<float>(width) / 3.0f, static_cast<float>(height) / 3.0f, -500.0f, 500.0f);
+			shadowBuffer.GetCamera().SetPosition({ 0.0f, 70.0f, 0.0f });
+			shadowBuffer.InitBuffer(*this);
 
-				D3D11_TEXTURE2D_DESC ppDesc = { 0 };
-				ppDesc.Width = bloomWidth;
-				ppDesc.Height = bloomHeight;
-				ppDesc.MipLevels = 1u;
-				ppDesc.ArraySize = 1u;
-				ppDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-				ppDesc.SampleDesc.Count = 1u;
-				ppDesc.SampleDesc.Quality = 0u;
-				ppDesc.Usage = D3D11_USAGE_DEFAULT;
-				ppDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-				ppDesc.CPUAccessFlags = 0u;
-				ppDesc.MiscFlags = 0u;
-				result = pDevice->CreateTexture2D(&ppDesc, nullptr, &bloomTexture);
-				assert(SUCCEEDED(result));
-				result = pDevice->CreateShaderResourceView(bloomTexture, nullptr, &bloomDownscaleTargets.back().pResource);
-				assert(SUCCEEDED(result));
-				result = pDevice->CreateRenderTargetView(bloomTexture, nullptr, &bloomDownscaleTargets.back().pTarget);
-				assert(SUCCEEDED(result));
-				bloomTexture->Release();
-			}
+			commonBuffer.InitBuffers(*this);
 		}
 
-		// Fullscreen
+		// Blend, rasterizer, depth stencil
 		{
-			ID3D11Texture2D* fullTexture;
-			D3D11_TEXTURE2D_DESC fullDesc = { 0 };
-			fullDesc.Width = width;
-			fullDesc.Height = height;
-			fullDesc.MipLevels = 1u;
-			fullDesc.ArraySize = 1u;
-			fullDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-			fullDesc.SampleDesc.Count = 1u;
-			fullDesc.SampleDesc.Quality = 0u;
-			fullDesc.Usage = D3D11_USAGE_DEFAULT;
-			fullDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			fullDesc.CPUAccessFlags = 0u;
-			fullDesc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&fullDesc, nullptr, &fullTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(fullTexture, nullptr, &historyN1Target.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(fullTexture, nullptr, &historyN1Target.pTarget);
-			assert(SUCCEEDED(result));
-
-			fullTexture->Release();
+			blendState.Init(pDevice.Get(), eBlendStates::Disabled);
+			rasterizer.Init(pDevice.Get(), eRasterizerStates::BackfaceCulling);
+			depthStencil.Init(pDevice.Get(), eDepthStencilStates::Normal);
 		}
-
-		// TAA
-		{
-			ID3D11Texture2D* taaTexture;
-			D3D11_TEXTURE2D_DESC taaDesc = { 0 };
-			taaDesc.Width = width;
-			taaDesc.Height = height;
-			taaDesc.MipLevels = 1u;
-			taaDesc.ArraySize = 1u;
-			taaDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-			taaDesc.SampleDesc.Count = 1u;
-			taaDesc.SampleDesc.Quality = 0u;
-			taaDesc.Usage = D3D11_USAGE_DEFAULT;
-			taaDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-			taaDesc.CPUAccessFlags = 0u;
-			taaDesc.MiscFlags = 0u;
-			result = pDevice->CreateTexture2D(&taaDesc, nullptr, &taaTexture);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateShaderResourceView(taaTexture, nullptr, &historyNTarget.pResource);
-			assert(SUCCEEDED(result));
-			result = pDevice->CreateRenderTargetView(taaTexture, nullptr, &historyNTarget.pTarget);
-			assert(SUCCEEDED(result));
-
-			taaTexture->Release();
-		}
-
-		// TODO bools
-		blendState.Init(pDevice.Get(), eBlendStates::Disabled);
-		rasterizer.Init(pDevice.Get(), eRasterizerStates::BackfaceCulling);
-		depthStencil.Init(pDevice.Get(), eDepthStencilStates::Normal);
 
 		// Init imgui d3d impl
 		ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
 
-		// TODO New refactor stuff
-		// TODO New refactor stuff
-		// TODO New refactor stuff
-		// TODO New refactor stuff
-		// TODO New refactor stuff
+		// Lights and post processing and TAA
+		{
+			lightManager.Init(*this);
 
-		deferredLights.Init(*this);
-		postProcessing.Init(*this, width, height);
+			postProcessing.Init(*this, width, height);
+			postProcessing.InitBuffer(*this);
 
-		postProcessing.ppData.tint = { 1.0f, 1.0f, 1.0f };
-		postProcessing.ppData.blackpoint = { 0.0f, 0.0f, 0.0f };
-		postProcessing.ppData.exposure = 0.0f;
-		postProcessing.ppData.contrast = 1.0f;
-		postProcessing.ppData.saturation = 1.0f;
-		postProcessing.ppData.blur = 0.0f;
-		postProcessing.ppData.sharpness = 1.0f;
+			temporalAntiAliasing.Init(pDevice.Get(), width, height);
+			temporalAntiAliasing.SetHistoryViewProjection(camera.GetInverseView() * camera.GetProjection());
+			temporalAntiAliasing.InitBuffer(*this);
+		}
 
-		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
-
-		shadowBuffer.GetCamera().SetOrthographic(static_cast<float>(width) / 3.0f, static_cast<float>(height) / 3.0f, -500.0f, 500.0f);
-		shadowBuffer.GetCamera().SetPosition({ 0.0f, 70.0f, 0.0f });
-
-		historyViewProjection = camera.GetInverseView() * camera.GetProjection();
-
-		vcb.Init(*this, commonData);
-		pcb.Init(*this, commonData);
-		tab.Init(*this, taaData);
-		shadowPixelBuffer.Init(*this, shadowBuffer.shadowData);
-		ppb.Init(*this, postProcessing.ppData);
+		// TODO These should be components
 
 		skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
+
+		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
 
 		models.emplace_back();
 		models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
@@ -253,8 +164,7 @@ namespace Kaka
 		}
 
 		constexpr float colour[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-		pContext->ClearRenderTargetView(postProcessing.pTarget.Get(), colour);
-		//pContext->ClearDepthStencilView(pDepth.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0u);
+		pContext->ClearRenderTargetView(postProcessing.GetTarget().Get(), colour);
 	}
 
 	void Graphics::EndFrame()
@@ -286,6 +196,178 @@ namespace Kaka
 		pContext->DrawIndexedInstanced(aCount, aInstanceCount, 0u, 0u, 0u);
 	}
 
+	void Graphics::Render(const RenderContext& aContext)
+	{
+		BeginFrame();
+
+		// Need some kind of model renderer in GFX
+		// Need a GameObject and component system
+
+		/// ---------- SETUP ---------- BEGIN
+		{
+			SetCamera(camera);
+
+			CommonBuffer::CommonContext context = { camera, aContext.totalTime, GetCurrentResolution() };
+			commonBuffer.UpdateAndBindBuffers(*this, context);
+
+			SetDepthStencilState(eDepthStencilStates::Normal);
+			// May need to change to backface culling due to shadow artifacts
+			SetRasterizerState(eRasterizerStates::FrontfaceCulling);
+
+			// Apply jitter to projection matrix
+			temporalAntiAliasing.ApplyProjectionJitter(currentCamera, frameCount, width, height);
+		}
+		/// ---------- SETUP ---------- END
+
+
+
+		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
+		{
+			StartShadows(shadowBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+			lightManager.SetShadowCamera(shadowBuffer.GetCamera().GetInverseView() * shadowBuffer.GetCamera().GetProjection());
+
+			shadowBuffer.Clear(pContext.Get());
+			shadowBuffer.SetAsActiveTarget(pContext.Get());
+
+			// Render everything that casts shadows
+			{
+				for (Model& model : models)
+				{
+					model.Draw(*this, aContext.deltaTime, false);
+				}
+			}
+
+			ResetShadows(camera);
+		}
+		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- END
+
+
+
+		/// ---------- GBUFFER PASS ---------- BEGIN
+		{
+			gBuffer.ClearTextures(pContext.Get());
+			gBuffer.SetAsActiveTarget(pContext.Get(), gBuffer.GetDepthStencilView());
+
+			temporalAntiAliasing.UpdateAndBindBuffer(*this);
+
+			for (Model& model : models)
+			{
+				model.Draw(*this, aContext.deltaTime, true);
+			}
+
+			SetRenderTarget(eRenderTargetType::None, nullptr);
+			gBuffer.SetAllAsResources(pContext.Get(), PS_GBUFFER_SLOT);
+		}
+		/// ---------- GBUFFER PASS ---------- END
+
+
+
+		/// ---------- LIGHTING PASS ---------- BEGIN
+		{
+			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
+
+			shadowBuffer.UpdateAndBindBuffer(*this);
+
+			BindShadows(shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+
+			lightManager.Draw(*this);
+			UnbindShadows(PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+		}
+		/// ---------- LIGHTING PASS ---------- END
+
+
+
+		/// ---------- SKYBOX PASS ---------- BEGIN
+		{
+			SetRenderTarget(eRenderTargetType::PostProcessing, gBuffer.GetDepthStencilView());
+
+			SetDepthStencilState(eDepthStencilStates::ReadOnlyLessEqual);
+			SetRasterizerState(eRasterizerStates::NoCulling);
+
+			skybox.Draw(*this);
+		}
+		/// ---------- SKYBOX PASS ---------- END
+
+
+
+		/// ---------- TAA PASS ---------- BEGIN
+		{
+			if (flipFlop)
+			{
+				SetRenderTarget(eRenderTargetType::HistoryN1, nullptr);
+				pContext->PSSetShaderResources(PS_TAA_SLOT_HISTORY, 1u, temporalAntiAliasing.GetNResource().GetAddressOf());
+			}
+			else
+			{
+				SetRenderTarget(eRenderTargetType::HistoryN, nullptr);
+				pContext->PSSetShaderResources(PS_TAA_SLOT_HISTORY, 1u, temporalAntiAliasing.GetN1Resource().GetAddressOf());
+			}
+
+			pContext->PSSetShaderResources(PS_TAA_SLOT_CURRENT, 1u, postProcessing.GetResource().GetAddressOf());
+
+			// Need world position for reprojection
+			pContext->PSSetShaderResources(PS_TAA_SLOT_WORLDPOS, 1u, gBuffer.GetResource(GBuffer::GBufferTexture::WorldPosition));
+			// Velocity?
+			//pContext->PSSetShaderResources(3u, 1u, gBuffer.GetDepthShaderResourceView());
+
+			temporalAntiAliasing.UpdateJitter();
+			temporalAntiAliasing.UpdateAndBindBuffer(*this);
+
+			// Set history view projection matrix for next frame
+			temporalAntiAliasing.SetHistoryViewProjection(camera.GetInverseView() * camera.GetProjection());
+
+			postProcessing.SetTemporalAliasingPS();
+			postProcessing.Draw(*this);
+		}
+		/// ---------- TAA PASS ---------- END
+
+
+
+		/// ---------- POST PROCESSING PASS ---------- BEGIN
+		{
+			if (flipFlop)
+			{
+				postProcessing.HandleBloomScaling(*this, postProcessing, *temporalAntiAliasing.GetN1Resource().GetAddressOf(), pDefaultTarget.GetAddressOf());
+			}
+			else
+			{
+				postProcessing.HandleBloomScaling(*this, postProcessing, *temporalAntiAliasing.GetNResource().GetAddressOf(), pDefaultTarget.GetAddressOf());
+			}
+
+			flipFlop = !flipFlop;
+
+			postProcessing.UpdateAndBindBuffer(*this);
+			postProcessing.Draw(*this);
+
+			// NOTE This must be as many as render targets, I think
+			// TODO Should probably be cleaned up after each pass
+			ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+			pContext->PSSetShaderResources(0u, 1, nullSRVs);
+			pContext->PSSetShaderResources(1u, 1, nullSRVs);
+			pContext->PSSetShaderResources(2u, 1, nullSRVs);
+			pContext->PSSetShaderResources(3u, 1, nullSRVs);
+			pContext->PSSetShaderResources(4u, 1, nullSRVs);
+		}
+		/// ---------- POST PROCESSING PASS ---------- END
+
+
+
+		/// ---------- SPRITE PASS ---------- BEGIN
+		{
+			//	SetBlendState(eBlendStates::Additive);
+
+			//	dustParticles.Draw(*this);
+
+			//	SetBlendState(eBlendStates::Disabled);
+		}
+		/// ---------- SPRITE PASS ---------- END
+
+		// TODO This will move ? when there is an Editor project/class
+		ShowImGui(aContext.fps);
+
+		EndFrame();
+	}
+
 	DirectX::XMMATRIX Graphics::GetProjection() const
 	{
 		return currentCamera->GetProjection();
@@ -313,6 +395,21 @@ namespace Kaka
 		return currentCamera->GetInverseView();
 	}
 
+	DirectX::XMFLOAT2 Graphics::GetCurrentResolution() const
+	{
+		return { static_cast<float>(width), static_cast<float>(height) };
+	}
+
+	UINT Graphics::GetWidth() const
+	{
+		return width;
+	}
+
+	UINT Graphics::GetHeight() const
+	{
+		return height;
+	}
+
 	UINT Graphics::GetDrawcallCount() const
 	{
 		return drawcallCount;
@@ -336,119 +433,19 @@ namespace Kaka
 			break;
 			case eRenderTargetType::PostProcessing:
 			{
-				pContext->OMSetRenderTargets(1u, postProcessing.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, postProcessing.GetTarget().GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::HistoryN1:
 			{
-				pContext->OMSetRenderTargets(1u, historyN1Target.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, temporalAntiAliasing.GetN1Target().GetAddressOf(), aDepth);
 			}
 			break;
 			case eRenderTargetType::HistoryN:
 			{
-				pContext->OMSetRenderTargets(1u, historyNTarget.pTarget.GetAddressOf(), aDepth);
+				pContext->OMSetRenderTargets(1u, temporalAntiAliasing.GetNTarget().GetAddressOf(), aDepth);
 			}
 			break;
-		}
-	}
-
-	void Graphics::SetRenderTargetShadow(const RSMBuffer& aBuffer) const
-	{
-		pContext->OMSetRenderTargets(0u, nullptr, aBuffer.GetDepthStencilView());
-	}
-
-	float Halton(uint32_t i, uint32_t b)
-	{
-		float f = 1.0f;
-		float r = 0.0f;
-
-		while (i > 0)
-		{
-			f /= static_cast<float>(b);
-			r = r + f * static_cast<float>(i % b);
-			i = static_cast<uint32_t>(floorf(static_cast<float>(i) / static_cast<float>(b)));
-		}
-
-		return r;
-	}
-
-	void Graphics::ApplyProjectionJitter()
-	{
-		previousJitter = currentJitter;
-
-		currentJitter = DirectX::XMFLOAT2(
-			Halton(frameCount % 16 + 1, 2),
-			Halton(frameCount % 16 + 1, 3));
-
-		currentJitter.x = ((currentJitter.x - 0.5f) / (float)width) * 2.0f;
-		currentJitter.y = ((currentJitter.y - 0.5f) / (float)height) * 2.0f;
-
-		currentJitter.x *= jitterScale;
-		currentJitter.y *= jitterScale;
-
-		currentCamera->ApplyProjectionJitter(currentJitter.x, currentJitter.y);
-	}
-
-	void Graphics::HandleBloomScaling(PostProcessing& aPostProcessor, ID3D11ShaderResourceView* aResource)
-	{
-		if (usePostProcessing)
-		{
-			pContext->OMSetRenderTargets(1u, bloomDownscaleTargets[0].pTarget.GetAddressOf(), nullptr);
-			pContext->PSSetShaderResources(0u, 1u, &aResource);
-
-			aPostProcessor.SetDownsamplePS();
-
-			downSampleData.uvScale = bloomDivideFactor;
-			PixelConstantBuffer<DownSampleData> bloomBuffer{ *this, 1u };
-			bloomBuffer.Update(*this, downSampleData);
-			bloomBuffer.Bind(*this);
-
-			aPostProcessor.Draw(*this);
-
-			for (int i = 1; i < bloomDownscaleTargets.size(); ++i)
-			{
-				pContext->OMSetRenderTargets(1u, bloomDownscaleTargets[i].pTarget.GetAddressOf(), nullptr);
-				pContext->PSSetShaderResources(0u, 1u, bloomDownscaleTargets[i - 1].pResource.GetAddressOf());
-
-				downSampleData.uvScale *= bloomDivideFactor;
-				bloomBuffer.Update(*this, downSampleData);
-				bloomBuffer.Bind(*this);
-
-				aPostProcessor.Draw(*this);
-			}
-
-			SetBlendState(eBlendStates::Alpha);
-
-			aPostProcessor.SetUpsamplePS();
-
-			for (int i = (int)bloomDownscaleTargets.size() - 1; i > 0; --i)
-			{
-				pContext->OMSetRenderTargets(1u, bloomDownscaleTargets[i - 1].pTarget.GetAddressOf(), nullptr);
-				pContext->PSSetShaderResources(0u, 1u, bloomDownscaleTargets[i].pResource.GetAddressOf());
-
-				downSampleData.uvScale /= bloomDivideFactor;
-				bloomBuffer.Update(*this, downSampleData);
-				bloomBuffer.Bind(*this);
-
-				aPostProcessor.Draw(*this);
-			}
-
-			SetBlendState(eBlendStates::Disabled);
-
-			aPostProcessor.SetPostProcessPS();
-
-			pContext->OMSetRenderTargets(1u, pDefaultTarget.GetAddressOf(), nullptr);
-			pContext->PSSetShaderResources(0u, 1u, &aResource);
-			pContext->PSSetShaderResources(1u, 1u, bloomDownscaleTargets[0].pResource.GetAddressOf());
-		}
-		else
-		{
-			aPostProcessor.SetFullscreenPS();
-
-			pContext->OMSetRenderTargets(1u, pDefaultTarget.GetAddressOf(), nullptr);
-			pContext->PSSetShaderResources(0u, 1u, &aResource);
-			ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-			pContext->PSSetShaderResources(1u, 1, nullSRVs);
 		}
 	}
 
@@ -467,21 +464,6 @@ namespace Kaka
 		rasterizer.SetRasterizerState(pContext.Get(), aRasterizerState);
 	}
 
-	void Graphics::BindPostProcessingTexture()
-	{
-		pContext->PSSetShaderResources(0u, 1u, postProcessing.pResource.GetAddressOf());
-	}
-
-	void Graphics::BindBloomDownscaleTexture(const int aIndex)
-	{
-		pContext->PSSetShaderResources(0u, 1u, bloomDownscaleTargets[aIndex].pResource.GetAddressOf());
-	}
-
-	DirectX::XMFLOAT2 Graphics::GetCurrentResolution() const
-	{
-		return { static_cast<float>(width), static_cast<float>(height) };
-	}
-
 	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const ShadowBuffer& aBuffer, UINT aSlot)
 	{
 		pContext->ClearDepthStencilView(aBuffer.GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
@@ -491,9 +473,6 @@ namespace Kaka
 
 		SetVertexShaderOverride(L"Shaders\\Model_NO_TAA_VS.cso");
 		SetPixelShaderOverride(L"Shaders\\Model_Shadows_PS.cso");
-
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		pContext->PSSetShaderResources(aSlot, 1u, nullSRVs);
 	}
 
 	void Graphics::ResetShadows(Camera& aCamera)
@@ -520,183 +499,7 @@ namespace Kaka
 		skyboxAngle.y += skyboxSpeed * aDeltaTime;
 		skybox.Rotate(skyboxAngle);
 
-		deferredLights.Update(aDeltaTime);
-	}
-
-	void Graphics::Render(const float aDeltaTime, const float aTotalTime, const float aFPS)
-	{
-		BeginFrame();
-		SetCamera(camera);
-
-		// Need some kind of model renderer in GFX
-		// Need a GameObject and component system
-
-		ApplyProjectionJitter();
-
-		commonData.historyViewProjection = commonData.viewProjection;
-		commonData.viewProjection = camera.GetInverseView() * camera.GetJitteredProjection();
-		commonData.inverseViewProjection = DirectX::XMMatrixInverse(nullptr, commonData.viewProjection);
-		commonData.projection = DirectX::XMMatrixInverse(nullptr, camera.GetProjection());
-		commonData.viewInverse = camera.GetInverseView();
-		commonData.cameraPosition = { camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z, 0.0f };
-		commonData.resolution = GetCurrentResolution();
-		commonData.currentTime = aTotalTime;
-
-		pcb.Update(*this, commonData);
-		pcb.Bind(*this);
-
-		vcb.Update(*this, commonData);
-		vcb.Bind(*this);
-
-		skyboxAngle.y += skyboxSpeed * aDeltaTime;
-		skybox.Rotate(skyboxAngle);
-
-		deferredLights.Update(aDeltaTime);
-
-		SetDepthStencilState(eDepthStencilStates::Normal);
-		// Need backface culling for Reflective Shadow Maps
-		SetRasterizerState(eRasterizerStates::BackfaceCulling);
-
-		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
-		{
-			StartShadows(shadowBuffer.GetCamera(), deferredLights.GetDirectionalLightData().lightDirection, shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
-			deferredLights.SetShadowCamera(shadowBuffer.GetCamera().GetInverseView() * shadowBuffer.GetCamera().GetProjection());
-
-			shadowBuffer.Clear(pContext.Get());
-			shadowBuffer.SetAsActiveTarget(pContext.Get());
-
-			// Render everything that casts shadows
-			{
-				for (Model& model : models)
-				{
-					model.Draw(*this, aDeltaTime, false);
-				}
-			}
-
-			ResetShadows(camera);
-		}
-		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- END
-
-		/// GBuffer pass -- BEGIN
-		{
-			gBuffer.ClearTextures(pContext.Get());
-			gBuffer.SetAsActiveTarget(pContext.Get(), gBuffer.GetDepthStencilView());
-
-			taaData.jitter = currentJitter;
-			taaData.previousJitter = previousJitter;
-
-			tab.Update(*this, taaData);
-			tab.Bind(*this);
-
-			for (Model& model : models)
-			{
-				model.Draw(*this, aDeltaTime, true);
-			}
-
-			SetRenderTarget(eRenderTargetType::None, nullptr);
-			gBuffer.SetAllAsResources(pContext.Get(), PS_GBUFFER_SLOT);
-		}
-		/// GBuffer pass -- END
-
-		/// Lighting pass -- BEGIN
-		{
-			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
-
-			shadowPixelBuffer.Update(*this, shadowBuffer.shadowData);
-			shadowPixelBuffer.Bind(*this);
-
-			BindShadows(shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
-
-			deferredLights.Draw(*this);
-			UnbindShadows(PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
-		}
-		/// Lighting pass -- END
-
-		/// Skybox pass -- BEGIN
-		{
-			SetRenderTarget(eRenderTargetType::PostProcessing, gBuffer.GetDepthStencilView());
-
-			SetDepthStencilState(eDepthStencilStates::ReadOnlyLessEqual);
-			SetRasterizerState(eRasterizerStates::NoCulling);
-
-			skybox.Draw(*this);
-		}
-		/// Skybox pass -- END
-
-		/// TAA pass -- BEGIN
-		if (flipFlop)
-		{
-			SetRenderTarget(eRenderTargetType::HistoryN1, nullptr);
-			pContext->PSSetShaderResources(1u, 1u, historyNTarget.pResource.GetAddressOf());
-		}
-		else
-		{
-			SetRenderTarget(eRenderTargetType::HistoryN, nullptr);
-			pContext->PSSetShaderResources(1u, 1u, historyN1Target.pResource.GetAddressOf());
-		}
-
-		pContext->PSSetShaderResources(0u, 1u, postProcessing.pResource.GetAddressOf());
-
-		// Need world position for reprojection
-		pContext->PSSetShaderResources(2u, 1u, gBuffer.GetShaderResourceView(GBuffer::GBufferTexture::WorldPosition));
-		pContext->PSSetShaderResources(3u, 1u, gBuffer.GetDepthShaderResourceView());
-
-		taaData.jitter = currentJitter;
-		taaData.previousJitter = previousJitter;
-
-		tab.Update(*this, taaData);
-		tab.Bind(*this);
-
-		// Set history view projection matrix for next frame
-		historyViewProjection = camera.GetInverseView() * camera.GetProjection();
-
-		postProcessing.SetTemporalAliasingPS();
-		postProcessing.Draw(*this);
-		/// TAA pass -- END
-
-		/// Post processing pass -- BEGIN
-
-		if (flipFlop)
-		{
-			HandleBloomScaling(postProcessing, *historyN1Target.pResource.GetAddressOf());
-		}
-		else
-		{
-			HandleBloomScaling(postProcessing, *historyNTarget.pResource.GetAddressOf());
-		}
-
-		flipFlop = !flipFlop;
-
-		ppb.Update(*this, postProcessing.ppData);
-		ppb.Bind(*this);
-
-		postProcessing.Draw(*this);
-
-		// NOTE This must be as many as render targets, I think
-		// TODO Should probably be cleaned up after each pass
-		ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
-		pContext->PSSetShaderResources(0u, 1, nullSRVs);
-		pContext->PSSetShaderResources(1u, 1, nullSRVs);
-		pContext->PSSetShaderResources(2u, 1, nullSRVs);
-		pContext->PSSetShaderResources(3u, 1, nullSRVs);
-		pContext->PSSetShaderResources(4u, 1, nullSRVs);
-
-		/// Post processing pass -- END
-
-		/// Sprite pass -- BEGIN
-		//{
-		//	SetBlendState(eBlendStates::Additive);
-
-		//	dustParticles.Draw(*this);
-
-		//	SetBlendState(eBlendStates::Disabled);
-		//}
-		/// Sprite pass -- END
-
-		ShowImGui(aFPS);
-
-		// End frame
-		EndFrame();
+		lightManager.Update(aDeltaTime);
 	}
 
 	void Graphics::ShowImGui(const float aFPS)
@@ -706,7 +509,7 @@ namespace Kaka
 		{
 			if (ImGui::Begin("Post Processing"))
 			{
-				ImGui::Checkbox("Use PP", &usePostProcessing);
+				ImGui::Checkbox("Use PP", &postProcessing.usePostProcessing);
 				ImGui::ColorPicker3("Tint", &postProcessing.ppData.tint.x);
 				ImGui::DragFloat3("Blackpoint", &postProcessing.ppData.blackpoint.x, 0.01f, 0.0f, 1.0f, "%.2f");
 				ImGui::DragFloat("Exposure", &postProcessing.ppData.exposure, 0.01f, -10.0f, 10.0f, "%.2f");
@@ -716,11 +519,11 @@ namespace Kaka
 				ImGui::DragFloat("Sharpness", &postProcessing.ppData.sharpness, 0.01f, 0.0f, 10.0f, "%.2f");
 				ImGui::Text("Bloom");
 				ImGui::SetNextItemWidth(100);
-				ImGui::SliderFloat("Bloom blending", &downSampleData.bloomBlending, 0.0f, 1.0f);
+				ImGui::SliderFloat("Bloom blending", &postProcessing.downSampleData.bloomBlending, 0.0f, 1.0f);
 				ImGui::SetNextItemWidth(100);
-				ImGui::SliderFloat("Bloom threshold", &downSampleData.bloomThreshold, 0.0f, 1.0f);
+				ImGui::SliderFloat("Bloom threshold", &postProcessing.downSampleData.bloomThreshold, 0.0f, 1.0f);
 				ImGui::Text("Temporal Anti-Aliasing");
-				ImGui::DragFloat("Jitter scale", &jitterScale, 0.01f, 0.0f, 1.0f, "%.2f");
+				ImGui::DragFloat("Jitter scale", &temporalAntiAliasing.jitterScale, 0.01f, 0.0f, 1.0f, "%.2f");
 			}
 			ImGui::End();
 
@@ -767,7 +570,7 @@ namespace Kaka
 			}
 			ImGui::End();
 
-			deferredLights.ShowControlWindow();
+			lightManager.ShowControlWindow();
 
 			if (showStatsWindow)
 			{
@@ -803,21 +606,12 @@ namespace Kaka
 		return imGuiEnabled;
 	}
 
-	UINT Graphics::GetWidth() const
-	{
-		return width;
-	}
-
-	UINT Graphics::GetHeight() const
-	{
-		return height;
-	}
-
 	void Graphics::ProcessFileChangeEngine(const std::wstring& aPath, filewatch::Event aEvent)
 	{
 		switch (aEvent)
 		{
 			case filewatch::Event::modified:
+				std::cout << "Recompiling a shader!" << std::endl;
 				if (aPath.ends_with(L".hlsl"))
 				{
 					const std::wstring sub = aPath.substr(aPath.find_last_of(L"\\") + 1);

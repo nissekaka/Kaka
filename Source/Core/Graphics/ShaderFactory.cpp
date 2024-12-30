@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "ShaderFactory.h"
 
+#include <filesystem>
+
+#define HLSL_PATH "..\\Core\\Source\\Graphics\\Shaders\\"
+#define toWstr(str) std::wstring(str.begin(), str.end())
+#define toStr(wstr) std::string(wstr.begin(), wstr.end())
+
 namespace Kaka
 {
 	PixelShader* ShaderFactory::GetPixelShader(const Graphics& aGfx, const std::wstring& aFileName)
@@ -44,28 +50,44 @@ namespace Kaka
 
 	void ShaderFactory::RecompileShader(const std::wstring& aFileName, ID3D11Device* aDevice)
 	{
-		std::wstring hlslPath = L"..\\Source\\Core\\Graphics\\Shaders\\" + aFileName;
 		std::wstring path = L"Shaders\\" + aFileName;
 
 		Sleep(5);
 
 		path.replace(path.find(L".hlsl"), 5, L".cso");
 
+		if (!std::filesystem::exists("..\\Source\\Core\\Graphics\\Shaders\\")) {
+			throw std::runtime_error("HLSL_PATH does not exist!");
+		}
+
+		std::string filePath;
+		std::string fileName = toStr(aFileName);
+		for (const auto& entry : std::filesystem::recursive_directory_iterator("..\\Source\\Core\\Graphics\\Shaders\\"))
+		{
+			if (entry.path().filename().string() == fileName)
+			{
+				filePath = entry.path().string();
+				break;
+			}
+		}
+
 		if (pixelShaders.contains(path))
 		{
-			if (auto* newPixelShader = CreatePixelShaderFromFile(hlslPath, aDevice))
+			if (auto* newPixelShader = CreatePixelShaderFromFile(toWstr(filePath).c_str(), aDevice))
 			{
 				pixelShaders[path].pPixelShader = nullptr;
 				pixelShaders[path].pPixelShader = newPixelShader;
+				OutputDebugStringA(("Recompiled pixel shader: " + filePath + "\n").c_str());
 			}
 		}
 
 		if (vertexShaders.contains(path))
 		{
-			if (auto* newVertexShader = CreateVertexShaderFromFile(hlslPath, aDevice))
+			if (auto* newVertexShader = CreateVertexShaderFromFile(toWstr(filePath).c_str(), aDevice))
 			{
 				vertexShaders[path].pVertexShader = nullptr;
 				vertexShaders[path].pVertexShader = newVertexShader;
+				OutputDebugStringA(("Recompiled vertex shader: " + filePath + "\n").c_str());
 			}
 		}
 	}

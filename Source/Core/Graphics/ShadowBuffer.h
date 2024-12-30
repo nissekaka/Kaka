@@ -1,5 +1,6 @@
 #pragma once
 #include "Utility/Camera.h"
+#include "Core/Graphics/Bindable/ConstantBuffers.h"
 
 namespace Kaka
 {
@@ -18,6 +19,8 @@ namespace Kaka
 
 		static ShadowBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);
 		~ShadowBuffer() = default;
+		void InitBuffer(const Graphics& aGfx);
+		void UpdateAndBindBuffer(Graphics& aGfx);
 		Camera& GetCamera() { return camera; }
 
 		void Clear(ID3D11DeviceContext* aContext) const;
@@ -33,10 +36,13 @@ namespace Kaka
 			return depthStencilView.Get();
 		}
 
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilTexture;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> depthStencilShaderResourceView;
+
+		PixelConstantBuffer<ShadowData> shadowPixelBuffer{ PS_CBUFFER_SLOT_SHADOW };
 
 		Camera camera;
 	};

@@ -52,7 +52,7 @@ namespace Kaka
 		void SetAllAsResources(ID3D11DeviceContext* aContext, unsigned int aSlot);
 		void ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot);
 
-		inline ID3D11ShaderResourceView* const* GetShaderResourceView(GBufferTexture aType) const
+		inline ID3D11ShaderResourceView* const* GetResource(GBufferTexture aType) const
 		{
 			return shaderResourceViews[(int)aType].GetAddressOf();
 		}

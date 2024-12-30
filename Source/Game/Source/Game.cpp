@@ -28,12 +28,15 @@ namespace Kaka
 		HandleInput(aDeltaTime);
 
 		wnd.Gfx().UpdateLights(aDeltaTime);
-		wnd.Gfx().Render(aDeltaTime, timer.GetTotalTime(), timer.GetFPS());
+		RenderContext renderContext = { aDeltaTime, timer.GetTotalTime(), timer.GetFPS() };
+		wnd.Gfx().Render(renderContext);
 	}
 
 	void Game::HandleInput(const float aDeltaTime)
 	{
 		UNREFERENCED_PARAMETER(aDeltaTime);
+
+		// TODO All of these set through wnd.Gfx() -> etc need to be handled better
 
 		while (const auto e = wnd.keyboard.ReadKey())
 		{
@@ -66,7 +69,7 @@ namespace Kaka
 					wnd.Gfx().drawLightDebug = !wnd.Gfx().drawLightDebug;
 					break;
 				case 'T':
-					wnd.Gfx().taaData.useTAA = !wnd.Gfx().taaData.useTAA;
+					wnd.Gfx().temporalAntiAliasing.taaData.useTAA = !wnd.Gfx().temporalAntiAliasing.taaData.useTAA;
 					break;
 				case 'F':
 					break;

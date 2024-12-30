@@ -37,7 +37,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
     }
 
 	// Use history view-projection matrix to project onto previous camera's screen space
-    const float3 worldPosition = worldPositionTexture.Sample(linearSampler, aInput.texCoord).rgb;
+    const float3 worldPosition = worldPositionTexture.Sample(pointSampler, aInput.texCoord).rgb;
 
     float2 reprojectedUV = aInput.texCoord;
 
@@ -50,7 +50,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
     //const float2 motionVector = velocityTexture.Sample(linearSampler, aInput.texCoord).xy;
     //const float2 reprojectedUV = (aInput.texCoord - motionVector); // / resolution;
 
-    const float3 currentColour = currentTexture.Sample(linearSampler, aInput.texCoord).rgb;
+    const float3 currentColour = currentTexture.Sample(pointSampler, aInput.texCoord).rgb;
     const float3 previousColour = previousTexture.Sample(linearSampler, reprojectedUV).rgb;
 
     //return float4(previousColour, 1.0f);
@@ -74,7 +74,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
 
     float3 output = currentColour * 0.1f + previousColourClamped * 0.9f;
 
-    //return float4(output, 1.0f);
+    return float4(output, 1.0f);
 
     float3 antialiased = previousColourClamped.rgb;
 

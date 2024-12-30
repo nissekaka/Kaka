@@ -57,6 +57,17 @@ namespace Kaka
 		return returnShadowBuffer;
 	}
 
+	void ShadowBuffer::InitBuffer(const Graphics& aGfx)
+	{
+		shadowPixelBuffer.Init(aGfx, shadowData);
+	}
+
+	void ShadowBuffer::UpdateAndBindBuffer(Graphics& aGfx)
+	{
+		shadowPixelBuffer.Update(aGfx, shadowData);
+		shadowPixelBuffer.Bind(aGfx);
+	}
+
 	void ShadowBuffer::Clear(ID3D11DeviceContext* aContext) const
 	{
 		aContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
