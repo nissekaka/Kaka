@@ -9,6 +9,7 @@ namespace Kaka
 		None,
 		Default,
 		PostProcessing,
+		RSM,
 		HistoryN1,
 		HistoryN
 	};

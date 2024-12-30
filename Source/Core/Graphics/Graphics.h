@@ -96,8 +96,10 @@ namespace Kaka
 
 		// Shadows
 		void StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const ShadowBuffer& aBuffer, UINT aSlot);
+		void StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer, UINT aSlot);
 		void ResetShadows(Camera& aCamera);
 		void BindShadows(const ShadowBuffer& aBuffer, UINT aSlot);
+		void BindShadows(const RSMBuffer& aBuffer, UINT aSlot);
 		void UnbindShadows(UINT aSlot);
 
 		// Shader
@@ -144,6 +146,7 @@ namespace Kaka
 		UINT drawcallCount;
 		unsigned long long frameCount = 0;
 		bool flipFlop = false;
+		bool useReflectiveShadowMap = true;
 
 		filewatch::FileWatch<std::wstring> shaderFileWatcher;
 
@@ -167,6 +170,8 @@ namespace Kaka
 		GBuffer gBuffer;
 		ShadowBuffer shadowBuffer;
 		CommonBuffer commonBuffer;
+		RSMBuffer rsmBuffer;
+		IndirectLighting indirectLighting;
 
 		DeferredLights lightManager;
 

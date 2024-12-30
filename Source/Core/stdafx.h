@@ -10,18 +10,6 @@
 
 #include "Core/Graphics/Bindable/Bindable.h"
 #include "Core/Graphics/Bindable/BindableCommon.h"
-#include "Core/Graphics/Bindable/ConstantBuffers.h"
-#include "Core/Graphics/Bindable/CubeTexture.h"
-#include "Core/Graphics/Bindable/DepthStencil.h"
-#include "Core/Graphics/Bindable/IndexBuffer.h"
-#include "Core/Graphics/Bindable/InputLayout.h"
-#include "Core/Graphics/Bindable/Rasterizer.h"
-#include "Core/Graphics/Bindable/Sampler.h"
-#include "Core/Graphics/Bindable/SkyboxTransformConstantBuffer.h"
-#include "Core/Graphics/Bindable/Texture.h"
-#include "Core/Graphics/Bindable/Topology.h"
-#include "Core/Graphics/Bindable/TransformConstantBuffer.h"
-#include "Core/Graphics/Bindable/VertexBuffer.h"
 #include "Core/Graphics/Drawable/Drawable.h"
 #include "Core/Graphics/Drawable/Model.h"
 #include "Core/Graphics/Drawable/ModelData.h"
@@ -31,3 +19,5 @@
 //#include "Core/Input/Mouse.h"
 //#include "Windows/KakaWin.h"
 //#include "Windows/Window.h"
+
+// TODO Attempt to clean this up

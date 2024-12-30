@@ -74,7 +74,7 @@ namespace Kaka
 				case 'F':
 					break;
 				case 'R':
-					//wnd.Gfx().drawRSM = !wnd.Gfx().drawRSM;
+					wnd.Gfx().useReflectiveShadowMap = !wnd.Gfx().useReflectiveShadowMap;
 					break;
 			}
 		}

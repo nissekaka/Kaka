@@ -134,6 +134,18 @@ namespace Kaka
 			temporalAntiAliasing.InitBuffer(*this);
 		}
 
+		// RSM
+		{
+			rsmBuffer = RSMBuffer::Create(*this, width, height);
+			rsmBuffer.Init(*this, width, height);
+			rsmBuffer.InitBuffer(*this);
+
+			rsmBuffer.GetCamera().SetOrthographic(static_cast<float>(width) / 3.0f, static_cast<float>(height) / 3.0f, -500.0f, 500.0f);
+			rsmBuffer.GetCamera().SetPosition({ 0.0f, 70.0f, 0.0f });
+
+			indirectLighting.Init(*this);
+		}
+
 		// TODO These should be components
 
 		skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
@@ -212,7 +224,14 @@ namespace Kaka
 
 			SetDepthStencilState(eDepthStencilStates::Normal);
 			// May need to change to backface culling due to shadow artifacts
-			SetRasterizerState(eRasterizerStates::FrontfaceCulling);
+			if (useReflectiveShadowMap)
+			{
+				SetRasterizerState(eRasterizerStates::BackfaceCulling);
+			}
+			else
+			{
+				SetRasterizerState(eRasterizerStates::FrontfaceCulling);
+			}
 
 			// Apply jitter to projection matrix
 			temporalAntiAliasing.ApplyProjectionJitter(currentCamera, frameCount, width, height);
@@ -220,26 +239,56 @@ namespace Kaka
 		/// ---------- SETUP ---------- END
 
 
-
-		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
+		if (useReflectiveShadowMap)
 		{
-			StartShadows(shadowBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
-			lightManager.SetShadowCamera(shadowBuffer.GetCamera().GetInverseView() * shadowBuffer.GetCamera().GetProjection());
-
-			shadowBuffer.Clear(pContext.Get());
-			shadowBuffer.SetAsActiveTarget(pContext.Get());
-
-			// Render everything that casts shadows
+			/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- BEGIN
 			{
-				for (Model& model : models)
-				{
-					model.Draw(*this, aContext.deltaTime, false);
-				}
-			}
+				StartShadows(rsmBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, rsmBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+				lightManager.SetShadowCamera(rsmBuffer.GetCamera().GetInverseView() * rsmBuffer.GetCamera().GetProjection());
+				rsmBuffer.ClearTextures(pContext.Get());
+				rsmBuffer.SetAsActiveTarget(pContext.Get());
 
-			ResetShadows(camera);
+				rsmBuffer.rsmLightData.colourAndIntensity[0] = lightManager.GetDirectionalLightData().lightColour.x;
+				rsmBuffer.rsmLightData.colourAndIntensity[1] = lightManager.GetDirectionalLightData().lightColour.y;
+				rsmBuffer.rsmLightData.colourAndIntensity[2] = lightManager.GetDirectionalLightData().lightColour.z;
+				rsmBuffer.rsmLightData.colourAndIntensity[3] = lightManager.GetDirectionalLightData().lightIntensity;
+				rsmBuffer.rsmLightData.isDirectionalLight = TRUE;
+
+				rsmBuffer.UpdateAndBindLightDataBuffer(*this);
+
+				// Render everything that casts shadows
+				{
+					for (Model& model : models)
+					{
+						model.Draw(*this, aContext.deltaTime, false);
+					}
+				}
+
+				ResetShadows(camera);
+			}
+			/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- END
 		}
-		/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- END
+		else {
+			/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
+			{
+				StartShadows(shadowBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+				lightManager.SetShadowCamera(shadowBuffer.GetCamera().GetInverseView() * shadowBuffer.GetCamera().GetProjection());
+
+				shadowBuffer.Clear(pContext.Get());
+				shadowBuffer.SetAsActiveTarget(pContext.Get());
+
+				// Render everything that casts shadows
+				{
+					for (Model& model : models)
+					{
+						model.Draw(*this, aContext.deltaTime, false);
+					}
+				}
+
+				ResetShadows(camera);
+			}
+			/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- END
+		}
 
 
 
@@ -262,13 +311,41 @@ namespace Kaka
 
 
 
+		/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- BEGIN
+		{
+			if (useReflectiveShadowMap)
+			{
+				// Directional light
+				rsmBuffer.SetAllAsResources(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
+				rsmBuffer.rsmSamplingData.lightCameraTransform = rsmBuffer.GetCamera().GetInverseView() * rsmBuffer.GetCamera().GetJitteredProjection();
+
+				SetRenderTarget(eRenderTargetType::RSM, nullptr);
+
+				rsmBuffer.UpdateAndBindSamplingBuffer(*this);
+
+				indirectLighting.Draw(*this);
+
+				rsmBuffer.ClearAllAsResourcesSlots(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
+			}
+		}
+		/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- END
+
+
+
 		/// ---------- LIGHTING PASS ---------- BEGIN
 		{
 			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
 
 			shadowBuffer.UpdateAndBindBuffer(*this);
 
-			BindShadows(shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+			if (useReflectiveShadowMap)
+			{
+				BindShadows(rsmBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+			}
+			else
+			{
+				BindShadows(shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
+			}
 
 			lightManager.Draw(*this);
 			UnbindShadows(PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
@@ -287,6 +364,24 @@ namespace Kaka
 			skybox.Draw(*this);
 		}
 		/// ---------- SKYBOX PASS ---------- END
+
+
+
+		/// ---------- INDIRECT LIGHTING PASS -- BEGIN
+		// This draws the indirect light to the post processing buffer
+		// Indirect light is drawn to its own buffer, then combined with the post processing buffer here so that we see it
+		if (useReflectiveShadowMap)
+		{
+			pContext->PSSetShaderResources(0u, 1u, rsmBuffer.GetResource().GetAddressOf());
+			SetRenderTarget(eRenderTargetType::PostProcessing, nullptr);
+			SetBlendState(eBlendStates::Additive);
+
+			postProcessing.SetFullscreenPS();
+			postProcessing.Draw(*this);
+
+			SetBlendState(eBlendStates::Disabled);
+		}
+		/// ---------- INDIRECT LIGHTING PASS -- END
 
 
 
@@ -436,6 +531,11 @@ namespace Kaka
 				pContext->OMSetRenderTargets(1u, postProcessing.GetTarget().GetAddressOf(), aDepth);
 			}
 			break;
+			case eRenderTargetType::RSM:
+			{
+				pContext->OMSetRenderTargets(1u, rsmBuffer.GetTarget().GetAddressOf(), aDepth);
+			}
+			break;
 			case eRenderTargetType::HistoryN1:
 			{
 				pContext->OMSetRenderTargets(1u, temporalAntiAliasing.GetN1Target().GetAddressOf(), aDepth);
@@ -475,6 +575,17 @@ namespace Kaka
 		SetPixelShaderOverride(L"Shaders\\Model_Shadows_PS.cso");
 	}
 
+	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer, UINT aSlot)
+	{
+		pContext->ClearDepthStencilView(aBuffer.GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+		SetCamera(aCamera);
+		aCamera.SetDirection(aLightDirection);
+
+		SetVertexShaderOverride(L"Shaders\\RSM_VS.cso");
+		SetPixelShaderOverride(L"Shaders\\RSM_PS.cso");
+	}
+
 	void Graphics::ResetShadows(Camera& aCamera)
 	{
 		ClearPixelShaderOverride();
@@ -483,6 +594,11 @@ namespace Kaka
 	}
 
 	void Graphics::BindShadows(const ShadowBuffer& aBuffer, UINT aSlot)
+	{
+		pContext->PSSetShaderResources(aSlot, 1u, aBuffer.GetDepthShaderResourceView());
+	}
+
+	void Graphics::BindShadows(const RSMBuffer& aBuffer, UINT aSlot)
 	{
 		pContext->PSSetShaderResources(aSlot, 1u, aBuffer.GetDepthShaderResourceView());
 	}
@@ -562,6 +678,40 @@ namespace Kaka
 				//ImGui::Image(gBuffer.GetShaderResourceViews()[5], ImVec2(512, 288));
 			}
 			ImGui::End();
+
+			if (useReflectiveShadowMap) {
+
+				if (ImGui::Begin("RSM Directional"))
+				{
+					ImGui::DragInt("Sample count##DirSam", (int*)&rsmBuffer.rsmSamplingData.sampleCount, 1, 1, 64);
+					ImGui::DragFloat("R Max##DirectMax", &rsmBuffer.rsmSamplingData.rMax, 0.001f, 0.0f, 5.0f, "%.3f");
+					ImGui::DragFloat("RSM Intensity##DirInt", &rsmBuffer.rsmSamplingData.rsmIntensity, 10.0f, 0.0f, 100000.0f, "%.2f");
+				}
+				ImGui::End();
+
+				// RSM indirect lighting
+				if (ImGui::Begin("Indirect light"))
+				{
+					ImGui::Image(rsmBuffer.GetResource().Get(), ImVec2(1024, 576));
+				}
+				ImGui::End();
+
+				// Draw all resources in RSMBuffer
+				if (ImGui::Begin("RSMBuffer Directional"))
+				{
+					ImGui::Columns(2, nullptr, false);
+					ImGui::Text("World Position");
+					ImGui::Image(rsmBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
+					ImGui::Text("Normal");
+					ImGui::Image(rsmBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
+					ImGui::NextColumn();
+					ImGui::Text("Flux");
+					ImGui::Image(rsmBuffer.GetShaderResourceViews()[2], ImVec2(512, 288));
+					ImGui::Text("Depth");
+					ImGui::Image(*rsmBuffer.GetDepthShaderResourceView(), ImVec2(512, 288));
+				}
+				ImGui::End();
+			}
 
 			// Shadow buffer
 			if (ImGui::Begin("Shadow buffer"))
