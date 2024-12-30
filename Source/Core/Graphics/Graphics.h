@@ -18,6 +18,7 @@
 #include "Core/Graphics/Bindable/CommonBuffer.h"
 #include "Core/Graphics/Drawable/Skybox.h"
 #include "Core/Graphics/Drawable/Model.h"
+//#include "Core/Graphics/Drawable/Terrain.h"
 
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
@@ -168,5 +169,7 @@ namespace Kaka
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
 		std::vector<Model> models = {};
+
+		//Terrain terrain = {};
 	};
 }

@@ -12,8 +12,6 @@
 
 namespace Kaka
 {
-	static constexpr UINT MAX_LIGHTS = 50u;
-
 	Model::Model(const eShaderType aShaderType)
 		:
 		shaderType(aShaderType) { }

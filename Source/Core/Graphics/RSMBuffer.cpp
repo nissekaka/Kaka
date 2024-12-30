@@ -183,7 +183,7 @@ namespace Kaka
 
 	ID3D11Texture2D* RSMBuffer::GetTexture(const unsigned int aIndex)
 	{
-		assert(aIndex < (int)RSMBufferTexture::Count && "Trying to get a Texture2D from Gbuffer that doesnt exist.");
+		assert(aIndex < (int)eRSMBufferTexture::Count && "Trying to get a Texture2D from Gbuffer that doesnt exist.");
 
 		return textures[aIndex].Get();
 	}

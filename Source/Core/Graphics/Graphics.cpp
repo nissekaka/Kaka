@@ -151,6 +151,9 @@ namespace Kaka
 		models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
 		models.back().Init();
 		models.back().SetScale(0.1f);
+
+		//terrain.Init(*this, 512);
+		//terrain.SetPosition({ -256.0f, 0.0f, -256.0f });
 	}
 
 	Graphics::~Graphics()
@@ -258,6 +261,8 @@ namespace Kaka
 					{
 						model.Draw(*this, aContext.deltaTime, false);
 					}
+
+					//terrain.Draw(*this);
 				}
 
 				ResetShadows(camera);
@@ -279,6 +284,8 @@ namespace Kaka
 					{
 						model.Draw(*this, aContext.deltaTime, false);
 					}
+
+					//terrain.Draw(*this);
 				}
 
 				ResetShadows(camera);
@@ -299,6 +306,8 @@ namespace Kaka
 			{
 				model.Draw(*this, aContext.deltaTime, true);
 			}
+
+			//terrain.Draw(*this);
 
 			SetRenderTarget(eRenderTargetType::None, nullptr);
 			gBuffer.SetAllAsResources(pContext.Get(), PS_GBUFFER_SLOT);

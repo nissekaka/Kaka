@@ -58,10 +58,10 @@ namespace Kaka
 				Vertex vertex = {};
 				float noiseValue = noiseGenerator.GetNoise(static_cast<float>(x), static_cast<float>(z));
 				vertex.position = DirectX::XMFLOAT3(static_cast<float>(x), noiseValue * heightMul,
-				                                    static_cast<float>(z));
+					static_cast<float>(z));
 				vertex.normal = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 				vertex.texCoord = DirectX::XMFLOAT2(static_cast<float>(x) / uvFactor,
-				                                    static_cast<float>(z) / uvFactor);
+					static_cast<float>(z) / uvFactor);
 				vertex.tangent = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 				vertex.bitangent = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 				terrainVertices.push_back(vertex);
@@ -148,17 +148,17 @@ namespace Kaka
 				DirectX::XMFLOAT3& currentPosition = terrainVertices[currentIndex].position;
 				DirectX::XMFLOAT3 topPosition = (z > 0) ? terrainVertices[indexTop].position : currentPosition;
 				DirectX::XMFLOAT3 bottomPosition = (z < terrainSize - 1)
-					                                   ? terrainVertices[indexBottom].position
-					                                   : currentPosition;
+					? terrainVertices[indexBottom].position
+					: currentPosition;
 				DirectX::XMFLOAT3 leftPosition = (x > 0) ? terrainVertices[indexLeft].position : currentPosition;
 				DirectX::XMFLOAT3 rightPosition = (x < terrainSize - 1)
-					                                  ? terrainVertices[indexRight].position
-					                                  : currentPosition;
+					? terrainVertices[indexRight].position
+					: currentPosition;
 
 				DirectX::XMVECTOR edge1 = DirectX::XMVectorSubtract(XMLoadFloat3(&topPosition),
-				                                                    XMLoadFloat3(&bottomPosition));
+					XMLoadFloat3(&bottomPosition));
 				DirectX::XMVECTOR edge2 = DirectX::XMVectorSubtract(XMLoadFloat3(&leftPosition),
-				                                                    XMLoadFloat3(&rightPosition));
+					XMLoadFloat3(&rightPosition));
 				DirectX::XMVECTOR normal = DirectX::XMVector3Cross(edge1, edge2);
 
 				normal = DirectX::XMVector3Normalize(normal);
@@ -166,7 +166,7 @@ namespace Kaka
 
 				if (isBorder)
 				{
-					DirectX::XMStoreFloat3(&terrainVertices[currentIndex].normal, {0, 1, 0});
+					DirectX::XMStoreFloat3(&terrainVertices[currentIndex].normal, { 0, 1, 0 });
 				}
 				else
 				{
@@ -180,7 +180,7 @@ namespace Kaka
 					DirectX::XMVECTOR tangent;
 					tangent = DirectX::XMVectorScale(
 						DirectX::XMVectorSubtract(DirectX::XMVectorScale(edge1, deltaUV2.y),
-						                          DirectX::XMVectorScale(edge2, deltaUV1.y)),
+							DirectX::XMVectorScale(edge2, deltaUV1.y)),
 						1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y));
 					tangent = DirectX::XMVector3Normalize(tangent);
 
@@ -188,7 +188,7 @@ namespace Kaka
 					DirectX::XMVECTOR bitangent;
 					bitangent = DirectX::XMVectorScale(
 						DirectX::XMVectorSubtract(DirectX::XMVectorScale(edge2, deltaUV1.x),
-						                          DirectX::XMVectorScale(edge1, deltaUV2.x)),
+							DirectX::XMVectorScale(edge1, deltaUV2.x)),
 						1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y));
 					bitangent = DirectX::XMVector3Normalize(bitangent);
 
@@ -207,12 +207,12 @@ namespace Kaka
 				const int index = z * terrainSize + x;
 
 				terrainIndices.push_back(static_cast<unsigned short>(index));
-				terrainIndices.push_back(static_cast<unsigned short>(index + terrainSize));
 				terrainIndices.push_back(static_cast<unsigned short>(index + 1));
+				terrainIndices.push_back(static_cast<unsigned short>(index + terrainSize));
 
 				terrainIndices.push_back(static_cast<unsigned short>(index + terrainSize));
-				terrainIndices.push_back(static_cast<unsigned short>(index + terrainSize + 1));
 				terrainIndices.push_back(static_cast<unsigned short>(index + 1));
+				terrainIndices.push_back(static_cast<unsigned short>(index + terrainSize + 1));
 			}
 		}
 
@@ -273,42 +273,42 @@ namespace Kaka
 							terrainSubsets[currentIndex].vertices.push_back(terrainVertices[index]);
 
 							if (terrainSubsets[currentIndex].vertices.back().position.x < terrainSubsets[currentIndex].
-							                                                              bounds.min.x)
+								bounds.min.x)
 							{
 								terrainSubsets[currentIndex].bounds.min.x = terrainSubsets[currentIndex].vertices.back()
-								                                                                        .position.x;
+									.position.x;
 							}
 							if (terrainSubsets[currentIndex].vertices.back().position.x > terrainSubsets[currentIndex].
-							                                                              bounds.max.x)
+								bounds.max.x)
 							{
 								terrainSubsets[currentIndex].bounds.max.x = terrainSubsets[currentIndex].vertices.back()
-								                                                                        .position.x;
+									.position.x;
 							}
 
 							if (terrainSubsets[currentIndex].vertices.back().position.y < terrainSubsets[currentIndex].
-							                                                              bounds.min.y)
+								bounds.min.y)
 							{
 								terrainSubsets[currentIndex].bounds.min.y = terrainSubsets[currentIndex].vertices.back()
-								                                                                        .position.y;
+									.position.y;
 							}
 							if (terrainSubsets[currentIndex].vertices.back().position.y > terrainSubsets[currentIndex].
-							                                                              bounds.max.y)
+								bounds.max.y)
 							{
 								terrainSubsets[currentIndex].bounds.max.y = terrainSubsets[currentIndex].vertices.back()
-								                                                                        .position.y;
+									.position.y;
 							}
 
 							if (terrainSubsets[currentIndex].vertices.back().position.z < terrainSubsets[currentIndex].
-							                                                              bounds.min.z)
+								bounds.min.z)
 							{
 								terrainSubsets[currentIndex].bounds.min.z = terrainSubsets[currentIndex].vertices.back()
-								                                                                        .position.z;
+									.position.z;
 							}
 							if (terrainSubsets[currentIndex].vertices.back().position.z > terrainSubsets[currentIndex].
-							                                                              bounds.max.z)
+								bounds.max.z)
 							{
 								terrainSubsets[currentIndex].bounds.max.z = terrainSubsets[currentIndex].vertices.back()
-								                                                                        .position.z;
+									.position.z;
 							}
 						}
 					}
@@ -373,12 +373,12 @@ namespace Kaka
 		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Grass\\Grass_c.png");
 		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Grass\\Grass_n.png");
 		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Grass\\Grass_m.png");
-		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Rock\\Rock_c.png");
-		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Rock\\Rock_n.png");
-		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Rock\\Rock_m.png");
-		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Snow\\Snow_c.png");
-		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Snow\\Snow_n.png");
-		texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Snow\\Snow_m.png");
+		//texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Rock\\Rock_c.png");
+		//texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Rock\\Rock_n.png");
+		//texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Rock\\Rock_m.png");
+		//texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Snow\\Snow_c.png");
+		//texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Snow\\Snow_n.png");
+		//texture.LoadTextureFromPath(aGfx, "Assets\\Textures\\Snow\\Snow_m.png");
 
 		OutputDebugStringA("\nLoaded textures...");
 
@@ -393,10 +393,11 @@ namespace Kaka
 			subset.indexBuffer.Init(aGfx, subset.indices);
 		}
 
-		pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\TerrainPBR_PS.cso");
-		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainReflect_VS.cso");
+		pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Model_TAA_PS.cso");
+		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Model_TAA_VS.cso");
 
 		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
+		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		OutputDebugStringA("\nDone!");
 	}
@@ -404,6 +405,9 @@ namespace Kaka
 	void Terrain::Draw(Graphics& aGfx)
 	{
 		texture.Bind(aGfx);
+		topology.Bind(aGfx);
+
+		aGfx.SetRasterizerState(eRasterizerStates::BackfaceCulling);
 
 		if (aGfx.HasPixelShaderOverride())
 		{
@@ -412,9 +416,6 @@ namespace Kaka
 		else
 		{
 			pixelShader->Bind(aGfx);
-
-			PixelConstantBuffer<PSMaterialConstant> psConstantBuffer(aGfx, pmc, 0u);
-			psConstantBuffer.Bind(aGfx);
 		}
 
 		if (aGfx.HasVertexShaderOverride())
@@ -428,9 +429,22 @@ namespace Kaka
 
 		inputLayout.Bind(aGfx);
 
+		TransformConstantBuffer transformConstantBuffer(aGfx, *this, 0u);
+		transformConstantBuffer.Bind(aGfx);
+
 		for (int i = 0; i < terrainSubsets.size(); ++i)
 		{
-			if (!aGfx.IsBoundingBoxInFrustum(terrainSubsets[i].bounds.min, terrainSubsets[i].bounds.max))
+			// Need to multiply the bounds with the transform matrix
+			DirectX::XMFLOAT3 minBounds = terrainSubsets[i].bounds.min;
+			DirectX::XMFLOAT3 maxBounds = terrainSubsets[i].bounds.max;
+			DirectX::XMVECTOR minBoundsVec = DirectX::XMLoadFloat3(&terrainSubsets[i].bounds.min);
+			DirectX::XMVECTOR maxBoundsVec = DirectX::XMLoadFloat3(&terrainSubsets[i].bounds.max);
+			minBoundsVec = DirectX::XMVector3Transform(minBoundsVec, GetTransform());
+			maxBoundsVec = DirectX::XMVector3Transform(maxBoundsVec, GetTransform());
+			DirectX::XMStoreFloat3(&minBounds, minBoundsVec);
+			DirectX::XMStoreFloat3(&maxBounds, maxBoundsVec);
+			
+			if (!aGfx.IsBoundingBoxInFrustum(minBounds, maxBounds))
 			{
 				continue;
 			}
@@ -438,21 +452,16 @@ namespace Kaka
 			{
 				continue;
 			}
-			PixelConstantBuffer<PackedLightData> packedLightBuffer(aGfx, terrainSubsets[i].packedLightData, 9u);
-			packedLightBuffer.Bind(aGfx);
 
 			terrainSubsets[i].vertexBuffer.Bind(aGfx);
 			terrainSubsets[i].indexBuffer.Bind(aGfx);
-
-			TransformConstantBuffer transformConstantBuffer(aGfx, *this, 0u);
-			transformConstantBuffer.Bind(aGfx);
 
 			aGfx.DrawIndexed(static_cast<UINT>(std::size(terrainSubsets[i].indices)));
 		}
 
 		// Unbind shader resources
-		ID3D11ShaderResourceView* nullSRVs[9] = {nullptr};
-		aGfx.pContext->PSSetShaderResources(2u, 9u, nullSRVs);
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
+		aGfx.pContext->PSSetShaderResources(1u, 3u, nullSRVs);
 	}
 
 	void Terrain::SetPosition(const DirectX::XMFLOAT3 aPosition)
@@ -506,7 +515,7 @@ namespace Kaka
 		float x = terrainSubsets[subsetIndex].vertices[vertIndex].position.x + transform.x;
 		float y = terrainSubsets[subsetIndex].vertices[vertIndex].position.y + transform.y;
 		float z = terrainSubsets[subsetIndex].vertices[vertIndex].position.z + transform.z;
-		return {x, y, z};
+		return { x, y, z };
 	}
 
 	DirectX::XMMATRIX Terrain::GetTransform() const
