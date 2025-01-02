@@ -9,6 +9,8 @@
 #include <complex>
 #include <DirectXMath.h>
 
+#include "ECS/ECS.h"
+
 namespace WRL = Microsoft::WRL;
 
 namespace Kaka
@@ -147,10 +149,10 @@ namespace Kaka
 
 		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
 
-		models.emplace_back();
-		models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
-		models.back().Init();
-		models.back().SetScale(0.1f);
+		//models.emplace_back();
+		//models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
+		//models.back().Init();
+		//models.back().SetScale(0.1f);
 
 		//terrain.Init(*this, 512);
 		//terrain.SetPosition({ -256.0f, 0.0f, -256.0f });
@@ -206,7 +208,7 @@ namespace Kaka
 		pContext->DrawIndexedInstanced(aCount, aInstanceCount, 0u, 0u, 0u);
 	}
 
-	void Graphics::Render(const RenderContext& aContext)
+	void Graphics::Render(const RenderContext& aContext, ECS& aEcs, Model& tempModelForBinding)
 	{
 		BeginFrame();
 
@@ -257,10 +259,12 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					for (Model& model : models)
-					{
-						model.Draw(*this, aContext.deltaTime, false);
-					}
+					tempModelForBinding.SetupModelDrawing(*this);
+					aEcs.RenderModelComponents(*this, aEcs.components.modelComponents, aEcs.components.transformComponents);
+					//for (Model& model : models)
+					//{
+					//	model.Draw(*this, aContext.deltaTime, false);
+					//}
 
 					//terrain.Draw(*this);
 				}
@@ -280,10 +284,13 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					for (Model& model : models)
-					{
-						model.Draw(*this, aContext.deltaTime, false);
-					}
+					tempModelForBinding.SetupModelDrawing(*this);
+					aEcs.RenderModelComponents(*this, aEcs.components.modelComponents, aEcs.components.transformComponents);
+
+					//for (Model& model : models)
+					//{
+					//	model.Draw(*this, aContext.deltaTime, false);
+					//}
 
 					//terrain.Draw(*this);
 				}
@@ -302,10 +309,13 @@ namespace Kaka
 
 			temporalAntiAliasing.UpdateAndBindBuffer(*this);
 
-			for (Model& model : models)
-			{
-				model.Draw(*this, aContext.deltaTime, true);
-			}
+			tempModelForBinding.SetupModelDrawing(*this);
+			aEcs.RenderModelComponents(*this, aEcs.components.modelComponents, aEcs.components.transformComponents, drawDebug);
+
+			//for (Model& model : models)
+			//{
+			//	model.Draw(*this, aContext.deltaTime, true);
+			//}
 
 			//terrain.Draw(*this);
 
@@ -452,6 +462,12 @@ namespace Kaka
 
 
 
+		/// ---------- DEBUG PASS ---------- BEGIN
+		{
+		}
+
+
+
 		/// ---------- SPRITE PASS ---------- BEGIN
 		{
 			//	SetBlendState(eBlendStates::Additive);
@@ -493,6 +509,11 @@ namespace Kaka
 	DirectX::XMMATRIX Graphics::GetCameraInverseView() const
 	{
 		return currentCamera->GetInverseView();
+	}
+
+	bool Graphics::IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const
+	{
+		return currentCamera->IsPointInFrustum(aPoint);
 	}
 
 	bool Graphics::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const

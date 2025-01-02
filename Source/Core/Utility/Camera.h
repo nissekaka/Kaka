@@ -72,6 +72,7 @@ namespace Kaka
 		FrustumPlanes ExtractFrustumPlanes() const;
 
 	public:
+		bool IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const;
 		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const;
 
 	public:

@@ -19,7 +19,7 @@ namespace Kaka
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(aFilePath,
-		                                         /*aiProcess_GenBoundingBoxes |*/
+		                                         aiProcess_GenBoundingBoxes |
 		                                         aiProcess_FlipUVs |
 		                                         aiProcess_ConvertToLeftHanded |
 		                                         aiProcess_LimitBoneWeights |
@@ -119,30 +119,30 @@ namespace Kaka
 				DirectX::XMFLOAT3 tangent{0.0f, 0.0f, 0.0f};
 				DirectX::XMFLOAT3 bitangent{0.0f, 0.0f, 0.0f};
 
-				if (position.x < mesh.aabb.minBound.x)
-				{
-					mesh.aabb.minBound.x = position.x;
-				}
-				if (position.y < mesh.aabb.minBound.y)
-				{
-					mesh.aabb.minBound.y = position.y;
-				}
-				if (position.z < mesh.aabb.minBound.z)
-				{
-					mesh.aabb.minBound.z = position.z;
-				}
-				if (position.x > mesh.aabb.maxBound.x)
-				{
-					mesh.aabb.maxBound.x = position.x;
-				}
-				if (position.y > mesh.aabb.maxBound.y)
-				{
-					mesh.aabb.maxBound.y = position.y;
-				}
-				if (position.z > mesh.aabb.maxBound.z)
-				{
-					mesh.aabb.maxBound.z = position.z;
-				}
+				//if (position.x < mesh.aabb.minBound.x)
+				//{
+				//	mesh.aabb.minBound.x = position.x;
+				//}
+				//if (position.y < mesh.aabb.minBound.y)
+				//{
+				//	mesh.aabb.minBound.y = position.y;
+				//}
+				//if (position.z < mesh.aabb.minBound.z)
+				//{
+				//	mesh.aabb.minBound.z = position.z;
+				//}
+				//if (position.x > mesh.aabb.maxBound.x)
+				//{
+				//	mesh.aabb.maxBound.x = position.x;
+				//}
+				//if (position.y > mesh.aabb.maxBound.y)
+				//{
+				//	mesh.aabb.maxBound.y = position.y;
+				//}
+				//if (position.z > mesh.aabb.maxBound.z)
+				//{
+				//	mesh.aabb.maxBound.z = position.z;
+				//}
 
 				// Check if the mesh has texture coordinates
 				if (aiMesh->HasTextureCoords(0))

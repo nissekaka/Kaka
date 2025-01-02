@@ -10,6 +10,17 @@ namespace Kaka
 
 	int Game::Go()
 	{
+		entities.push_back(ecs.CreateEntity());
+		//ecs.AddComponent(entities[0], Transform{});
+		ecs.components.transformComponents[entities[0]] = TransformComponent{};
+		ecs.components.modelComponents[entities[0]] = ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" };
+
+		// TODO Need to rewrite this to use ECS
+		models.emplace_back();
+		models.back().LoadModel(wnd.Gfx(), "Assets/Models/sponza_pbr/Sponza.obj", Model::eShaderType::PBR);
+		models.back().Init();
+		models.back().SetScale(0.1f);
+
 		while (true)
 		{
 			// Process all messages pending
@@ -27,9 +38,11 @@ namespace Kaka
 	{
 		HandleInput(aDeltaTime);
 
+		ecs.UpdateTransformComponents( ecs.components.transformComponents);
+
 		wnd.Gfx().UpdateLights(aDeltaTime);
 		RenderContext renderContext = { aDeltaTime, timer.GetTotalTime(), timer.GetFPS() };
-		wnd.Gfx().Render(renderContext);
+		wnd.Gfx().Render(renderContext, ecs, models.back());
 	}
 
 	void Game::HandleInput(const float aDeltaTime)
@@ -67,6 +80,9 @@ namespace Kaka
 					break;
 				case VK_F3:
 					wnd.Gfx().drawLightDebug = !wnd.Gfx().drawLightDebug;
+					break;
+				case VK_F4:
+					wnd.Gfx().drawDebug = !wnd.Gfx().drawDebug;
 					break;
 				case 'T':
 					wnd.Gfx().temporalAntiAliasing.taaData.useTAA = !wnd.Gfx().temporalAntiAliasing.taaData.useTAA;

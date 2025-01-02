@@ -20,6 +20,7 @@ namespace Kaka
 		static bool LoadTexture(const Graphics& aGfx, ModelDataPtr& aOutModelData, const std::string& aFilePath);
 		static Texture* LoadTexture(const Graphics& aGfx, const std::string& aFilePath, const UINT aSlot = 2u);
 		static bool LoadAnimation(AnimatedModelDataPtr& aOutModelData, const std::string& aFilePath);
+		static MeshList& GetMeshList(const std::string& aFilePath) { return meshLists[aFilePath]; }
 
 	private:
 

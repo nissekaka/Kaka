@@ -55,6 +55,7 @@ namespace Kaka
 		friend class Game;
 		friend class PostProcessing;
 		friend class Sprite;
+		friend class ECS;
 
 	public:
 		Graphics(HWND aHWnd, UINT aWidth, UINT aHeight);
@@ -65,7 +66,7 @@ namespace Kaka
 		void EndFrame();
 		void DrawIndexed(UINT aCount);
 		void DrawIndexedInstanced(UINT aCount, UINT aInstanceCount);
-		void Render(const RenderContext& aContext);
+		void Render(const RenderContext& aContext, ECS& aEcs, Model& tempModelForBinding);
 
 		// Camera
 		DirectX::XMMATRIX GetProjection() const;
@@ -73,6 +74,7 @@ namespace Kaka
 		void SetupCamera(const float aWidth, const float aHeight, const float aFoV = 80.0f, const float aNearZ = 0.5f, const float aFarZ = 5000.0f);
 		void SetCamera(Camera& aCamera);
 		DirectX::XMMATRIX GetCameraInverseView() const;
+		bool IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const;
 		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const;
 
 		// Render info
@@ -126,9 +128,10 @@ namespace Kaka
 		UINT width;
 		UINT height;
 		UINT drawcallCount;
-		unsigned long long frameCount = 0;
+		uint64_t frameCount = 0;
 		bool flipFlop = false;
 		bool useReflectiveShadowMap = false;
+		bool drawDebug = false;
 
 		filewatch::FileWatch<std::wstring> shaderFileWatcher;
 
@@ -168,7 +171,7 @@ namespace Kaka
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
-		std::vector<Model> models = {};
+		//std::vector<Model> models = {};
 
 		//Terrain terrain = {};
 	};

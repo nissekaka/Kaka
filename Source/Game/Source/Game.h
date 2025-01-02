@@ -2,6 +2,7 @@
 #include "Core/Windows/Window.h"
 #include "Core/Utility/ImGuiManager.h"
 #include "Core/Utility/Timer.h"
+#include "Core/ECS/ECS.h"
 
 namespace Kaka
 {
@@ -20,5 +21,9 @@ namespace Kaka
 		ImGuiManager imGui;
 		Window wnd;
 		Timer timer;
+		ECS ecs;
+		std::vector<EntityID> entities;
+
+		std::vector<Model> models;
 	};
 }

@@ -224,6 +224,22 @@ namespace Kaka
 		return frustum;
 	}
 
+	bool Camera::IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const
+	{
+		const FrustumPlanes frustum = ExtractFrustumPlanes();
+		for (const DirectX::XMFLOAT4& plane : frustum.planes)
+		{
+			if (plane.x * aPoint.x + plane.y * aPoint.y + plane.z * aPoint.z + plane.w > 0.0f)
+				continue;
+
+			// If the point is outside any frustum plane, it is not visible
+			return false;
+		}
+
+		// If the point is not outside any frustum plane, it is visible
+		return true;
+	}
+
 	bool Camera::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const
 	{
 		const FrustumPlanes frustum = ExtractFrustumPlanes();

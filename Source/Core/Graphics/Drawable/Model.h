@@ -24,6 +24,7 @@ namespace Kaka
 		void Init();
 		void LoadModel(const Graphics& aGfx, const std::string& aFilePath, const eShaderType aShaderType);
 		bool LoadAnimation(const std::string& aFilePath);
+		void SetupModelDrawing(const Graphics& aGfx);
 		void Draw(Graphics& aGfx, const float aDeltaTime, bool aFrustumCulling);
 		void SetPosition(DirectX::XMFLOAT3 aPosition);
 		void SetRotation(DirectX::XMFLOAT3 aRotation);
@@ -41,7 +42,7 @@ namespace Kaka
 		DirectX::XMMATRIX GetBoneWorldTransform(int aBoneIndex) const;
 		void DrawDebugAABB(const Graphics& aGfx, const Mesh& aMesh) const;
 
-		AABB GetTranslatedAABB(const Mesh& aMesh) const;
+		static AABB GetTranslatedAABB(const Mesh& aMesh, const DirectX::XMMATRIX& aTransform);
 
 		void SetPixelShader(const Graphics& aGfx, const std::wstring& aFilePath);
 		void SetTexture(Texture* aTexture);

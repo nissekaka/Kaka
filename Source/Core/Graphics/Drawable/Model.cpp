@@ -119,6 +119,8 @@ namespace Kaka
 		}
 
 		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
+		inputLayout.Bind(aGfx);
+
 		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		topology.Bind(aGfx);
 	}
@@ -126,6 +128,27 @@ namespace Kaka
 	bool Model::LoadAnimation(const std::string& aFilePath)
 	{
 		return ModelLoader::LoadAnimation(animatedModelData, aFilePath);
+	}
+
+	void Model::SetupModelDrawing(const Graphics& aGfx)
+	{
+		if (aGfx.HasVertexShaderOverride())
+		{
+			aGfx.GetVertexShaderOverride()->Bind(aGfx);
+		}
+		else
+		{
+			vertexShader->Bind(aGfx);
+		}
+		if (aGfx.HasPixelShaderOverride())
+		{
+			aGfx.GetPixelShaderOverride()->Bind(aGfx);
+		}
+		else
+		{
+			pixelShader->Bind(aGfx);
+		}
+		inputLayout.Bind(aGfx);
 	}
 
 	void Model::Draw(Graphics& aGfx, const float aDeltaTime, bool aFrustumCulling)
@@ -179,7 +202,7 @@ namespace Kaka
 		{
 			if (aFrustumCulling)
 			{
-				if (!aGfx.IsBoundingBoxInFrustum(GetTranslatedAABB(mesh).minBound, GetTranslatedAABB(mesh).maxBound))
+				if (!aGfx.IsBoundingBoxInFrustum(GetTranslatedAABB(mesh, GetTransform()).minBound, GetTranslatedAABB(mesh, GetTransform()).maxBound))
 				{
 					continue;
 				}
@@ -545,9 +568,9 @@ namespace Kaka
 		}
 	}
 
-	AABB Model::GetTranslatedAABB(const Mesh& aMesh) const
+	AABB Model::GetTranslatedAABB(const Mesh& aMesh, const DirectX::XMMATRIX& aTransform)
 	{
-		const DirectX::XMMATRIX meshTransform = GetTransform();
+		const DirectX::XMMATRIX meshTransform = aTransform;
 		const DirectX::XMVECTOR minBound = DirectX::XMVector3Transform(
 			DirectX::XMLoadFloat3(&aMesh.aabb.minBound),
 			meshTransform

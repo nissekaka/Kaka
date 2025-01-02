@@ -36,7 +36,6 @@ namespace Kaka
 			return depthStencilView.Get();
 		}
 
-
 	private:
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilTexture;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
