@@ -9,6 +9,24 @@ namespace Kaka
 {
 	class Graphics;
 
+	enum class eVertexShaderType
+	{
+		Model,
+		ModelAnimated,
+		RSM,
+		//ModelInstanced,
+		//ModelAnimatedInstanced,
+	};
+
+	enum class ePixelShaderType
+	{
+		Model,
+		Shadow,
+		RSM,
+		//ModelInstanced,
+		//ModelAnimatedInstanced,
+	};
+
 	class ShaderFactory
 	{
 	public:
@@ -22,6 +40,10 @@ namespace Kaka
 		static ID3D11VertexShader* CreateVertexShaderFromFile(const std::wstring& aFilePath, ID3D11Device* aDevice);
 
 	private:
+		inline static std::unordered_map<eVertexShaderType, std::wstring> shaderPaths = {
+			{ eVertexShaderType::Model, L"Shaders/Model_TAA_VS.cso" },
+			{ eVertexShaderType::ModelAnimated, L"Shaders/Model/Model_Anim_VS.cso" }
+		};
 		inline static std::unordered_map<std::wstring, PixelShader> pixelShaders;
 		inline static std::unordered_map<std::wstring, VertexShader> vertexShaders;
 		inline static std::unordered_map<std::wstring, ComputeShader> computeShaders;

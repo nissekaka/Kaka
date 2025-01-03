@@ -24,6 +24,7 @@
 
 namespace Kaka
 {
+	class ECS;
 	class Texture;
 	class VertexShader;
 	class PixelShader;
@@ -55,7 +56,7 @@ namespace Kaka
 		friend class Game;
 		friend class PostProcessing;
 		friend class Sprite;
-		friend class ECS;
+		friend class Systems;
 
 	public:
 		Graphics(HWND aHWnd, UINT aWidth, UINT aHeight);

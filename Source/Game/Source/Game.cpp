@@ -10,11 +10,14 @@ namespace Kaka
 
 	int Game::Go()
 	{
-		entities.push_back(ecs.CreateEntity());
-		//ecs.AddComponent(entities[0], Transform{});
-		ecs.components.transformComponents[entities[0]] = TransformComponent{};
-		ecs.components.modelComponents[entities[0]] = ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" };
+		ECS::Entity& entity = entities.emplace_back(ecs.CreateEntity());
+		entity.AddComponent(TransformComponent{}, ecs.components.transformComponents);
+		entity.AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" }, ecs.components.modelComponents);
 
+		// TODO ModelLoader needs to be rewritten to use ECS
+		// TODO Maybe store all models there? Or load through graphics and store everything there since
+		// TODO it's the only place that needs to know about the models
+		// TODO and there is where we render them
 		// TODO Need to rewrite this to use ECS
 		models.emplace_back();
 		models.back().LoadModel(wnd.Gfx(), "Assets/Models/sponza_pbr/Sponza.obj", Model::eShaderType::PBR);
