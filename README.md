@@ -1,5 +1,7 @@
 DirectX 11 graphics engine.
 
+WIP: Currently being converted into a game engine.
+
 Includes:
 - Deferred rendering
 - Indirect lighting from Reflective Shadow Maps
