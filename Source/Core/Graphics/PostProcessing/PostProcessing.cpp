@@ -3,20 +3,18 @@
 
 #include "Core/Graphics/Bindable/PixelShader.h"
 #include "Core/Graphics/Bindable/VertexShader.h"
-#include "Core/Graphics/Drawable/ModelData.h"
-#include "Core/Graphics/Drawable/Vertex.h"
 
 namespace Kaka
 {
 	void PostProcessing::Init(const Graphics& aGfx, const UINT aWidth, const UINT aHeight)
 	{
-		postProcessVS = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Fullscreen_VS.cso");
-		postProcessPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\PostProcessing_PS.cso");
+		postProcessVS = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::Fullscreen);
+		postProcessPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::PostProcessing);
 
-		downsamplePS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Downsample_PS.cso");
-		upsamplePS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Upsample_PS.cso");
-		fullscreenPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Fullscreen_PS.cso");
-		temporalAliasingPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\TAA_PS.cso");
+		downsamplePS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::DownSample);
+		upsamplePS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::UpSample);
+		fullscreenPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Fullscreen);
+		temporalAliasingPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::TAA);
 
 		currentPS = postProcessPS;
 
@@ -62,20 +60,6 @@ namespace Kaka
 
 		vertexBuffer.Init(aGfx, vertices);
 		indexBuffer.Init(aGfx, indices);
-
-		ied =
-		{
-			{
-				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-			{
-				"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-		};
-
-		inputLayout.Init(aGfx, ied, postProcessVS->GetBytecode());
 
 		HRESULT result;
 
@@ -237,7 +221,6 @@ namespace Kaka
 		indexBuffer.Bind(aGfx);
 		currentPS->Bind(aGfx);
 		postProcessVS->Bind(aGfx);
-		inputLayout.Bind(aGfx);
 
 		aGfx.DrawIndexed(6u);
 		// Unbind shader resources

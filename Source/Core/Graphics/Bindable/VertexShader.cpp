@@ -4,14 +4,11 @@
 
 namespace Kaka
 {
-	VertexShader::VertexShader(const Graphics& aGfx, const std::wstring& aPath)
+	void VertexShader::Init(const Graphics& aGfx, const eVertexShaderType aType)
 	{
-		Init(aGfx, aPath);
-	}
+		std::wstring path = ShaderFactory::vertexShaderTypePathMap[aType];
 
-	void VertexShader::Init(const Graphics& aGfx, const std::wstring& aPath)
-	{
-		D3DReadFileToBlob(aPath.c_str(), &pBytecodeBlob);
+		D3DReadFileToBlob(path.c_str(), &pBytecodeBlob);
 		GetDevice(aGfx)->CreateVertexShader
 		(
 			pBytecodeBlob->GetBufferPointer(),
@@ -20,79 +17,75 @@ namespace Kaka
 			&pVertexShader
 		);
 
-		//switch (aPath)
-		//{
-		//	case L"Shaders/Model_TAA_VS.cso":
-		//	{
-		//		/*ied =
-		//		{
-		//			{
-		//				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//			},
-		//			{
-		//				"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-		//				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//			},
-		//			{
-		//				"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//			},
-		//			{
-		//				"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//			},
-		//			{
-		//				"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//			},
-		//		};
-		//		inputLayout.Init(aGfx, ied, GetBytecode());*/
-		//	}
-		//	break;
-		//	case L"Shaders/Model_Anim_VS.cso":
-		//	{
-		//		//ied =
-		//		//{
-		//		//	{
-		//		//		"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//	{
-		//		//		"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//	{
-		//		//		"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//	{
-		//		//		"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//	{
-		//		//		"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//	{
-		//		//		"BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//	{
-		//		//		"BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
-		//		//		D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-		//		//	},
-		//		//};
-		//		//inputLayout.Init(aGfx, ied, GetBytecode());
-		//	}
-		//	break;
-		//}
+		switch (aType)
+		{
+			case eVertexShaderType::ModelTAA:
+			case eVertexShaderType::ModelNoTAA:
+			{
+				ied =
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+				};
+			}
+			break;
+			case eVertexShaderType::ModelAnimated:
+			{
+				ied =
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+				};
+			}
+			break;
+			case eVertexShaderType::Sprite:
+			{
+				ied =
+				{
+					 {"SV_POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					 {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					 {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					 {"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					 {"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					 // Data from the instance buffer
+					 {"INSTANCE_ID", 0, DXGI_FORMAT_R32_UINT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+				};
+			}
+			break;
+			case eVertexShaderType::Fullscreen:
+			{
+				ied =
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+				};
+			}
+			break;
+			case eVertexShaderType::Skybox:
+			case eVertexShaderType::DeferredLight:
+			{
+				ied =
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+				};
+			}
+		}
+
+		inputLayout.Init(aGfx, ied, GetBytecode());
 	}
 
 	void VertexShader::Bind(const Graphics& aGfx)
 	{
 		GetContext(aGfx)->VSSetShader(pVertexShader.Get(), nullptr, 0u);
-		//inputLayout.Bind(aGfx);
+		inputLayout.Bind(aGfx);
 	}
 
 	ID3DBlob* VertexShader::GetBytecode() const

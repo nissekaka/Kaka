@@ -148,14 +148,6 @@ namespace Kaka
 		skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
 
 		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
-
-		//models.emplace_back();
-		//models.back().LoadModel(*this, "Assets\\Models\\sponza_pbr\\Sponza.obj", Model::eShaderType::PBR);
-		//models.back().Init();
-		//models.back().SetScale(0.1f);
-
-		//terrain.Init(*this, 512);
-		//terrain.SetPosition({ -256.0f, 0.0f, -256.0f });
 	}
 
 	Graphics::~Graphics()
@@ -260,13 +252,7 @@ namespace Kaka
 				// Render everything that casts shadows
 				{
 					tempModelForBinding.SetupModelDrawing(*this);
-					aEcs.RenderModelComponents(*this, aEcs.components.modelComponents, aEcs.components.transformComponents);
-					//for (Model& model : models)
-					//{
-					//	model.Draw(*this, aContext.deltaTime, false);
-					//}
-
-					//terrain.Draw(*this);
+					aEcs.RenderModelComponents(*this);
 				}
 
 				ResetShadows(camera);
@@ -285,14 +271,7 @@ namespace Kaka
 				// Render everything that casts shadows
 				{
 					tempModelForBinding.SetupModelDrawing(*this);
-					aEcs.RenderModelComponents(*this, aEcs.components.modelComponents, aEcs.components.transformComponents);
-
-					//for (Model& model : models)
-					//{
-					//	model.Draw(*this, aContext.deltaTime, false);
-					//}
-
-					//terrain.Draw(*this);
+					aEcs.RenderModelComponents(*this);
 				}
 
 				ResetShadows(camera);
@@ -309,15 +288,11 @@ namespace Kaka
 
 			temporalAntiAliasing.UpdateAndBindBuffer(*this);
 
-			tempModelForBinding.SetupModelDrawing(*this);
-			aEcs.RenderModelComponents(*this, aEcs.components.modelComponents, aEcs.components.transformComponents, drawDebug);
-
-			//for (Model& model : models)
-			//{
-			//	model.Draw(*this, aContext.deltaTime, true);
-			//}
-
-			//terrain.Draw(*this);
+			// Render all models to the GBuffer
+			{
+				tempModelForBinding.SetupModelDrawing(*this);
+				aEcs.RenderModelComponents(*this, drawDebug);
+			}
 
 			SetRenderTarget(eRenderTargetType::None, nullptr);
 			gBuffer.SetAllAsResources(pContext.Get(), PS_GBUFFER_SLOT);
@@ -330,7 +305,6 @@ namespace Kaka
 		{
 			if (useReflectiveShadowMap)
 			{
-				// Directional light
 				rsmBuffer.SetAllAsResources(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
 				rsmBuffer.rsmSamplingData.lightCameraTransform = rsmBuffer.GetCamera().GetInverseView() * rsmBuffer.GetCamera().GetJitteredProjection();
 
@@ -338,7 +312,10 @@ namespace Kaka
 
 				rsmBuffer.UpdateAndBindSamplingBuffer(*this);
 
-				indirectLighting.Draw(*this);
+				// Draw the indirect lighting
+				{
+					indirectLighting.Draw(*this);
+				}
 
 				rsmBuffer.ClearAllAsResourcesSlots(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
 			}
@@ -362,7 +339,10 @@ namespace Kaka
 				BindShadows(shadowBuffer, PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
 			}
 
-			lightManager.Draw(*this);
+			// Draw deferred light
+			{
+				lightManager.Draw(*this);
+			}
 			UnbindShadows(PS_TEXTURE_SLOT_SHADOW_MAP_DIRECTIONAL);
 		}
 		/// ---------- LIGHTING PASS ---------- END
@@ -376,7 +356,10 @@ namespace Kaka
 			SetDepthStencilState(eDepthStencilStates::ReadOnlyLessEqual);
 			SetRasterizerState(eRasterizerStates::NoCulling);
 
-			skybox.Draw(*this);
+			// Draw skybox
+			{
+				skybox.Draw(*this);
+			}
 		}
 		/// ---------- SKYBOX PASS ---------- END
 
@@ -602,8 +585,8 @@ namespace Kaka
 		SetCamera(aCamera);
 		aCamera.SetDirection(aLightDirection);
 
-		SetVertexShaderOverride(L"Shaders\\Model_NO_TAA_VS.cso");
-		SetPixelShaderOverride(L"Shaders\\Model_Shadows_PS.cso");
+		SetVertexShaderOverride(eVertexShaderType::ModelNoTAA);
+		SetPixelShaderOverride(ePixelShaderType::ModelShadows);
 	}
 
 	void Graphics::StartShadows(Camera& aCamera, const DirectX::XMFLOAT3 aLightDirection, const RSMBuffer& aBuffer)
@@ -613,8 +596,8 @@ namespace Kaka
 		SetCamera(aCamera);
 		aCamera.SetDirection(aLightDirection);
 
-		SetVertexShaderOverride(L"Shaders\\RSM_VS.cso");
-		SetPixelShaderOverride(L"Shaders\\RSM_PS.cso");
+		SetVertexShaderOverride(eVertexShaderType::RSM);
+		SetPixelShaderOverride(ePixelShaderType::RSM);
 	}
 
 	void Graphics::ResetShadows(Camera& aCamera)

@@ -1,31 +1,40 @@
 #pragma once
 #include "Bindable.h"
-#include <string>
-
 #include "InputLayout.h"
-
 
 namespace Kaka
 {
+	enum class eVertexShaderType
+	{
+		ModelTAA,
+		ModelNoTAA,
+		ModelAnimated,
+		Skybox,
+		Sprite,
+		Fullscreen,
+		DeferredLight,
+		RSM,
+		ReflectionPlane,
+	};
+
 	class VertexShader : public Bindable
 	{
 		friend class ShaderFactory;
 
 	public:
 		VertexShader() = default;
-		VertexShader(const Graphics& aGfx, const std::wstring& aPath);
-		void Init(const Graphics& aGfx, const std::wstring& aPath);
+		void Init(const Graphics& aGfx, eVertexShaderType aType);
 		void Bind(const Graphics& aGfx) override;
 
-		ID3DBlob* GetBytecode() const;
 	private:
+		ID3DBlob* GetBytecode() const;
 
 	protected:
 		Microsoft::WRL::ComPtr<ID3DBlob> pBytecodeBlob;
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
 
 	private:
-		//std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-		//InputLayout inputLayout;
+		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
+		InputLayout inputLayout;
 	};
 }

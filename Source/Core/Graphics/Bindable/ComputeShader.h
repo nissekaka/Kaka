@@ -4,6 +4,11 @@
 
 namespace Kaka
 {
+	enum class eComputeShaderType
+	{
+		DustParticles,
+	};
+
 	class ComputeShader : public Bindable
 	{
 	public:

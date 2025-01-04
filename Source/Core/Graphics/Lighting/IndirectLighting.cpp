@@ -5,9 +5,9 @@ namespace Kaka
 {
 	void IndirectLighting::Init(const Graphics& aGfx)
 	{
-		indirectLightingVS = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Fullscreen_VS.cso");
-		indirectLightingPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\IndirectLighting_PS.cso");
-		indirectLightingCombinedPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\IndirectLightingCombined_PS.cso");
+		indirectLightingVS = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::Fullscreen);
+		indirectLightingPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::IndirectLighting);
+		indirectLightingCombinedPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::IndirectLightingCombined);
 		indirectLightingDefaultPS = indirectLightingPS;
 
 		struct PVertex
@@ -53,19 +53,6 @@ namespace Kaka
 		vertexBuffer.Init(aGfx, vertices);
 		indexBuffer.Init(aGfx, indices);
 
-		ied =
-		{
-			{
-				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-			{
-				"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-		};
-
-		inputLayout.Init(aGfx, ied, indirectLightingVS->GetBytecode());
 		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
@@ -75,8 +62,6 @@ namespace Kaka
 		indexBuffer.Bind(aGfx);
 		indirectLightingVS->Bind(aGfx);
 		indirectLightingPS->Bind(aGfx);
-		inputLayout.Bind(aGfx);
-		//topology.Bind(aGfx);
 
 		aGfx.DrawIndexed(indexBuffer.GetCount());
 	}

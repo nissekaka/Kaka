@@ -75,12 +75,12 @@ namespace Kaka
 
 		indexBuffer.Init(aGfx, indices);
 
-		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Sprite_VS.cso");
+		vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::Sprite);
 
-		vfxPixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Sprite_PS.cso");
-		deferredPixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Sprite_Deferred_PS.cso");
+		vfxPixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Sprite);
+		deferredPixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::SpriteDeferred);
 
-		computeShader = ShaderFactory::GetComputeShader(aGfx, L"Shaders\\DustParticles_CS.cso");
+		computeShader = ShaderFactory::GetComputeShader(aGfx, eComputeShaderType::DustParticles);
 
 		if (aIsVfx)
 		{
@@ -90,8 +90,6 @@ namespace Kaka
 		{
 			pixelShader = deferredPixelShader;
 		}
-
-		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
 
 		instanceData.resize(aNumberOfSprites);
 		std::vector<ParticleData> particleData = {};
@@ -300,7 +298,7 @@ namespace Kaka
 		aGfx.pContext->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
 
 		indexBuffer.Bind(aGfx);
-		inputLayout.Bind(aGfx);
+		//inputLayout.Bind(aGfx);
 
 		const unsigned int instanceCount = static_cast<unsigned int>(instanceData.size());
 

@@ -16,21 +16,25 @@ namespace Kaka
 		Systems() = default;
 		~Systems() = default;
 
-		inline void UpdateTransformComponents(TransformComponents& aTransforms)
+		inline void UpdateTransformComponents(ComponentRegistry& aRegistry)
 		{
+			auto& transforms = aRegistry.GetComponentMap<TransformComponent>();
 			// TODO This is currently not necessary because we're not updating the transform components
 			// The data should be stored in the component, but it can't be manipulated from anywhere currently
-			for (const auto& entity : aTransforms | std::views::keys)
+			for (const auto& entity : transforms | std::views::keys)
 			{
-				aTransforms[entity].scale = 0.1f;
+				//aTransforms[entity].scale = 0.1f;
 			}
 		}
 
-		inline void RenderModelComponents(Graphics& aGfx, ModelComponents& aModels, TransformComponents& aTransforms, const bool aDrawDebug = false)
+		inline void RenderModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry, const bool aDrawDebug = false)
 		{
-			for (auto& [entity, model] : aModels)
+			auto& models = aRegistry.GetComponentMap<ModelComponent>();
+			auto& transforms = aRegistry.GetComponentMap<TransformComponent>();
+
+			for (auto& [entity, model] : models)
 			{
-				auto& transform = aTransforms[entity];
+				auto& transform = transforms[entity];
 
 				// TODO Figure out a better way to handle transforms
 				const DirectX::XMMATRIX objectToWorld = DirectX::XMMatrixScaling(transform.scale, transform.scale, transform.scale) *

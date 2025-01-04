@@ -1,7 +1,5 @@
 #pragma once
 #include "Lighting.h"
-#include "Graphics/Bindable/IndexBuffer.h"
-#include "Graphics/Bindable/InputLayout.h"
 #include "Graphics/Bindable/Topology.h"
 #include "Graphics/Bindable/VertexBuffer.h"
 
@@ -69,8 +67,6 @@ namespace Kaka
 		VertexBuffer sphereVertexBuffer = {};
 		IndexBuffer sphereIndexBuffer = {};
 
-		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-		InputLayout inputLayout;
 		Topology topology = {};
 
 		// Directional light simulation

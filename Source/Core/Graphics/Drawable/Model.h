@@ -15,14 +15,10 @@ namespace Kaka
 	class Model : public Drawable
 	{
 	public:
-		enum class eShaderType { Solid, Light, Phong, AnimPhong, PBR, AnimPBR };
-
-	public:
 		Model() = default;
-		Model(const eShaderType aShaderType);
 		~Model() override = default;
 		void Init();
-		void LoadModel(const Graphics& aGfx, const std::string& aFilePath, const eShaderType aShaderType);
+		void LoadModel(const Graphics& aGfx, const std::string& aFilePath, const bool aAnimated = false);
 		bool LoadAnimation(const std::string& aFilePath);
 		void SetupModelDrawing(const Graphics& aGfx);
 		void Draw(Graphics& aGfx, const float aDeltaTime, bool aFrustumCulling);
@@ -44,7 +40,7 @@ namespace Kaka
 
 		static AABB GetTranslatedAABB(const Mesh& aMesh, const DirectX::XMMATRIX& aTransform);
 
-		void SetPixelShader(const Graphics& aGfx, const std::wstring& aFilePath);
+		void SetPixelShader(const Graphics& aGfx, const ePixelShaderType aType);
 		void SetTexture(Texture* aTexture);
 		void SetTextureAtIndex(Texture* aTexture, size_t aIndex) const;
 
@@ -59,12 +55,7 @@ namespace Kaka
 	private:
 		PixelShader* pixelShader = nullptr;
 		VertexShader* vertexShader = nullptr;
-		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-		InputLayout inputLayout;
 		Topology topology = {};
-
-	private:
-		eShaderType shaderType = {};
 
 	private:
 		struct TransformParameters

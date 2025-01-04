@@ -12,10 +12,6 @@
 
 namespace Kaka
 {
-	Model::Model(const eShaderType aShaderType)
-		:
-		shaderType(aShaderType) { }
-
 	void Model::Init()
 	{
 		if (modelType == eModelType::Skeletal)
@@ -25,101 +21,33 @@ namespace Kaka
 		isLoaded = true;
 	}
 
-	void Model::LoadModel(const Graphics& aGfx, const std::string& aFilePath, const eShaderType aShaderType)
+	void Model::LoadModel(const Graphics& aGfx, const std::string& aFilePath, const bool aAnimated)
 	{
-		shaderType = aShaderType;
-
 		// Shaders
-		switch (shaderType)
+		if (aAnimated)
 		{
-		case eShaderType::PBR:
-			{
-				modelType = eModelType::Static;
-				ModelLoader::LoadStaticModel(aGfx, aFilePath, modelData);
+			modelType = eModelType::Skeletal;
 
-				for (Mesh& mesh : modelData.meshList->meshes)
-				{
-					mesh.vertexBuffer.Init(aGfx, mesh.vertices);
-					mesh.indexBuffer.Init(aGfx, mesh.indices);
-				}
+			ModelLoader::LoadAnimatedModel(animatedModelData, aFilePath);
+			ModelLoader::LoadTexture(aGfx, animatedModelData, aFilePath);
 
-				pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Model_TAA_PS.cso");
-				vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Model_TAA_VS.cso");
-
-				ied =
-				{
-					{
-						"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-				};
-				inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
-			}
-			break;
-		case eShaderType::AnimPBR:
-			{
-				modelType = eModelType::Skeletal;
-
-				ModelLoader::LoadAnimatedModel(animatedModelData, aFilePath);
-				ModelLoader::LoadTexture(aGfx, animatedModelData, aFilePath);
-
-				pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Model\\Model_TAA_PS.cso");
-				vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Model\\Model_Anim_VS.cso");
-
-				ied =
-				{
-					{
-						"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-					{
-						"BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0,
-						D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-					},
-				};
-				inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
-			}
-			break;
+			pixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Model);
+			vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::ModelAnimated);
 		}
+		else
+		{
+			modelType = eModelType::Static;
+			ModelLoader::LoadStaticModel(aGfx, aFilePath, modelData);
 
-		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
-		inputLayout.Bind(aGfx);
+			for (Mesh& mesh : modelData.meshList->meshes)
+			{
+				mesh.vertexBuffer.Init(aGfx, mesh.vertices);
+				mesh.indexBuffer.Init(aGfx, mesh.indices);
+			}
+
+			pixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Model);
+			vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::ModelTAA);
+		}
 
 		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		topology.Bind(aGfx);
@@ -148,25 +76,24 @@ namespace Kaka
 		{
 			pixelShader->Bind(aGfx);
 		}
-		inputLayout.Bind(aGfx);
 	}
 
 	void Model::Draw(Graphics& aGfx, const float aDeltaTime, bool aFrustumCulling)
 	{
 		switch (modelType)
 		{
-		case eModelType::Static:
+			case eModelType::Static:
 			{
 				DrawStatic(aGfx, aFrustumCulling);
 			}
 			break;
-		case eModelType::Skeletal:
+			case eModelType::Skeletal:
 			{
 				UpdatePtr(aDeltaTime);
 				DrawAnimated(aGfx);
 			}
 			break;
-		default: ;
+			default:;
 		}
 	}
 
@@ -196,7 +123,6 @@ namespace Kaka
 		{
 			pixelShader->Bind(aGfx);
 		}
-		inputLayout.Bind(aGfx);
 
 		for (Mesh& mesh : modelData.meshList->meshes)
 		{
@@ -232,7 +158,7 @@ namespace Kaka
 		}
 
 		// Unbind shader resources
-		ID3D11ShaderResourceView* nullSRVs[3] = {nullptr};
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
 		aGfx.pContext->PSSetShaderResources(1u, 3u, nullSRVs);
 	}
 
@@ -257,7 +183,6 @@ namespace Kaka
 		{
 			pixelShader->Bind(aGfx);
 		}
-		inputLayout.Bind(aGfx);
 		topology.Bind(aGfx);
 
 		for (AnimatedMesh& mesh : animatedModelData.meshList->meshes)
@@ -265,26 +190,20 @@ namespace Kaka
 			mesh.vertexBuffer.Bind(aGfx);
 			mesh.indexBuffer.Bind(aGfx);
 
-			switch (shaderType)
+			// Bones
+			struct VSBoneConstant
 			{
-			case eShaderType::AnimPBR:
-				{
-					// Bones
-					struct VSBoneConstant
-					{
-						DirectX::XMMATRIX bones[64u];
-					} vsb = {};
+				DirectX::XMMATRIX bones[64u];
+			} vsb = {};
 
-					for (int i = 0; i < animatedModelData.finalTransforms.size(); ++i)
-					{
-						vsb.bones[i] = animatedModelData.finalTransforms[i];
-					}
-
-					VertexConstantBuffer<VSBoneConstant> vsConstantBuffer(aGfx, vsb, 1u);
-					vsConstantBuffer.Bind(aGfx);
-				}
-				break;
+			for (int i = 0; i < animatedModelData.finalTransforms.size(); ++i)
+			{
+				vsb.bones[i] = animatedModelData.finalTransforms[i];
 			}
+
+			VertexConstantBuffer<VSBoneConstant> vsConstantBuffer(aGfx, vsb, 1u);
+			vsConstantBuffer.Bind(aGfx);
+
 
 			std::vector<unsigned short> indices;
 			indices = mesh.indices;
@@ -293,7 +212,7 @@ namespace Kaka
 		}
 
 		// Unbind shader resources
-		ID3D11ShaderResourceView* nullSRVs[3] = {nullptr};
+		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
 		aGfx.pContext->PSSetShaderResources(0u, 3u, nullSRVs);
 
 		if (!drawSkeleton)
@@ -457,12 +376,12 @@ namespace Kaka
 
 	DirectX::XMFLOAT3 Model::GetPosition() const
 	{
-		return {transform.x, transform.y, transform.z};
+		return { transform.x, transform.y, transform.z };
 	}
 
 	DirectX::XMFLOAT3 Model::GetRotation() const
 	{
-		return {transform.roll, transform.pitch, transform.yaw};
+		return { transform.roll, transform.pitch, transform.yaw };
 	}
 
 	DirectX::XMMATRIX Model::GetTransform() const
@@ -521,14 +440,14 @@ namespace Kaka
 		const AABB aabb = aMesh.aabb;
 
 		Cube cube;
-		cube.vertices[0] = {aabb.minBound.x, aabb.minBound.y, aabb.minBound.z};
-		cube.vertices[1] = {aabb.minBound.x, aabb.maxBound.y, aabb.minBound.z};
-		cube.vertices[2] = {aabb.maxBound.x, aabb.maxBound.y, aabb.minBound.z};
-		cube.vertices[3] = {aabb.maxBound.x, aabb.minBound.y, aabb.minBound.z};
-		cube.vertices[4] = {aabb.minBound.x, aabb.minBound.y, aabb.maxBound.z};
-		cube.vertices[5] = {aabb.minBound.x, aabb.maxBound.y, aabb.maxBound.z};
-		cube.vertices[6] = {aabb.maxBound.x, aabb.maxBound.y, aabb.maxBound.z};
-		cube.vertices[7] = {aabb.maxBound.x, aabb.minBound.y, aabb.maxBound.z};
+		cube.vertices[0] = { aabb.minBound.x, aabb.minBound.y, aabb.minBound.z };
+		cube.vertices[1] = { aabb.minBound.x, aabb.maxBound.y, aabb.minBound.z };
+		cube.vertices[2] = { aabb.maxBound.x, aabb.maxBound.y, aabb.minBound.z };
+		cube.vertices[3] = { aabb.maxBound.x, aabb.minBound.y, aabb.minBound.z };
+		cube.vertices[4] = { aabb.minBound.x, aabb.minBound.y, aabb.maxBound.z };
+		cube.vertices[5] = { aabb.minBound.x, aabb.maxBound.y, aabb.maxBound.z };
+		cube.vertices[6] = { aabb.maxBound.x, aabb.maxBound.y, aabb.maxBound.z };
+		cube.vertices[7] = { aabb.maxBound.x, aabb.minBound.y, aabb.maxBound.z };
 
 		DirectX::XMFLOAT2 screenPos[8];
 
@@ -585,9 +504,9 @@ namespace Kaka
 		return aabb;
 	}
 
-	void Model::SetPixelShader(const Graphics& aGfx, const std::wstring& aFilePath)
+	void Model::SetPixelShader(const Graphics& aGfx, const ePixelShaderType aType)
 	{
-		pixelShader = ShaderFactory::GetPixelShader(aGfx, aFilePath);
+		pixelShader = ShaderFactory::GetPixelShader(aGfx, aType);
 	}
 
 	void Model::SetTexture(Texture* aTexture)

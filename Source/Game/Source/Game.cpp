@@ -4,25 +4,34 @@
 constexpr int WINDOW_WIDTH = 1920;
 constexpr int WINDOW_HEIGHT = 1080;
 
+
 namespace Kaka
 {
-	Game::Game() : wnd(WINDOW_WIDTH, WINDOW_HEIGHT, L"Kaka") { }
+	Game::Game() : wnd(WINDOW_WIDTH, WINDOW_HEIGHT, L"Kaka") {}
 
 	int Game::Go()
 	{
-		ECS::Entity& entity = entities.emplace_back(ecs.CreateEntity());
-		entity.AddComponent(TransformComponent{}, ecs.components.transformComponents);
-		entity.AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" }, ecs.components.modelComponents);
+		entities.reserve(100);
+
+		ECS::Entity* entity = &entities.emplace_back(ecs.CreateEntity());
+		entity->AddComponent(TransformComponent{});
+		ecs.GetComponent<TransformComponent>(entity->GetID())->scale = 0.1f;
+		entity->AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" });
+
+		ECS::Entity* entity2 = &entities.emplace_back(ecs.CreateEntity());
 
 		// TODO ModelLoader needs to be rewritten to use ECS
 		// TODO Maybe store all models there? Or load through graphics and store everything there since
 		// TODO it's the only place that needs to know about the models
 		// TODO and there is where we render them
 		// TODO Need to rewrite this to use ECS
-		models.emplace_back();
-		models.back().LoadModel(wnd.Gfx(), "Assets/Models/sponza_pbr/Sponza.obj", Model::eShaderType::PBR);
-		models.back().Init();
-		models.back().SetScale(0.1f);
+
+		for (auto& model : ecs.GetComponentMap<ModelComponent>() | std::views::values)
+		{
+			models.emplace_back();
+			models.back().LoadModel(wnd.Gfx(), model.filePath);
+			models.back().Init();
+		}
 
 		while (true)
 		{
@@ -41,7 +50,7 @@ namespace Kaka
 	{
 		HandleInput(aDeltaTime);
 
-		ecs.UpdateTransformComponents( ecs.components.transformComponents);
+		ecs.UpdateTransformComponents();
 
 		wnd.Gfx().UpdateLights(aDeltaTime);
 		RenderContext renderContext = { aDeltaTime, timer.GetTotalTime(), timer.GetFPS() };

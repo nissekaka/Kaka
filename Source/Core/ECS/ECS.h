@@ -6,91 +6,114 @@ namespace Kaka
 	struct TransformComponent;
 	struct ModelComponent;
 
-
-
 	class ECS
 	{
 	public:
+
+#pragma region Entity
+
 		class Entity
 		{
 		public:
-			Entity(ECS& aEcs, const EntityID aId) : id(aId), ecs(aEcs) {};
+			Entity(ECS* aEcs, const EntityID aId) : id(aId), ecs(aEcs) {}
 			~Entity() = default;
 
-			inline EntityID GetID() const { return id; }
+			EntityID GetID() const { return id; }
 
 			template <typename T>
-			inline void AddComponent(T aComponent, ComponentMap<T>& aComponentMap)
+			inline void AddComponent(T aComponent)
 			{
-				ecs.AddComponent(id, aComponent, aComponentMap);
+				ecs->AddComponent(id, aComponent);
 			}
 
 			template <typename T>
-			inline void RemoveComponent(ComponentMap<T>& aComponentMap)
+			inline void RemoveComponent()
 			{
-				ecs.RemoveComponent(id, aComponentMap);
+				ecs->RemoveComponent<T>(id);
 			}
 
 		private:
 			EntityID id = 0;
-			ECS& ecs;
+			ECS* ecs = nullptr;
 		};
 
-	public:
-		struct Components
-		{
-			TransformComponents transformComponents;
-			ModelComponents modelComponents;
-		} components;
+#pragma endregion
 
-		inline void UpdateTransformComponents(TransformComponents& aTransforms)
+#pragma region KECS
+
+	public:
+		ECS() = default;
+		~ECS() = default;
+
+		inline void UpdateTransformComponents()
 		{
-			systems.UpdateTransformComponents(aTransforms);
+			systems.UpdateTransformComponents(registry);
 		}
 
-		inline void RenderModelComponents(Graphics& aGfx, ModelComponents& aModels, TransformComponents& aTransforms, bool aDrawDebug = false)
+		inline void RenderModelComponents(Graphics& aGfx, const bool aDrawDebug = false)
 		{
-			systems.RenderModelComponents(aGfx, aModels, aTransforms, aDrawDebug);
+			systems.RenderModelComponents(aGfx, registry, aDrawDebug);
 		}
 
 		template <typename T>
-		static inline void AddComponent(EntityID aEntity, T aComponent, ComponentMap<T>& aComponents)
+		inline void AddComponent(EntityID entityID, T component)
 		{
-			if (aComponents.contains(aEntity))
+			auto& componentMap = registry.GetComponentMap<T>();
+
+			if (componentMap.contains(entityID))
 			{
 				std::cerr << "Entity already has component of type " << typeid(T).name() << std::endl;
 				return;
 			}
 
-			aComponents[aEntity] = aComponent;
+			componentMap[entityID] = component;
 		}
 
 		template <typename T>
-		static inline void RemoveComponent(EntityID aEntity, ComponentMap<T>& aComponents)
+		inline void RemoveComponent(EntityID entityID)
 		{
-			if (!aComponents.contains(aEntity))
+			auto& componentMap = registry.GetComponentMap<T>();
+
+			if (!componentMap.contains(entityID))
 			{
 				std::cerr << "Entity does not have component of type " << typeid(T).name() << std::endl;
 				return;
 			}
 
-			aComponents.erase(aEntity);
+			componentMap.erase(entityID);
 		}
 
-		Entity CreateEntity()
+		template <typename T>
+		inline T* GetComponent(EntityID entityID)
 		{
-			entities++;
-			return Entity{ *this, entities };
+			auto& componentMap = registry.GetComponentMap<T>();
+
+			if (!componentMap.contains(entityID))
+			{
+				std::cerr << "Entity does not have component of type " << typeid(T).name() << std::endl;
+				return nullptr;
+			}
+
+			return &componentMap[entityID];
 		}
 
-		//EntityID CreateEntity()
-		//{
-		//	entities++;
-		//	return entities;
-		//}
+		template <typename T>
+		inline ComponentMap<T>& GetComponentMap()
+		{
+			return registry.GetComponentMap<T>();
+		}
+
+		inline Entity CreateEntity()
+		{
+			return Entity{ this, entities };
+		}
 
 	private:
 		Systems systems;
 		EntityID entities = 0;
+		ComponentRegistry registry;
 	};
+
+#pragma endregion
+
 }

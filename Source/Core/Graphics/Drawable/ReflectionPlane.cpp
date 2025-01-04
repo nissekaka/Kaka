@@ -55,10 +55,8 @@ namespace Kaka
 		vertexBuffer.Init(aGfx, vertices);
 		indexBuffer.Init(aGfx, indices);
 
-		pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\ReflectionPlane_PS.cso");
-		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\ReflectionPlane_VS.cso");
-
-		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
+		pixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::ReflectionPlane);
+		vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::ReflectionPlane);
 	}
 
 	void ReflectionPlane::Draw(Graphics& aGfx)
@@ -77,7 +75,6 @@ namespace Kaka
 		psConstantBuffer.Bind(aGfx);
 
 		vertexShader->Bind(aGfx);
-		inputLayout.Bind(aGfx);
 
 		aGfx.DrawIndexed(static_cast<UINT>(std::size(indices)));
 

@@ -393,10 +393,9 @@ namespace Kaka
 			subset.indexBuffer.Init(aGfx, subset.indices);
 		}
 
-		pixelShader = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\Model_TAA_PS.cso");
-		vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\Model_TAA_VS.cso");
+		pixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Model);
+		vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::ModelTAA);
 
-		inputLayout.Init(aGfx, ied, vertexShader->GetBytecode());
 		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		OutputDebugStringA("\nDone!");
@@ -426,8 +425,6 @@ namespace Kaka
 		{
 			vertexShader->Bind(aGfx);
 		}
-
-		inputLayout.Bind(aGfx);
 
 		TransformConstantBuffer transformConstantBuffer(aGfx, *this, 0u);
 		transformConstantBuffer.Bind(aGfx);
@@ -495,11 +492,11 @@ namespace Kaka
 	{
 		if (aValue)
 		{
-			vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainReflect_VS.cso");
+			//vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainReflect_VS.cso");
 		}
 		else
 		{
-			vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainPBR_VS.cso");
+			//vertexShader = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\TerrainPBR_VS.cso");
 		}
 	}
 

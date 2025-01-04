@@ -8,10 +8,10 @@ namespace Kaka
 {
 	void DeferredLights::Init(Graphics& aGfx)
 	{
-		lightVS = ShaderFactory::GetVertexShader(aGfx, L"Shaders\\DeferredLight_VS.cso");
-		directionalLightPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\DeferredDirectionalLight_PS.cso");
-		pointlightPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\DeferredPointLight_PS.cso");
-		spotlightPS = ShaderFactory::GetPixelShader(aGfx, L"Shaders\\DeferredSpotLight_PS.cso");
+		lightVS = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::DeferredLight);
+		directionalLightPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::DirectionalLight);
+		pointlightPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::PointLight);
+		spotlightPS = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::SpotLight);
 
 		// Initial directional light values
 		directionalLightData.lightDirection = {2.16f, -3.14f, -1.6f};
@@ -28,16 +28,6 @@ namespace Kaka
 
 		CreateSphere(aGfx);
 
-		// Create input layout
-		ied =
-		{
-			{
-				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
-				D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0
-			},
-		};
-
-		inputLayout.Init(aGfx, ied, lightVS->GetBytecode());
 		topology.Init(aGfx, D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		pointlightData.reserve(POINT_LIGHT_RESERVE);
@@ -78,7 +68,6 @@ namespace Kaka
 	void DeferredLights::Draw(Graphics& aGfx)
 	{
 		lightVS->Bind(aGfx);
-		inputLayout.Bind(aGfx);
 		topology.Bind(aGfx);
 
 		// Directional Light

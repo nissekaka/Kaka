@@ -4,6 +4,28 @@
 
 namespace Kaka
 {
+	enum class ePixelShaderType
+	{
+		Model,
+		ModelShadows,
+		Skybox,
+		Sprite,
+		SpriteDeferred,
+		Fullscreen,
+		PostProcessing,
+		DownSample,
+		UpSample,
+		TAA,
+		DeferredLight,
+		DirectionalLight,
+		PointLight,
+		SpotLight,
+		RSM,
+		IndirectLighting,
+		IndirectLightingCombined,
+		ReflectionPlane,
+	};
+
 	class PixelShader : public Bindable
 	{
 		friend class ShaderFactory;

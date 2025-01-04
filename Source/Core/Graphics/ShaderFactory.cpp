@@ -4,66 +4,72 @@
 #include <d3dcompiler.h>
 #include <filesystem>
 
-#define HLSL_PATH "..\\Core\\Source\\Graphics\\Shaders\\"
+#define HLSL_PATH "../Core/Source/Graphics/Shaders/"
 #define TO_WSTR(str) std::wstring((str).begin(), (str).end())
 #define TO_STR(wstr) std::string((wstr).begin(), (wstr).end())
 
 namespace Kaka
 {
-	PixelShader* ShaderFactory::GetPixelShader(const Graphics& aGfx, const std::wstring& aFileName)
+	PixelShader* ShaderFactory::GetPixelShader(const Graphics& aGfx, const ePixelShaderType aType)
 	{
-		if (pixelShaders.contains(aFileName))
+		std::wstring path = pixelShaderTypePathMap[aType];
+
+		if (pixelShaders.contains(path))
 		{
-			return &pixelShaders[aFileName];
+			return &pixelShaders[path];
 		}
 
-		pixelShaders[aFileName] = PixelShader();
-		pixelShaders[aFileName].Init(aGfx, aFileName);
+		pixelShaders[path] = PixelShader();
+		pixelShaders[path].Init(aGfx, path);
 
-		return &pixelShaders[aFileName];
+		return &pixelShaders[path];
 	}
 
-	VertexShader* ShaderFactory::GetVertexShader(const Graphics& aGfx, const std::wstring& aFileName)
+	VertexShader* ShaderFactory::GetVertexShader(const Graphics& aGfx, const eVertexShaderType aType)
 	{
-		if (vertexShaders.contains(aFileName))
+		std::wstring path = vertexShaderTypePathMap[aType];
+
+		if (vertexShaders.contains(path))
 		{
-			return &vertexShaders[aFileName];
+			return &vertexShaders[path];
 		}
 
-		vertexShaders[aFileName] = VertexShader();
-		vertexShaders[aFileName].Init(aGfx, aFileName);
+		vertexShaders[path] = VertexShader();
+		vertexShaders[path].Init(aGfx, aType);
 
-		return &vertexShaders[aFileName];
+		return &vertexShaders[path];
 	}
 
-	ComputeShader* ShaderFactory::GetComputeShader(const Graphics& aGfx, const std::wstring& aFileName)
+	ComputeShader* ShaderFactory::GetComputeShader(const Graphics& aGfx, const eComputeShaderType aType)
 	{
-		if (computeShaders.contains(aFileName))
+		std::wstring path = computeShaderTypePathMap[aType];
+
+		if (computeShaders.contains(path))
 		{
-			return &computeShaders[aFileName];
+			return &computeShaders[path];
 		}
 
-		computeShaders[aFileName] = ComputeShader();
-		computeShaders[aFileName].Init(aGfx, aFileName);
+		computeShaders[path] = ComputeShader();
+		computeShaders[path].Init(aGfx, path);
 
-		return &computeShaders[aFileName];
+		return &computeShaders[path];
 	}
 
 	void ShaderFactory::RecompileShader(const std::wstring& aFileName, ID3D11Device* aDevice)
 	{
-		std::wstring path = L"Shaders\\" + aFileName;
+		std::wstring path = L"Shaders/" + aFileName;
 
 		Sleep(5);
 
 		path.replace(path.find(L".hlsl"), 5, L".cso");
 
-		if (!std::filesystem::exists("..\\Source\\Core\\Graphics\\Shaders\\")) {
+		if (!std::filesystem::exists("../Source/Core/Graphics/Shaders/")) {
 			throw std::runtime_error("HLSL_PATH does not exist!");
 		}
 
 		std::string filePath;
 		std::string fileName = TO_STR(aFileName);
-		for (const auto& entry : std::filesystem::recursive_directory_iterator("..\\Source\\Core\\Graphics\\Shaders\\"))
+		for (const auto& entry : std::filesystem::recursive_directory_iterator("../Source/Core/Graphics/Shaders/"))
 		{
 			if (entry.path().filename().string() == fileName)
 			{

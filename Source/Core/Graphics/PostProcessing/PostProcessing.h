@@ -1,9 +1,6 @@
 #pragma once
-#include "Core/Graphics/Bindable/Bindable.h"
 #include "Core/Graphics/Bindable/IndexBuffer.h"
-#include "Core/Graphics/Bindable/InputLayout.h"
 #include "Core/Graphics/Bindable/PixelShader.h"
-#include "Core/Graphics/Bindable/Topology.h"
 #include "Core/Graphics/Bindable/VertexBuffer.h"
 #include "Core/Graphics/Bindable/VertexShader.h"
 #include "Core/Graphics/RenderTarget.h"
@@ -74,9 +71,6 @@ namespace Kaka
 		RenderTarget renderTarget;
 		std::vector<RenderTarget> bloomDownscaleTargets = {};
 
-		PixelConstantBuffer<PostProcessing::PostProcessingData> ppb{ 1u };
-
-		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-		InputLayout inputLayout;
+		PixelConstantBuffer<PostProcessingData> ppb{ 1u };
 	};
 }

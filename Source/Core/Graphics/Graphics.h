@@ -18,7 +18,6 @@
 #include "Core/Graphics/Bindable/CommonBuffer.h"
 #include "Core/Graphics/Drawable/Skybox.h"
 #include "Core/Graphics/Drawable/Model.h"
-//#include "Core/Graphics/Drawable/Terrain.h"
 
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
@@ -99,8 +98,8 @@ namespace Kaka
 		void UnbindShadows(UINT aSlot);
 
 		// Shader
-		void SetPixelShaderOverride(const std::wstring& aFileName) { pixelShaderOverride = ShaderFactory::GetPixelShader(*this, aFileName); }
-		void SetVertexShaderOverride(const std::wstring& aFileName) { vertexShaderOverride = ShaderFactory::GetVertexShader(*this, aFileName); }
+		void SetPixelShaderOverride(const ePixelShaderType aType) { pixelShaderOverride = ShaderFactory::GetPixelShader(*this, aType); }
+		void SetVertexShaderOverride(const eVertexShaderType aType) { vertexShaderOverride = ShaderFactory::GetVertexShader(*this, aType); }
 		PixelShader* GetPixelShaderOverride() const { return pixelShaderOverride; }
 		VertexShader* GetVertexShaderOverride() const { return vertexShaderOverride; }
 		bool HasPixelShaderOverride() const { return pixelShaderOverride != nullptr; }
@@ -172,8 +171,6 @@ namespace Kaka
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
-		//std::vector<Model> models = {};
-
-		//Terrain terrain = {};
+		std::vector<Model> models = {};
 	};
 }

@@ -1,7 +1,6 @@
 #pragma once
-#include "Core/Graphics/Bindable/Bindable.h"
+
 #include "Core/Graphics/Bindable/IndexBuffer.h"
-#include "Core/Graphics/Bindable/InputLayout.h"
 #include "Core/Graphics/Bindable/PixelShader.h"
 #include "Core/Graphics/Bindable/Topology.h"
 #include "Core/Graphics/Bindable/VertexBuffer.h"
@@ -22,14 +21,13 @@ namespace Kaka
 	private:
 		VertexBuffer vertexBuffer = {};
 		IndexBuffer indexBuffer = {};
-		//Texture texture{1u};
+
 		VertexShader* indirectLightingVS = nullptr;
+
 		PixelShader* indirectLightingPS = nullptr;
 		PixelShader* indirectLightingDefaultPS = nullptr;
 		PixelShader* indirectLightingCombinedPS = nullptr;
 
-		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-		InputLayout inputLayout;
 		Topology topology = {};
 	};
 }
