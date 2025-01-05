@@ -4,6 +4,8 @@
 
 namespace Kaka
 {
+	struct Mesh;
+
 	struct PerspectiveData
 	{
 		float width;
@@ -54,6 +56,7 @@ namespace Kaka
 		void SetPerspective(float aWidth, float aHeight, float aVFov, float aNearZ, float aFarZ);
 		void SetOrthographic(float aWidth, float aHeight, float aNearZ, float aFarZ);
 		void ApplyProjectionJitter(float aJitterX, float aJitterY);
+		void ResetFrustumFlag();
 
 	private:
 		PerspectiveData perspectiveData;
@@ -69,11 +72,12 @@ namespace Kaka
 		static constexpr float TRAVEL_SPEED = 12.0f;
 		static constexpr float ROTATION_SPEED = 0.0008f;
 
-		FrustumPlanes ExtractFrustumPlanes() const;
+		FrustumPlanes ExtractFrustumPlanes();
 
 	public:
-		bool IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const;
-		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const;
+		bool IsPointInFrustum(const DirectX::XMFLOAT3& aPoint);
+		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax);
+		std::vector<bool> AreMeshesInFrustum(const std::vector<Mesh>& aMeshes, const DirectX::XMMATRIX& aObjectToWorld);
 
 	public:
 		DirectX::XMFLOAT3 cameraInput = { 0.0f, 0.0f, 0.0f };
@@ -83,5 +87,8 @@ namespace Kaka
 		float cameraSpeed = 0.0f;
 		float cameraSpeedDefault = 3.0f;
 		float cameraSpeedBoost = 6.0f;
+
+		FrustumPlanes frustum;
+		bool extractedFrustumThisFrame = false;
 	};
 }

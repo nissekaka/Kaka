@@ -152,6 +152,8 @@ namespace Kaka
 		// TODO Move this to a model renderer or something
 		transformBuffer.Init(*this, Transforms{});
 		topology.Init(*this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		renderPackages.reserve(10000);
 	}
 
 	Graphics::~Graphics()
@@ -191,7 +193,7 @@ namespace Kaka
 
 		drawcallCount = 0u;
 
-		renderPackages.clear();
+		currentCamera->ResetFrustumFlag();
 	}
 
 	void Graphics::DrawIndexed(const UINT aCount)
@@ -213,38 +215,50 @@ namespace Kaka
 
 	void Graphics::RenderQueue()
 	{
+		Texture* boundTexture = nullptr;
+
 		for (const auto& renderPackage : renderPackages)
 		{
-			DirectX::XMMATRIX objectToWorld = renderPackage.objectToWorld;
-			DirectX::XMMATRIX objectToClip = renderPackage.objectToWorld * GetCameraInverseView();
+			DirectX::XMMATRIX objectToWorld = *renderPackage.objectToWorld;
+			DirectX::XMMATRIX objectToClip = objectToWorld * GetCameraInverseView();
 			objectToClip = objectToClip * GetJitteredProjection();
 
 			Transforms transforms = { objectToWorld, objectToClip };
-			
+
 			transformBuffer.Update(*this, transforms);
 			transformBuffer.Bind(*this);
 
-			MeshList& meshList = ModelFactory::GetMeshList(renderPackage.modelPath);
+			MeshList& meshList = *renderPackage.meshList;
+			//MeshList& meshList = ModelFactory::GetMeshList(renderPackage.modelPath);
 
-			for (Mesh& mesh : meshList.meshes)
+			std::vector<bool> visible = currentCamera->AreMeshesInFrustum(meshList.meshes, objectToWorld);
+
+			for (int i = 0; i < meshList.meshes.size(); ++i)
+				//for (Mesh& mesh : meshList.meshes)
 			{
 				//if (aFrustumCulling)
 				//{
-				if (!IsBoundingBoxInFrustum(Model::GetTranslatedAABB(mesh, objectToWorld).minBound, Model::GetTranslatedAABB(mesh, objectToWorld).maxBound))
+					//if (!IsBoundingBoxInFrustum(Model::GetTranslatedAABB(mesh, objectToWorld).minBound, Model::GetTranslatedAABB(mesh, objectToWorld).maxBound))
+				if (!visible[i])
 				{
 					continue;
 				}
 				//}
 
+				Mesh& mesh = meshList.meshes[i];
+
 				bool hasAlpha = false;
 				if (mesh.texture != nullptr)
 				{
-					mesh.texture->Bind(*this);
-
-					if (mesh.texture->HasAlpha())
+					if (boundTexture == nullptr || mesh.texture != boundTexture)
 					{
-						hasAlpha = true;
-						SetRasterizerState(eRasterizerStates::NoCulling);
+						mesh.texture->Bind(*this);
+
+						if (mesh.texture->HasAlpha())
+						{
+							hasAlpha = true;
+							SetRasterizerState(eRasterizerStates::NoCulling);
+						}
 					}
 				}
 
@@ -350,7 +364,8 @@ namespace Kaka
 			}
 			/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- END
 		}
-		else {
+		else
+		{
 			/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- BEGIN
 			{
 				StartShadows(shadowBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, shadowBuffer);
@@ -560,7 +575,7 @@ namespace Kaka
 
 	void Graphics::LoadModel(const std::string& aFilePath)
 	{
-		if (ModelFactory::LoadStaticModel(*this, aFilePath, modelData.emplace_back()))
+		if (ModelFactory::LoadStaticFBXModel(*this, aFilePath, modelData.emplace_back()))
 		{
 			// TODO Shader should be set from Editor or something
 			modelData.back().vertexShader = ShaderFactory::GetVertexShader(*this, eVertexShaderType::ModelTAA);
@@ -798,7 +813,8 @@ namespace Kaka
 			}
 			ImGui::End();
 
-			if (useReflectiveShadowMap) {
+			if (useReflectiveShadowMap)
+			{
 
 				if (ImGui::Begin("RSM Directional"))
 				{

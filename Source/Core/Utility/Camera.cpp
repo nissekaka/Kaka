@@ -185,9 +185,14 @@ namespace Kaka
 		jitteredProjection = projection * offset;
 	}
 
-	Camera::FrustumPlanes Camera::ExtractFrustumPlanes() const
+	Camera::FrustumPlanes Camera::ExtractFrustumPlanes() 
 	{
-		FrustumPlanes frustum;
+		if (extractedFrustumThisFrame)
+		{
+			return frustum;
+		}
+
+		extractedFrustumThisFrame = true;
 
 		// Extract the rows of the view-projection matrix
 		DirectX::XMFLOAT4X4 VP;
@@ -224,7 +229,12 @@ namespace Kaka
 		return frustum;
 	}
 
-	bool Camera::IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const
+	void Camera::ResetFrustumFlag()
+	{
+		extractedFrustumThisFrame = false;
+	}
+
+	bool Camera::IsPointInFrustum(const DirectX::XMFLOAT3& aPoint)
 	{
 		const FrustumPlanes frustum = ExtractFrustumPlanes();
 		for (const DirectX::XMFLOAT4& plane : frustum.planes)
@@ -240,7 +250,7 @@ namespace Kaka
 		return true;
 	}
 
-	bool Camera::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const
+	bool Camera::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax)
 	{
 		const FrustumPlanes frustum = ExtractFrustumPlanes();
 		for (const DirectX::XMFLOAT4& plane : frustum.planes)
@@ -268,5 +278,50 @@ namespace Kaka
 
 		// If the bounding box is not completely outside any frustum plane, it is visible
 		return true;
+	}
+	std::vector<bool> Camera::AreMeshesInFrustum(const std::vector<Mesh>& aMeshes, const DirectX::XMMATRIX& aObjectToWorld)
+	{
+		const FrustumPlanes frustum = ExtractFrustumPlanes();
+
+		std::vector<bool> results;
+		results.resize(aMeshes.size());
+
+		//for (const Mesh& mesh : aMeshes)
+		for (int i = 0; i < aMeshes.size(); ++i)
+		{
+			bool isVisible = true;
+
+			const DirectX::XMFLOAT3 minBound = Model::GetTranslatedAABB(aMeshes[i], aObjectToWorld).minBound;
+			const DirectX::XMFLOAT3 maxBound = Model::GetTranslatedAABB(aMeshes[i], aObjectToWorld).maxBound;
+
+			for (const DirectX::XMFLOAT4& plane : frustum.planes)
+			{
+
+				if (plane.x * minBound.x + plane.y * minBound.y + plane.z * minBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * maxBound.x + plane.y * minBound.y + plane.z * minBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * minBound.x + plane.y * maxBound.y + plane.z * minBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * maxBound.x + plane.y * maxBound.y + plane.z * minBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * minBound.x + plane.y * minBound.y + plane.z * maxBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * maxBound.x + plane.y * minBound.y + plane.z * maxBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * minBound.x + plane.y * maxBound.y + plane.z * maxBound.z + plane.w > 0.0f)
+					continue;
+				if (plane.x * maxBound.x + plane.y * maxBound.y + plane.z * maxBound.z + plane.w > 0.0f)
+					continue;
+
+				// If the bounding box is completely outside any frustum plane, it is not visible
+				isVisible = false;
+				break;
+			}
+
+			results[i] = isVisible;
+		}
+
+		return results;
 	}
 }

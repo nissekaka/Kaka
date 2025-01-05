@@ -31,6 +31,7 @@ namespace Kaka
 	struct ModelComponent
 	{
 		std::string filePath = "";
+		MeshList* meshList = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
 	};

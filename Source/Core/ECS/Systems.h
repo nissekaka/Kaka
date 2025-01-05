@@ -14,7 +14,7 @@ namespace Kaka
 		Systems() = default;
 		~Systems() = default;
 
-		inline void UpdateTransformComponents(ComponentRegistry& aRegistry)
+		inline void UpdateModelComponents(ComponentRegistry& aRegistry)
 		{
 			auto& transforms = aRegistry.GetComponentMap<TransformComponent>();
 
@@ -22,6 +22,7 @@ namespace Kaka
 			{
 				auto& transform = transforms[entity];
 
+				// TODO This needs optimization
 				const DirectX::XMMATRIX objectToWorld = DirectX::XMMatrixScaling(transform.scale, transform.scale, transform.scale) *
 					DirectX::XMMatrixRotationRollPitchYaw(transform.roll, transform.pitch, transform.yaw) *
 					DirectX::XMMatrixTranslation(transform.x, transform.y, transform.z);
@@ -30,7 +31,7 @@ namespace Kaka
 			}
 		}
 
-		inline void UpdateModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry)
+		inline void RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry)
 		{
 			auto& models = aRegistry.GetComponentMap<ModelComponent>();
 			auto& transforms = aRegistry.GetComponentMap<TransformComponent>();
@@ -39,7 +40,7 @@ namespace Kaka
 			{
 				auto& transform = transforms[entity];
 
-				aGfx.RegisterRenderPackage(EntityRenderPackage{ model.filePath, transform.objectToWorld });
+				aGfx.RegisterRenderPackage(EntityRenderPackage{ model.meshList, &transform.objectToWorld });
 			}
 		}
 	};

@@ -51,14 +51,19 @@ namespace Kaka
 		ECS() = default;
 		~ECS() = default;
 
-		inline void UpdateTransformComponents()
+		inline void RegisterModelComponents(Graphics& aGfx)
 		{
-			systems.UpdateTransformComponents(registry);
+			systems.RegisterModelComponents(aGfx, registry);
 		}
 
-		inline void UpdateModelComponents(Graphics& aGfx)
+		inline void UpdateModelComponents()
 		{
-			systems.UpdateModelComponents(aGfx, registry);
+			systems.UpdateModelComponents(registry);
+		}
+
+		inline void UpdateComponents(const float aDeltaTime)
+		{
+			UpdateModelComponents();
 		}
 
 		template <typename T>

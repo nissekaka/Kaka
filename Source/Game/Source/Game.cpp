@@ -1,6 +1,8 @@
 #include "Game.h"
 #include <Core/Utility/KakaMath.h>
 
+#include "Graphics/Drawable/ModelFactory.h"
+
 constexpr int WINDOW_WIDTH = 1920;
 constexpr int WINDOW_HEIGHT = 1080;
 
@@ -11,16 +13,16 @@ namespace Kaka
 
 	int Game::Go()
 	{
-		entities.reserve(10000);
+		entities.reserve(1600);
 
 		//entities.push_back(ecs.CreateEntity());
 		//entities.back().AddComponent(TransformComponent{});
 		//entities.back().AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" });
 		//entities.back().GetComponent<TransformComponent>()->scale = 0.1f;
 
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < 40; i++)
 		{
-			for (int j = 0; j < 100; j++)
+			for (int j = 0; j < 40; j++)
 			{
 				entities.push_back(ecs.CreateEntity());
 				entities.back().AddComponent(TransformComponent{});
@@ -34,7 +36,10 @@ namespace Kaka
 		for (auto& model : ecs.GetComponentMap<ModelComponent>() | std::views::values)
 		{
 			wnd.Gfx().LoadModel(model.filePath);
+			model.meshList = &ModelFactory::GetMeshList(model.filePath);
 		}
+
+		ecs.RegisterModelComponents(wnd.Gfx());
 
 		while (true)
 		{
@@ -53,8 +58,7 @@ namespace Kaka
 	{
 		HandleInput(aDeltaTime);
 
-		ecs.UpdateTransformComponents();
-		ecs.UpdateModelComponents(wnd.Gfx());
+		ecs.UpdateComponents(aDeltaTime);
 
 		wnd.Gfx().UpdateLights(aDeltaTime);
 		RenderContext renderContext = { aDeltaTime, timer.GetTotalTime(), timer.GetFPS() };

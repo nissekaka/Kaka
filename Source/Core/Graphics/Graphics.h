@@ -47,8 +47,8 @@ namespace Kaka
 
 	struct EntityRenderPackage
 	{
-		std::string modelPath;
-		DirectX::XMMATRIX objectToWorld;
+		MeshList* meshList;
+		DirectX::XMMATRIX* objectToWorld;
 	};
 
 	class Graphics
