@@ -4,7 +4,7 @@
 #include <random>
 #include <thread>
 
-#include "ModelLoader.h"
+#include "ModelFactory.h"
 #include "Core/Graphics/Drawable/Vertex.h"
 #include "Core/Utility/Camera.h"
 #include "Core/Utility/KakaMath.h"
@@ -59,7 +59,7 @@ namespace Kaka
 		indices.push_back(2);
 		indices.push_back(3);
 
-		texture = ModelLoader::LoadTexture(aGfx, aFile, 1u);
+		texture = ModelFactory::LoadTexture(aGfx, aFile, 1u);
 
 		D3D11_BUFFER_DESC bufferDesc = {};
 		bufferDesc.ByteWidth = sizeof(SpriteVertex) * 4;

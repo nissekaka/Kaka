@@ -32,6 +32,12 @@ namespace Kaka
 				ecs->RemoveComponent<T>(id);
 			}
 
+			template <typename T>
+			inline T* GetComponent()
+			{
+				return ecs->GetComponent<T>(id);
+			}
+
 		private:
 			EntityID id = 0;
 			ECS* ecs = nullptr;
@@ -50,9 +56,9 @@ namespace Kaka
 			systems.UpdateTransformComponents(registry);
 		}
 
-		inline void RenderModelComponents(Graphics& aGfx, const bool aDrawDebug = false)
+		inline void UpdateModelComponents(Graphics& aGfx)
 		{
-			systems.RenderModelComponents(aGfx, registry, aDrawDebug);
+			systems.UpdateModelComponents(aGfx, registry);
 		}
 
 		template <typename T>
@@ -105,7 +111,7 @@ namespace Kaka
 
 		inline Entity CreateEntity()
 		{
-			return Entity{ this, entities };
+			return Entity{ this, entities++ };
 		}
 
 	private:

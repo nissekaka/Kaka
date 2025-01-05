@@ -11,26 +11,29 @@ namespace Kaka
 
 	int Game::Go()
 	{
-		entities.reserve(100);
+		entities.reserve(10000);
 
-		ECS::Entity* entity = &entities.emplace_back(ecs.CreateEntity());
-		entity->AddComponent(TransformComponent{});
-		ecs.GetComponent<TransformComponent>(entity->GetID())->scale = 0.1f;
-		entity->AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" });
+		//entities.push_back(ecs.CreateEntity());
+		//entities.back().AddComponent(TransformComponent{});
+		//entities.back().AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" });
+		//entities.back().GetComponent<TransformComponent>()->scale = 0.1f;
 
-		ECS::Entity* entity2 = &entities.emplace_back(ecs.CreateEntity());
-
-		// TODO ModelLoader needs to be rewritten to use ECS
-		// TODO Maybe store all models there? Or load through graphics and store everything there since
-		// TODO it's the only place that needs to know about the models
-		// TODO and there is where we render them
-		// TODO Need to rewrite this to use ECS
+		for (int i = 0; i < 100; i++)
+		{
+			for (int j = 0; j < 100; j++)
+			{
+				entities.push_back(ecs.CreateEntity());
+				entities.back().AddComponent(TransformComponent{});
+				entities.back().AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
+				entities.back().GetComponent<TransformComponent>()->x = i * 20.0f;
+				entities.back().GetComponent<TransformComponent>()->z = j * 20.0f;
+				entities.back().GetComponent<TransformComponent>()->scale = 0.1f;
+			}
+		}
 
 		for (auto& model : ecs.GetComponentMap<ModelComponent>() | std::views::values)
 		{
-			models.emplace_back();
-			models.back().LoadModel(wnd.Gfx(), model.filePath);
-			models.back().Init();
+			wnd.Gfx().LoadModel(model.filePath);
 		}
 
 		while (true)
@@ -51,10 +54,11 @@ namespace Kaka
 		HandleInput(aDeltaTime);
 
 		ecs.UpdateTransformComponents();
+		ecs.UpdateModelComponents(wnd.Gfx());
 
 		wnd.Gfx().UpdateLights(aDeltaTime);
 		RenderContext renderContext = { aDeltaTime, timer.GetTotalTime(), timer.GetFPS() };
-		wnd.Gfx().Render(renderContext, ecs, models.back());
+		wnd.Gfx().Render(renderContext);
 	}
 
 	void Game::HandleInput(const float aDeltaTime)

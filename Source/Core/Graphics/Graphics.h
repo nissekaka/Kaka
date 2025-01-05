@@ -18,6 +18,8 @@
 #include "Core/Graphics/Bindable/CommonBuffer.h"
 #include "Core/Graphics/Drawable/Skybox.h"
 #include "Core/Graphics/Drawable/Model.h"
+#include "Core/Graphics/Drawable/ModelRenderer.h"
+#include "ECS/Entity.h"
 
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
@@ -35,6 +37,18 @@ namespace Kaka
 		float deltaTime;
 		float totalTime;
 		float fps;
+	};
+
+	struct Transforms
+	{
+		DirectX::XMMATRIX objectToWorld = {};
+		DirectX::XMMATRIX objectToClip = {};
+	};
+
+	struct EntityRenderPackage
+	{
+		std::string modelPath;
+		DirectX::XMMATRIX objectToWorld;
 	};
 
 	class Graphics
@@ -66,7 +80,11 @@ namespace Kaka
 		void EndFrame();
 		void DrawIndexed(UINT aCount);
 		void DrawIndexedInstanced(UINT aCount, UINT aInstanceCount);
-		void Render(const RenderContext& aContext, ECS& aEcs, Model& tempModelForBinding);
+		void RegisterRenderPackage(const EntityRenderPackage& aRenderPackage);
+		void RenderQueue();
+		void TempSetupModelRender();
+		void Render(const RenderContext& aContext);
+		void LoadModel(const std::string& aFilePath);
 
 		// Camera
 		DirectX::XMMATRIX GetProjection() const;
@@ -119,7 +137,7 @@ namespace Kaka
 		bool showImGui = true;
 		bool showStatsWindow = true;
 		bool drawLightDebug = false;
-	
+
 	public:
 		void UpdateLights(const float aDeltaTime);
 		void ProcessFileChangeEngine(const std::wstring& aPath, filewatch::Event aEvent);
@@ -171,6 +189,9 @@ namespace Kaka
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
-		std::vector<Model> models = {};
+		std::vector<ModelData> modelData;
+		std::vector<EntityRenderPackage> renderPackages;
+		VertexConstantBuffer<Transforms> transformBuffer = { 0u };
+		Topology topology = {};
 	};
 }

@@ -23,7 +23,5 @@ namespace Kaka
 		Timer timer;
 		ECS ecs;
 		std::vector<ECS::Entity> entities;
-
-		std::vector<Model> models;
 	};
 }

@@ -26,10 +26,4 @@ namespace Kaka
 		UINT slot;
 		BOOL hasAlpha = FALSE;
 	};
-
-	struct Material
-	{
-		std::string name;
-		Texture* textures[2u];
-	};
 }

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Model.h"
 #include "Core/Graphics/Graphics.h"
-#include "Core/Graphics/Drawable/ModelLoader.h"
+#include "Core/Graphics/Drawable/ModelFactory.h"
 #include <External/include/imgui/imgui.h>
 #include <d3dcompiler.h>
 #include <TGAFBXImporter/source/Internal.inl>
@@ -28,8 +28,8 @@ namespace Kaka
 		{
 			modelType = eModelType::Skeletal;
 
-			ModelLoader::LoadAnimatedModel(animatedModelData, aFilePath);
-			ModelLoader::LoadTexture(aGfx, animatedModelData, aFilePath);
+			ModelFactory::LoadAnimatedModel(animatedModelData, aFilePath);
+			//ModelLoader::LoadTexture(aGfx, animatedModelData, aFilePath);
 
 			pixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Model);
 			vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::ModelAnimated);
@@ -37,13 +37,13 @@ namespace Kaka
 		else
 		{
 			modelType = eModelType::Static;
-			ModelLoader::LoadStaticModel(aGfx, aFilePath, modelData);
+			ModelFactory::LoadStaticModel(aGfx, aFilePath, modelData);
 
-			for (Mesh& mesh : modelData.meshList->meshes)
-			{
-				mesh.vertexBuffer.Init(aGfx, mesh.vertices);
-				mesh.indexBuffer.Init(aGfx, mesh.indices);
-			}
+			//for (Mesh& mesh : modelData.meshList->meshes)
+			//{
+			//	mesh.vertexBuffer.Init(aGfx, mesh.vertices);
+			//	mesh.indexBuffer.Init(aGfx, mesh.indices);
+			//}
 
 			pixelShader = ShaderFactory::GetPixelShader(aGfx, ePixelShaderType::Model);
 			vertexShader = ShaderFactory::GetVertexShader(aGfx, eVertexShaderType::ModelTAA);
@@ -55,7 +55,7 @@ namespace Kaka
 
 	bool Model::LoadAnimation(const std::string& aFilePath)
 	{
-		return ModelLoader::LoadAnimation(animatedModelData, aFilePath);
+		return ModelFactory::LoadAnimation(animatedModelData, aFilePath);
 	}
 
 	void Model::SetupModelDrawing(const Graphics& aGfx)

@@ -20,6 +20,7 @@ namespace Kaka
 		switch (aType)
 		{
 			case eVertexShaderType::ModelTAA:
+			case eVertexShaderType::RSM:
 			case eVertexShaderType::ModelNoTAA:
 			{
 				ied =

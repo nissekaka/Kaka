@@ -31,8 +31,8 @@ namespace Kaka
 		float GetScale() const;
 		bool IsLoaded() const;
 		void BindPixelShader(const Graphics& aGfx);
-		ModelDataPtr& GetModelData() { return modelData; }
-		AnimatedModelDataPtr& GetAnimatedModelData() { return animatedModelData; }
+		ModelData& GetModelData() { return modelData; }
+		AnimatedModelData& GetAnimatedModelData() { return animatedModelData; }
 		DirectX::XMMATRIX& GetBoneTransform(int aBoneIndex);
 		DirectX::XMMATRIX& GetBoneTransform(const std::string& aBoneName);
 		DirectX::XMMATRIX GetBoneWorldTransform(int aBoneIndex) const;
@@ -75,8 +75,8 @@ namespace Kaka
 		float specularPower = 2.0f;
 
 	private:
-		AnimatedModelDataPtr animatedModelData;
-		ModelDataPtr modelData;
+		AnimatedModelData animatedModelData;
+		ModelData modelData;
 		eModelType modelType = eModelType::None;
 		bool isLoaded = false;
 

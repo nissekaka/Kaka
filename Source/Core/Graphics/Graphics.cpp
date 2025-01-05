@@ -4,7 +4,7 @@
 #include <External/include/imgui/imgui_impl_win32.h>
 
 #include "Core/Graphics/Drawable/Model.h"
-#include "Core/Graphics/Drawable/ModelLoader.h"
+#include "Core/Graphics/Drawable/ModelFactory.h"
 
 #include <complex>
 #include <DirectXMath.h>
@@ -20,7 +20,7 @@ namespace Kaka
 		width(aWidth),
 		height(aHeight),
 		shaderFileWatcher(
-			L"..\\Source\\Core\\Graphics\\Shaders\\Fullscreen\\",
+			L"../Source/Core/Graphics/Shaders/",
 			[this](const std::wstring& path, const filewatch::Event change_type)
 			{
 				ProcessFileChangeEngine(path, change_type);
@@ -148,6 +148,10 @@ namespace Kaka
 		skybox.Init(*this, "Assets\\Textures\\Skybox\\Miramar\\", "Assets\\Textures\\Skybox\\Kurt\\");
 
 		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
+
+		// TODO Move this to a model renderer or something
+		transformBuffer.Init(*this, Transforms{});
+		topology.Init(*this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 	Graphics::~Graphics()
@@ -186,6 +190,8 @@ namespace Kaka
 		}
 
 		drawcallCount = 0u;
+
+		renderPackages.clear();
 	}
 
 	void Graphics::DrawIndexed(const UINT aCount)
@@ -200,7 +206,92 @@ namespace Kaka
 		pContext->DrawIndexedInstanced(aCount, aInstanceCount, 0u, 0u, 0u);
 	}
 
-	void Graphics::Render(const RenderContext& aContext, ECS& aEcs, Model& tempModelForBinding)
+	void Graphics::RegisterRenderPackage(const EntityRenderPackage& aRenderPackage)
+	{
+		renderPackages.push_back(aRenderPackage);
+	}
+
+	void Graphics::RenderQueue()
+	{
+		for (const auto& renderPackage : renderPackages)
+		{
+			DirectX::XMMATRIX objectToWorld = renderPackage.objectToWorld;
+			DirectX::XMMATRIX objectToClip = renderPackage.objectToWorld * GetCameraInverseView();
+			objectToClip = objectToClip * GetJitteredProjection();
+
+			Transforms transforms = { objectToWorld, objectToClip };
+			
+			transformBuffer.Update(*this, transforms);
+			transformBuffer.Bind(*this);
+
+			MeshList& meshList = ModelFactory::GetMeshList(renderPackage.modelPath);
+
+			for (Mesh& mesh : meshList.meshes)
+			{
+				//if (aFrustumCulling)
+				//{
+				if (!IsBoundingBoxInFrustum(Model::GetTranslatedAABB(mesh, objectToWorld).minBound, Model::GetTranslatedAABB(mesh, objectToWorld).maxBound))
+				{
+					continue;
+				}
+				//}
+
+				bool hasAlpha = false;
+				if (mesh.texture != nullptr)
+				{
+					mesh.texture->Bind(*this);
+
+					if (mesh.texture->HasAlpha())
+					{
+						hasAlpha = true;
+						SetRasterizerState(eRasterizerStates::NoCulling);
+					}
+				}
+
+				mesh.vertexBuffer.Bind(*this);
+				mesh.indexBuffer.Bind(*this);
+
+				DrawIndexed(mesh.indexBuffer.GetCount());
+
+				if (hasAlpha)
+				{
+					SetRasterizerState(eRasterizerStates::BackfaceCulling);
+				}
+
+				//if (aDrawDebug)
+				//{
+				//	DrawDebugAABB(aGfx, mesh, objectToWorld);
+				//}
+			}
+
+			// Unbind shader resources
+			ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
+			pContext->PSSetShaderResources(1u, 3u, nullSRVs);
+		}
+	}
+
+	void Graphics::TempSetupModelRender()
+	{
+		if (HasVertexShaderOverride())
+		{
+			GetVertexShaderOverride()->Bind(*this);
+		}
+		else
+		{
+			modelData.back().vertexShader->Bind(*this);
+		}
+		if (HasPixelShaderOverride())
+		{
+			GetPixelShaderOverride()->Bind(*this);
+		}
+		else
+		{
+			modelData.back().pixelShader->Bind(*this);
+		}
+		topology.Bind(*this);
+	}
+
+	void Graphics::Render(const RenderContext& aContext)
 	{
 		BeginFrame();
 
@@ -222,7 +313,7 @@ namespace Kaka
 			}
 			else
 			{
-				SetRasterizerState(eRasterizerStates::FrontfaceCulling);
+				SetRasterizerState(eRasterizerStates::BackfaceCulling);
 			}
 
 			// Apply jitter to projection matrix
@@ -251,8 +342,8 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					tempModelForBinding.SetupModelDrawing(*this);
-					aEcs.RenderModelComponents(*this);
+					TempSetupModelRender();
+					RenderQueue();
 				}
 
 				ResetShadows(camera);
@@ -270,8 +361,8 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					tempModelForBinding.SetupModelDrawing(*this);
-					aEcs.RenderModelComponents(*this);
+					TempSetupModelRender();
+					RenderQueue();
 				}
 
 				ResetShadows(camera);
@@ -290,8 +381,8 @@ namespace Kaka
 
 			// Render all models to the GBuffer
 			{
-				tempModelForBinding.SetupModelDrawing(*this);
-				aEcs.RenderModelComponents(*this, drawDebug);
+				TempSetupModelRender();
+				RenderQueue();
 			}
 
 			SetRenderTarget(eRenderTargetType::None, nullptr);
@@ -465,6 +556,20 @@ namespace Kaka
 		ShowImGui(aContext.fps);
 
 		EndFrame();
+	}
+
+	void Graphics::LoadModel(const std::string& aFilePath)
+	{
+		if (ModelFactory::LoadStaticModel(*this, aFilePath, modelData.emplace_back()))
+		{
+			// TODO Shader should be set from Editor or something
+			modelData.back().vertexShader = ShaderFactory::GetVertexShader(*this, eVertexShaderType::ModelTAA);
+			modelData.back().pixelShader = ShaderFactory::GetPixelShader(*this, ePixelShaderType::Model);
+		}
+		else
+		{
+			modelData.pop_back();
+		}
 	}
 
 	DirectX::XMMATRIX Graphics::GetProjection() const
@@ -775,7 +880,6 @@ namespace Kaka
 		switch (aEvent)
 		{
 			case filewatch::Event::modified:
-				std::cout << "Recompiling a shader!" << std::endl;
 				if (aPath.ends_with(L".hlsl"))
 				{
 					const std::wstring sub = aPath.substr(aPath.find_last_of(L"\\") + 1);
@@ -783,6 +887,76 @@ namespace Kaka
 					ShaderFactory::RecompileShader(sub, pDevice.Get());
 				}
 				break;
+		}
+	}
+
+	static inline void DrawDebugAABB(const Graphics& aGfx, const Mesh& aMesh, const DirectX::XMMATRIX& aTransform)
+	{
+		struct Cube
+		{
+			DirectX::XMFLOAT3 vertices[8];
+		};
+
+		const AABB aabb = aMesh.aabb;
+
+		Cube cube;
+		cube.vertices[0] = { aabb.minBound.x, aabb.minBound.y, aabb.minBound.z };
+		cube.vertices[1] = { aabb.minBound.x, aabb.maxBound.y, aabb.minBound.z };
+		cube.vertices[2] = { aabb.maxBound.x, aabb.maxBound.y, aabb.minBound.z };
+		cube.vertices[3] = { aabb.maxBound.x, aabb.minBound.y, aabb.minBound.z };
+		cube.vertices[4] = { aabb.minBound.x, aabb.minBound.y, aabb.maxBound.z };
+		cube.vertices[5] = { aabb.minBound.x, aabb.maxBound.y, aabb.maxBound.z };
+		cube.vertices[6] = { aabb.maxBound.x, aabb.maxBound.y, aabb.maxBound.z };
+		cube.vertices[7] = { aabb.maxBound.x, aabb.minBound.y, aabb.maxBound.z };
+
+		// If any vertex is outside of camera frustum, don't draw
+		for (auto& vertice : cube.vertices)
+		{
+			DirectX::XMVECTOR transformedVertex = DirectX::XMVector3Transform(DirectX::XMLoadFloat3(&vertice), aTransform);
+			DirectX::XMFLOAT3 transformedVertexFloat3;
+			DirectX::XMStoreFloat3(&transformedVertexFloat3, transformedVertex);
+
+			if (!aGfx.IsPointInFrustum(transformedVertexFloat3))
+			{
+				return;
+			}
+		}
+
+		DirectX::XMFLOAT2 screenPos[8];
+
+		// Convert 3D positions to screen space
+		for (int i = 0; i < 8; ++i)
+		{
+			DirectX::XMMATRIX projectionMatrix = aTransform * aGfx.GetCameraInverseView();
+			projectionMatrix = projectionMatrix * aGfx.GetProjection();
+
+			DirectX::XMStoreFloat2(
+				&screenPos[i],
+				DirectX::XMVector3TransformCoord(DirectX::XMLoadFloat3(&cube.vertices[i]), projectionMatrix)
+			);
+
+			screenPos[i].x = (screenPos[i].x + 1.0f) * 0.5f * ImGui::GetIO().DisplaySize.x;
+			screenPos[i].y = (1.0f - screenPos[i].y) * 0.5f * ImGui::GetIO().DisplaySize.y;
+		}
+
+		// Draw lines between all screenpositions
+		for (int i = 0; i < 4; ++i)
+		{
+			ImGui::GetForegroundDrawList()->AddLine(
+				ImVec2(screenPos[i].x, screenPos[i].y),
+				ImVec2(screenPos[(i + 1) % 4].x, screenPos[(i + 1) % 4].y),
+				IM_COL32(0, 255, 0, 255)
+			);
+			ImGui::GetForegroundDrawList()->AddLine(
+				ImVec2(screenPos[i + 4].x, screenPos[i + 4].y),
+				ImVec2(screenPos[((i + 1) % 4) + 4].x, screenPos[((i + 1) % 4) + 4].y),
+				IM_COL32(0, 255, 0, 255)
+			);
+			ImGui::GetForegroundDrawList()->AddLine(
+				ImVec2(screenPos[i].x, screenPos[i].y),
+				ImVec2(screenPos[i + 4].x, screenPos[i + 4].y),
+				IM_COL32(0, 255, 0, 255)
+			);
 		}
 	}
 }

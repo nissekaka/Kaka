@@ -6,8 +6,6 @@
 
 namespace Kaka
 {
-	struct Material;
-
 	enum class eModelType { None, Static, Skeletal };
 
 	struct AABB
@@ -32,7 +30,7 @@ namespace Kaka
 
 	struct Skeleton
 	{
-		int rootBoneIndex = -1; // Index of the root bone in the skeleton
+		int rootBoneIndex = -1;
 		std::vector<Bone> bones{};
 		std::vector<std::string> boneNames;
 	};
@@ -50,7 +48,6 @@ namespace Kaka
 	struct MeshList
 	{
 		std::vector<Mesh> meshes;
-		std::string filePath;
 	};
 
 	struct AnimatedMesh
@@ -68,30 +65,28 @@ namespace Kaka
 		std::string filePath;
 	};
 
-	struct RenderResources
+	// TODO This could be a thing
+	struct Material
 	{
-		VertexShader* myVertexShader;
-		PixelShader* myPixelShader;
-		Material* myMaterial;
+		std::string name;
+		Texture* texture;
+		PixelShader* pixelShader;
 	};
 
-	struct ModelDataPtr
+	struct ModelData
 	{
 		MeshList* meshList = nullptr;
-
 		Texture* texture = nullptr;
-
-		DirectX::XMMATRIX* transform = nullptr;
+		VertexShader* vertexShader = nullptr;
+		PixelShader* pixelShader = nullptr;
 	};
 
-	struct AnimatedModelDataPtr
+	struct AnimatedModelData
 	{
 		AnimatedMeshList* meshList = nullptr;
 		Skeleton* skeleton = nullptr;
 
 		Texture* texture = nullptr;
-
-		DirectX::XMMATRIX* transform = nullptr;
 
 		std::map<std::string, AnimationClip*> animationClipMap = {};
 		std::vector<std::string> animationNames = {};

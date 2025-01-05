@@ -8,15 +8,15 @@ namespace Kaka
 {
 #pragma region Components
 
-	struct Transforms
-	{
-		DirectX::XMMATRIX objectToWorld = {};
-		DirectX::XMMATRIX objectToClip = {};
-	};
+	//struct Transforms
+	//{
+	//	DirectX::XMMATRIX objectToWorld = {};
+	//	DirectX::XMMATRIX objectToClip = {};
+	//};
 
 	struct TransformComponent
 	{
-		//DirectX::XMMATRIX transform;
+		DirectX::XMMATRIX objectToWorld;
 		float roll = 0.0f;
 		float pitch = 0.0f;
 		float yaw = 0.0f;
@@ -25,12 +25,14 @@ namespace Kaka
 		float z = 0.0f;
 		float scale = 1.0f;
 
-		Transforms transforms = {};
+		//Transforms transforms = {};
 	};
 
 	struct ModelComponent
 	{
 		std::string filePath = "";
+		VertexShader* vertexShader = nullptr;
+		PixelShader* pixelShader = nullptr;
 	};
 
 #pragma endregion

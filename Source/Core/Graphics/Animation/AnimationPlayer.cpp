@@ -5,7 +5,7 @@
 
 namespace Kaka
 {
-	void AnimationPlayer::Init(AnimatedModelDataPtr* aModelData)
+	void AnimationPlayer::Init(AnimatedModelData* aModelData)
 	{
 		modelData = aModelData;
 		currentAnimation.combinedTransforms.resize(modelData->skeleton->bones.size());

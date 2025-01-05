@@ -1,7 +1,5 @@
 #include "stdafx.h"
-#include "ModelLoader.h"
-//#include "Core/Model/Mesh.h"
-//#include "Core/Windows/Window.h"
+#include "ModelFactory.h"
 #include "Core/Graphics/Drawable/Vertex.h"
 #include <External/include/assimp/Importer.hpp>
 #include <External/include/assimp/scene.h>
@@ -15,8 +13,14 @@
 
 namespace Kaka
 {
-	bool ModelLoader::LoadStaticModel(const Graphics& aGfx, const std::string& aFilePath, ModelDataPtr& aOutModelData)
+	bool ModelFactory::LoadStaticModel(const Graphics& aGfx, const std::string& aFilePath, ModelData& aOutModelData)
 	{
+		if (meshLists.contains(aFilePath))
+		{
+			aOutModelData.meshList = &meshLists[aFilePath];
+			return true;
+		}
+
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(aFilePath,
 		                                         aiProcess_GenBoundingBoxes |
@@ -98,7 +102,7 @@ namespace Kaka
 				else
 				{
 					textures[materialName] = Texture(1u);
-					textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+					textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
 
 					//return &textures[aFilePath];
 					mesh.texture = &textures[materialName];
@@ -119,31 +123,6 @@ namespace Kaka
 				DirectX::XMFLOAT3 tangent{0.0f, 0.0f, 0.0f};
 				DirectX::XMFLOAT3 bitangent{0.0f, 0.0f, 0.0f};
 
-				//if (position.x < mesh.aabb.minBound.x)
-				//{
-				//	mesh.aabb.minBound.x = position.x;
-				//}
-				//if (position.y < mesh.aabb.minBound.y)
-				//{
-				//	mesh.aabb.minBound.y = position.y;
-				//}
-				//if (position.z < mesh.aabb.minBound.z)
-				//{
-				//	mesh.aabb.minBound.z = position.z;
-				//}
-				//if (position.x > mesh.aabb.maxBound.x)
-				//{
-				//	mesh.aabb.maxBound.x = position.x;
-				//}
-				//if (position.y > mesh.aabb.maxBound.y)
-				//{
-				//	mesh.aabb.maxBound.y = position.y;
-				//}
-				//if (position.z > mesh.aabb.maxBound.z)
-				//{
-				//	mesh.aabb.maxBound.z = position.z;
-				//}
-
 				// Check if the mesh has texture coordinates
 				if (aiMesh->HasTextureCoords(0))
 				{
@@ -159,10 +138,10 @@ namespace Kaka
 					bitangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mBitangents[j]);
 				}
 
-				mesh.vertices.push_back({position, texCoord, normal, tangent, bitangent});
+				mesh.vertices.push_back(Vertex{position, texCoord, normal, tangent, bitangent});
 			}
 
-			mesh.indices.reserve(static_cast<std::vector<unsigned short, std::allocator<unsigned short>>::size_type>(aiMesh->mNumFaces) * 3);
+			mesh.indices.reserve(aiMesh->mNumFaces * 3);
 
 			for (unsigned int j = 0; j < aiMesh->mNumFaces; j++)
 			{
@@ -173,6 +152,9 @@ namespace Kaka
 					mesh.indices.push_back(static_cast<unsigned short>(face.mIndices[k]));
 				}
 			}
+
+			mesh.vertexBuffer.Init(aGfx, mesh.vertices);
+			mesh.indexBuffer.Init(aGfx, mesh.indices);
 			//for (unsigned int j = 0; i < aiMesh->mNumFaces; j++)
 			//{
 			//	const auto& face = aiMesh->mFaces[j];
@@ -187,178 +169,15 @@ namespace Kaka
 		return true;
 	}
 
-	//Skeleton ModelLoader::LoadSkeleton(const aiScene* aScene)
-	//{
-	//	Skeleton skeleton;
-
-	//	for (unsigned int i = 0; i < aScene->mNumMeshes; ++i)
-	//	{
-	//		const aiMesh* mesh = aScene->mMeshes[i];
-
-	//		for (unsigned int j = 0; j < mesh->mNumBones; ++j)
-	//		{
-	//			const aiBone* bone = mesh->mBones[j];
-
-	//			Bone skeletonBone;
-	//			skeletonBone.name = bone->mName.C_Str();
-	//			//skeletonBone.bindPose = AssimpToDirectXMatrix(bone->mOffsetMatrix);
-
-	//			skeleton.bones.push_back(skeletonBone);
-	//		}
-	//	}
-
-	//	for (unsigned int i = 0; i < skeleton.bones.size(); ++i)
-	//	{
-	//		const aiNode* boneNode = aScene->mRootNode->FindNode(skeleton.bones[i].name.c_str());
-	//		if (boneNode)
-	//		{
-	//			const aiNode* parentNode = boneNode->mParent;
-	//			if (parentNode)
-	//			{
-	//				std::string parentName = parentNode->mName.C_Str();
-	//				for (unsigned int j = 0; j < skeleton.bones.size(); ++j)
-	//				{
-	//					if (skeleton.bones[j].name == parentName)
-	//					{
-	//						skeleton.bones[i].parentIndex = j;
-	//						//skeleton.bones[j].childIndices.push_back(i);
-	//						break;
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//	// Find and set the rootBoneIndex
-	//	for (int i = 0; i < skeleton.bones.size(); ++i)
-	//	{
-	//		if (skeleton.bones[i].parentIndex == -1)
-	//		{
-	//			skeleton.rootBoneIndex = i;
-	//			break;
-	//		}
-	//	}
-
-	//	return skeleton;
-	//}
-
-	//// Helper function to find the index of the keyframe that corresponds to the given time
-	//unsigned int FindKeyframeIndex(const aiNodeAnim* aChannel, const float aTime)
-	//{
-	//	const unsigned int numKeys = aChannel->mNumPositionKeys;
-
-	//	// Handle cases where the given time is greater than the last keyframe time
-	//	if (aTime >= aChannel->mPositionKeys[numKeys - 1].mTime)
-	//	{
-	//		return numKeys - 1; // Return the index of the last keyframe
-	//	}
-
-	//	// Iterate through the position keys to find the index of the keyframe that matches or is closest to the given time
-	//	for (unsigned int i = 0; i < numKeys - 1; ++i)
-	//	{
-	//		if (aTime < aChannel->mPositionKeys[i + 1].mTime)
-	//		{
-	//			return i; // Return the index of the keyframe
-	//		}
-	//	}
-
-	//	// If no keyframe was found, return the last keyframe index
-	//	return numKeys - 1;
-	//}
-
-	//std::vector<AnimationClip> ModelLoader::LoadAnimations(const aiScene* aScene)
-	//{
-	//	std::vector<AnimationClip> animations;
-
-	//	// Iterate through each animation
-	//	for (unsigned int i = 0; i < aScene->mNumAnimations; ++i)
-	//	{
-	//		const aiAnimation* animation = aScene->mAnimations[i];
-
-	//		AnimationClip animationClip;
-	//		animationClip.name = animation->mName.C_Str();
-
-	//		const float ticksPerSecond = animation->mTicksPerSecond != 0
-	//			                             ? static_cast<float>(animation->mTicksPerSecond)
-	//			                             : 25.0f;
-	//		const float timeDuration = static_cast<float>(animation->mDuration) / ticksPerSecond;
-
-	//		// Determine the maximum number of frames among all the channels
-	//		unsigned int numFrames = 0;
-	//		for (unsigned int j = 1; j < animation->mNumChannels; ++j)
-	//		{
-	//			const aiNodeAnim* channel = animation->mChannels[j];
-	//			numFrames = (std::max)(numFrames, channel->mNumPositionKeys);
-	//		}
-
-	//		// Calculate the duration of a single frame in seconds
-	//		float frameDuration = timeDuration / static_cast<float>(numFrames);
-
-	//		// Iterate through each frame
-	//		for (unsigned int frameIndex = 0; frameIndex < numFrames; ++frameIndex)
-	//		{
-	//			// Create a keyframe for the current frame
-	//			Keyframe keyframe;
-	//			keyframe.time = (float)frameIndex * frameDuration;
-
-	//			// Iterate through each channel (bone)
-	//			for (unsigned int j = 1; j < animation->mNumChannels; ++j)
-	//			{
-	//				const aiNodeAnim* channel = animation->mChannels[j];
-
-	//				//const unsigned int keyframeIndex = FindKeyframeIndex(channel, keyframe.time);
-	//				const aiVectorKey& positionKey = channel->mPositionKeys[frameIndex];
-	//				//const aiQuatKey& rotationKey = channel->mRotationKeys[frameIndex];
-	//				//const aiVectorKey& scalingKey = channel->mScalingKeys[frameIndex];
-
-
-	//				DirectX::XMFLOAT3 position(positionKey.mValue.x, positionKey.mValue.y, positionKey.mValue.z);
-	//				std::string posKey = "\nIndex: " + std::to_string(frameIndex) + "  Pos: " +
-	//					std::to_string(position.x) + ", " + std::to_string(position.y) + ", " + std::to_string(
-	//						position.z);
-	//				OutputDebugStringA(posKey.c_str());
-	//				//DirectX::XMFLOAT4 rotation(rotationKey.mValue.x, rotationKey.mValue.y, rotationKey.mValue.z, rotationKey.mValue.w);
-	//				//DirectX::XMFLOAT3 scaling(scalingKey.mValue.x, scalingKey.mValue.y, scalingKey.mValue.z);
-	//				DirectX::XMFLOAT4 rotation(0.0f, 0.0f, 0.0f, 0.0f);
-	//				DirectX::XMFLOAT3 scaling(1.0f, 1.0f, 1.0f);
-
-	//				DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslationFromVector(
-	//					DirectX::XMLoadFloat3(&position));
-	//				DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationQuaternion(
-	//					DirectX::XMLoadFloat4(&rotation));
-	//				DirectX::XMMATRIX scalingMatrix = DirectX::XMMatrixScalingFromVector(
-	//					DirectX::XMLoadFloat3(&scaling));
-
-	//				DirectX::XMMATRIX boneTransformMatrix = translationMatrix * rotationMatrix * scalingMatrix;
-
-	//				// Add the bone transform to the keyframe
-	//				keyframe.boneTransforms.push_back(boneTransformMatrix);
-	//			}
-
-	//			// Add the keyframe to the animation clip
-	//			animationClip.keyframes.push_back(keyframe);
-	//		}
-
-	//		// Add the animation clip to the animations vector
-	//		animations.push_back(animationClip);
-	//	}
-
-	//	return animations;
-	//}
-
-	//DirectX::XMFLOAT4X4 ModelLoader::AssimpToDirectXMatrix(const aiMatrix4x4& aAssimpMatrix)
-	//{
-	//	return {
-	//		aAssimpMatrix.a1, aAssimpMatrix.b1, aAssimpMatrix.c1, aAssimpMatrix.d1,
-	//		aAssimpMatrix.a2, aAssimpMatrix.b2, aAssimpMatrix.c2, aAssimpMatrix.d2,
-	//		aAssimpMatrix.a3, aAssimpMatrix.b3, aAssimpMatrix.c3, aAssimpMatrix.d3,
-	//		aAssimpMatrix.a4, aAssimpMatrix.b4, aAssimpMatrix.c4, aAssimpMatrix.d4
-	//	};
-	//}
-
-	bool ModelLoader::LoadStaticFBXModel(const Graphics& aGfx, const std::string& aFilePath, ModelDataPtr& aOutModelData)
+	bool ModelFactory::LoadStaticFBXModel(const Graphics& aGfx, const std::string& aFilePath, ModelData& aOutModelData)
 	{
 		TGA::FBXModel fbxModel;
+
+		if (meshLists.contains(aFilePath))
+		{
+			aOutModelData.meshList = &meshLists[aFilePath];
+			return true;
+		}
 
 		const std::filesystem::path rootFsPath = std::filesystem::path(aFilePath).parent_path();
 		const std::string rootPath = rootFsPath.string() + "\\";
@@ -399,7 +218,8 @@ namespace Kaka
 					else
 					{
 						textures[materialName] = Texture(1u);
-						textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+						//textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+						textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
 
 						//return &textures[aFilePath];
 						mesh.texture = &textures[materialName];
@@ -451,6 +271,9 @@ namespace Kaka
 					mesh.indices.push_back(static_cast<unsigned short>(index));
 				}
 
+				mesh.vertexBuffer.Init(aGfx, mesh.vertices);
+				mesh.indexBuffer.Init(aGfx, mesh.indices);
+
 				// Assign material name
 				//aOutModelData.meshList->materialNames.push_back(fbxModel.Materials[fbxMesh.MaterialIndex].MaterialName);
 			}
@@ -459,7 +282,7 @@ namespace Kaka
 		return false;
 	}
 
-	bool ModelLoader::LoadAnimatedModel(AnimatedModelDataPtr& aOutModelData, const std::string& aFilePath)
+	bool ModelFactory::LoadAnimatedModel(AnimatedModelData& aOutModelData, const std::string& aFilePath)
 	{
 		if (skeletons.contains(aFilePath))
 		{
@@ -597,7 +420,7 @@ namespace Kaka
 		return false;
 	}
 
-	bool ModelLoader::LoadTexture(const Graphics& aGfx, AnimatedModelDataPtr& aOutModelData, const std::string& aFilePath)
+	bool ModelFactory::LoadTexture(const Graphics& aGfx, AnimatedModelData& aOutModelData, const std::string& aFilePath)
 	{
 		if (textures.contains(aFilePath))
 		{
@@ -612,7 +435,7 @@ namespace Kaka
 		return true;
 	}
 
-	bool ModelLoader::LoadTexture(const Graphics& aGfx, ModelDataPtr& aOutModelData, const std::string& aFilePath)
+	bool ModelFactory::LoadTexture(const Graphics& aGfx, ModelData& aOutModelData, const std::string& aFilePath)
 	{
 		if (textures.contains(aFilePath))
 		{
@@ -627,7 +450,7 @@ namespace Kaka
 		return true;
 	}
 
-	Texture* ModelLoader::LoadTexture(const Graphics& aGfx, const std::string& aFilePath, const UINT aSlot)
+	Texture* ModelFactory::LoadTexture(const Graphics& aGfx, const std::string& aFilePath, const UINT aSlot)
 	{
 		if (textures.contains(aFilePath))
 		{
@@ -640,7 +463,7 @@ namespace Kaka
 		return &textures[aFilePath];
 	}
 
-	bool ModelLoader::LoadAnimation(AnimatedModelDataPtr& aOutModelData, const std::string& aFilePath)
+	bool ModelFactory::LoadAnimation(AnimatedModelData& aOutModelData, const std::string& aFilePath)
 	{
 		if (animationClips.contains(aFilePath))
 		{

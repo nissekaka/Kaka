@@ -22,7 +22,7 @@ namespace Kaka
 		AnimationPlayer() = default;
 		~AnimationPlayer() = default;
 
-		void Init(AnimatedModelDataPtr* aModelData);
+		void Init(AnimatedModelData* aModelData);
 		void Animate(float aDeltaTime);
 		bool UpdateAnimation(const float aDeltaTime, Animation& aOutAnimation) const;
 		void BlendPoses(Animation& aFromAnimation, Animation& aToAnimation, const float aBlendFactor) const;
@@ -39,7 +39,7 @@ namespace Kaka
 		void SetBlendTime(float aBlendTime);
 
 	private:
-		AnimatedModelDataPtr* modelData = nullptr;
+		AnimatedModelData* modelData = nullptr;
 
 		Animation currentAnimation;
 		int currentAnimationIndex = 0;
