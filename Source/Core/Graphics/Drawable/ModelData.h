@@ -73,14 +73,6 @@ namespace Kaka
 		PixelShader* pixelShader;
 	};
 
-	struct ModelData
-	{
-		MeshList* meshList = nullptr;
-		Texture* texture = nullptr;
-		VertexShader* vertexShader = nullptr;
-		PixelShader* pixelShader = nullptr;
-	};
-
 	struct AnimatedModelData
 	{
 		AnimatedMeshList* meshList = nullptr;

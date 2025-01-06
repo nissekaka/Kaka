@@ -17,32 +17,27 @@ namespace Kaka
 
 		std::unordered_map<std::string, RenderQueue::RenderCommand> groups;
 
-		for (const auto& package : aRenderData)
+		for (const RenderData& package : aRenderData)
 		{
-			std::string key = std::to_string(static_cast<int>(package.vertexShader->VertexShader::GetType())) + "|" +
-				std::to_string(static_cast<int>(package.pixelShader->PixelShader::GetType())) + "|" +
+			std::string key = std::to_string(static_cast<int>(package.vertexShader->GetType())) + "|" +
+				std::to_string(static_cast<int>(package.pixelShader->GetType())) + "|" +
 				package.filePath;
 
-			// Find or create the group
-			auto& renderCommand = groups[key];
+			RenderQueue::RenderCommand& renderCommand = groups[key];
 			renderCommand.vertexShader = package.vertexShader;
 			renderCommand.pixelShader = package.pixelShader;
 			renderCommand.meshList = package.meshList;
-
-			// Append the transform for instancing
 			renderCommand.instanceTransforms.push_back(package.transform);
 		}
 
-		// Populate the render queue
-		for (auto& command : groups | std::views::values)
+		for (RenderQueue::RenderCommand& command : groups | std::views::values)
 		{
-			// Create instance data buffer
 			std::vector<DirectX::XMMATRIX> instanceData;
 			instanceData.reserve(command.instanceTransforms.size());
 
-			for (auto* matrixPtr : command.instanceTransforms)
+			for (DirectX::XMMATRIX* matrixPtr : command.instanceTransforms)
 			{
-				instanceData.push_back(DirectX::XMMatrixTranspose(*matrixPtr)); // Transpose for HLSL
+				instanceData.push_back(*matrixPtr);
 			}
 
 			command.instanceBuffer.Init(aGfx, instanceData);
@@ -57,7 +52,7 @@ namespace Kaka
 
 		topology.Bind(aGfx);
 
-		for (auto& command : aRenderQueue.commands)
+		for (RenderQueue::RenderCommand& command : aRenderQueue.commands)
 		{
 			// Commands SHOULD be sorted by shader, so we can optimize by binding the shader only once
 			// This is a naive implementation, but it works for now
@@ -92,7 +87,7 @@ namespace Kaka
 			std::vector<DirectX::XMMATRIX> instanceData;
 			instanceData.reserve(command.instanceTransforms.size());
 
-			for (auto* matrixPtr : command.instanceTransforms)
+			for (DirectX::XMMATRIX* matrixPtr : command.instanceTransforms)
 			{
 				DirectX::XMMATRIX transform = *matrixPtr;
 				if (aShadowPass)

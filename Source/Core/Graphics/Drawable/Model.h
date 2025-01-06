@@ -31,7 +31,7 @@ namespace Kaka
 		float GetScale() const;
 		bool IsLoaded() const;
 		void BindPixelShader(const Graphics& aGfx);
-		ModelData& GetModelData() { return modelData; }
+		//ModelData& GetModelData() { return modelData; }
 		AnimatedModelData& GetAnimatedModelData() { return animatedModelData; }
 		DirectX::XMMATRIX& GetBoneTransform(int aBoneIndex);
 		DirectX::XMMATRIX& GetBoneTransform(const std::string& aBoneName);
@@ -76,7 +76,7 @@ namespace Kaka
 
 	private:
 		AnimatedModelData animatedModelData;
-		ModelData modelData;
+		//ModelData modelData;
 		eModelType modelType = eModelType::None;
 		bool isLoaded = false;
 

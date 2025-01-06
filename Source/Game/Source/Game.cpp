@@ -139,6 +139,7 @@ namespace Kaka
 					// Create entity
 					entities.push_back(ecs.CreateEntity());
 					entities.back()->AddComponent(TransformComponent{});
+					//entities.back()->AddComponent(ModelComponent{ "Assets/Models/vamp/vamp.fbx" });
 					entities.back()->AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
 					entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
 					entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
@@ -149,7 +150,7 @@ namespace Kaka
 					wnd.Gfx().LoadModel(filePath);
 					entities.back()->GetComponent<ModelComponent>()->meshList = &ModelFactory::GetMeshList(filePath);
 
-					wnd.Gfx().ClearRenderPackages();
+					wnd.Gfx().ClearRenderData();
 					ecs.RegisterModelComponents(wnd.Gfx());
 					wnd.Gfx().BuildRenderQueue();
 					selectedEntity = entities.back()->GetID();
@@ -161,7 +162,7 @@ namespace Kaka
 					if (entities.size() > 0)
 					{
 						ecs.DestroyEntity(entities.back()->GetID());
-						wnd.Gfx().ClearRenderPackages();
+						wnd.Gfx().ClearRenderData();
 						ecs.RegisterModelComponents(wnd.Gfx());
 						wnd.Gfx().BuildRenderQueue();
 

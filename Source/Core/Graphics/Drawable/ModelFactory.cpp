@@ -13,26 +13,183 @@
 
 namespace Kaka
 {
-	bool ModelFactory::LoadStaticModel(const Graphics& aGfx, const std::string& aFilePath, ModelData& aOutModelData)
+	//bool ModelFactory::LoadStaticModel(const Graphics& aGfx, const std::string& aFilePath, ModelData& aOutModelData)
+	//{
+	//	if (meshLists.contains(aFilePath))
+	//	{
+	//		aOutModelData.meshList = &meshLists[aFilePath];
+	//		return true;
+	//	}
+
+	//	Assimp::Importer importer;
+	//	const aiScene* scene = importer.ReadFile(aFilePath,
+	//	                                         aiProcess_GenBoundingBoxes |
+	//	                                         aiProcess_FlipUVs |
+	//	                                         aiProcess_ConvertToLeftHanded |
+	//	                                         aiProcess_LimitBoneWeights |
+	//	                                         aiProcess_FindInvalidData |
+	//	                                         aiProcessPreset_TargetRealtime_Fast
+	//	);
+
+	//	const std::filesystem::path rootFsPath = std::filesystem::path(aFilePath).parent_path();
+	//	const std::string rootPath = rootFsPath.string() + "\\";
+
+	//	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	//	{
+	//		std::cerr << "Failed to load file: " << importer.GetErrorString() << std::endl;
+	//		return false;
+	//	}
+	//	meshLists[aFilePath] = MeshList();
+	//	MeshList& meshList = meshLists[aFilePath];
+	//	aOutModelData.meshList = &meshList;
+
+	//	meshLists[aFilePath].meshes.resize(scene->mNumMeshes);
+
+	//	// Copy model data from FBXImporter to our own model data
+	//	aOutModelData.meshList = &meshLists[aFilePath];
+	//	for (size_t i = 0; i < aOutModelData.meshList->meshes.size(); ++i)
+	//	{
+	//		// Imported data
+	//		aiMesh* aiMesh = scene->mMeshes[i];
+
+	//		// Our own data
+	//		Mesh& mesh = aOutModelData.meshList->meshes[i];
+
+	//		// AABB
+	//		mesh.aabb.minBound =
+	//		{
+	//			aiMesh->mAABB.mMin.x,
+	//			aiMesh->mAABB.mMin.y,
+	//			aiMesh->mAABB.mMin.z
+	//		};
+
+	//		mesh.aabb.maxBound =
+	//		{
+	//			aiMesh->mAABB.mMax.x,
+	//			aiMesh->mAABB.mMax.y,
+	//			aiMesh->mAABB.mMax.z
+	//		};
+
+	//		// Get Material from .fbx
+	//		{
+	//			aiString textureFileName;
+	//			aiMaterial* mat = scene->mMaterials[aiMesh->mMaterialIndex];
+
+	//			std::string materialName = mat->GetName().C_Str();
+	//			std::string diffuseTextureFileName;
+	//			std::string normalTextureFileName;
+	//			std::string materialTextureFileName;
+
+	//			// Diffuse
+	//			if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &textureFileName) == aiReturn_SUCCESS)
+	//			{
+	//				diffuseTextureFileName = rootPath + textureFileName.C_Str();
+	//			}
+	//			if (mat->GetTexture(aiTextureType_NORMALS, 0, &textureFileName) == aiReturn_SUCCESS)
+	//			{
+	//				normalTextureFileName = rootPath + textureFileName.C_Str();
+	//			}
+	//			if (mat->GetTexture(aiTextureType_METALNESS, 0, &textureFileName) == aiReturn_SUCCESS)
+	//			{
+	//				materialTextureFileName = rootPath + textureFileName.C_Str();
+	//			}
+
+	//			if (textures.contains(materialName))
+	//			{
+	//				//return &textures[materialName];
+	//				mesh.texture = &textures[materialName];
+	//			}
+	//			else
+	//			{
+	//				textures[materialName] = Texture(1u);
+	//				textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
+	//				//textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+
+
+	//				//return &textures[aFilePath];
+	//				mesh.texture = &textures[materialName];
+	//			}
+
+	//			//std::string name = textureFileName.C_Str();
+
+	//			//meshList.materialNames.push_back(name);
+	//		}
+
+	//		mesh.vertices.reserve(aiMesh->mNumVertices);
+
+	//		for (unsigned int j = 0; j < aiMesh->mNumVertices; ++j)
+	//		{
+	//			const DirectX::XMFLOAT3 position{aiMesh->mVertices[j].x, aiMesh->mVertices[j].y, aiMesh->mVertices[j].z};
+	//			const DirectX::XMFLOAT3 normal = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mNormals[j]);
+	//			DirectX::XMFLOAT2 texCoord{0.0f, 0.0f};
+	//			DirectX::XMFLOAT3 tangent{0.0f, 0.0f, 0.0f};
+	//			DirectX::XMFLOAT3 bitangent{0.0f, 0.0f, 0.0f};
+
+	//			// Check if the mesh has texture coordinates
+	//			if (aiMesh->HasTextureCoords(0))
+	//			{
+	//				// Retrieve the first set of texture coordinates
+	//				const aiVector3D& aiTexCoord = aiMesh->mTextureCoords[0][j];
+	//				texCoord.x = aiTexCoord.x;
+	//				texCoord.y = aiTexCoord.y;
+	//			}
+
+	//			if (aiMesh->HasTangentsAndBitangents())
+	//			{
+	//				tangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mTangents[j]);
+	//				bitangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mBitangents[j]);
+	//			}
+
+	//			mesh.vertices.push_back(Vertex{position, texCoord, normal, tangent, bitangent});
+	//		}
+
+	//		mesh.indices.reserve(aiMesh->mNumFaces * 3);
+
+	//		for (unsigned int j = 0; j < aiMesh->mNumFaces; j++)
+	//		{
+	//			const aiFace& face = aiMesh->mFaces[j];
+
+	//			for (unsigned int k = 0; k < face.mNumIndices; k++)
+	//			{
+	//				mesh.indices.push_back(static_cast<unsigned short>(face.mIndices[k]));
+	//			}
+	//		}
+
+	//		mesh.vertexBuffer.Init(aGfx, mesh.vertices);
+	//		mesh.indexBuffer.Init(aGfx, mesh.indices);
+	//		//for (unsigned int j = 0; i < aiMesh->mNumFaces; j++)
+	//		//{
+	//		//	const auto& face = aiMesh->mFaces[j];
+	//		//	assert(face.mNumIndices == 3);
+	//		//	mesh.indices.push_back(static_cast<const unsigned short&>(face.mIndices[0]));
+	//		//	mesh.indices.push_back(static_cast<const unsigned short&>(face.mIndices[1]));
+	//		//	mesh.indices.push_back(static_cast<const unsigned short&>(face.mIndices[2]));
+	//		//}
+	//	}
+
+
+	//	return true;
+	//}
+
+	bool ModelFactory::LoadStaticModel(const Graphics& aGfx, const std::string& aFilePath)
 	{
 		if (meshLists.contains(aFilePath))
 		{
-			aOutModelData.meshList = &meshLists[aFilePath];
 			return true;
 		}
 
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(aFilePath,
-		                                         aiProcess_GenBoundingBoxes |
-		                                         aiProcess_FlipUVs |
-		                                         aiProcess_ConvertToLeftHanded |
-		                                         aiProcess_LimitBoneWeights |
-		                                         aiProcess_FindInvalidData |
-		                                         aiProcessPreset_TargetRealtime_Fast
+			aiProcess_GenBoundingBoxes |
+			aiProcess_FlipUVs |
+			aiProcess_ConvertToLeftHanded |
+			aiProcess_LimitBoneWeights |
+			aiProcess_FindInvalidData |
+			aiProcessPreset_TargetRealtime_Fast
 		);
 
 		const std::filesystem::path rootFsPath = std::filesystem::path(aFilePath).parent_path();
-		const std::string rootPath = rootFsPath.string() + "\\";
+		const std::string rootPath = rootFsPath.string() + "/";
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -41,19 +198,16 @@ namespace Kaka
 		}
 		meshLists[aFilePath] = MeshList();
 		MeshList& meshList = meshLists[aFilePath];
-		aOutModelData.meshList = &meshList;
 
-		meshLists[aFilePath].meshes.resize(scene->mNumMeshes);
+		meshList.meshes.resize(scene->mNumMeshes);
 
-		// Copy model data from FBXImporter to our own model data
-		aOutModelData.meshList = &meshLists[aFilePath];
-		for (size_t i = 0; i < aOutModelData.meshList->meshes.size(); ++i)
+		for (size_t i = 0; i < meshList.meshes.size(); ++i)
 		{
 			// Imported data
 			aiMesh* aiMesh = scene->mMeshes[i];
 
 			// Our own data
-			Mesh& mesh = aOutModelData.meshList->meshes[i];
+			Mesh& mesh = meshList.meshes[i];
 
 			// AABB
 			mesh.aabb.minBound =
@@ -102,7 +256,17 @@ namespace Kaka
 				else
 				{
 					textures[materialName] = Texture(1u);
-					textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
+
+					if (diffuseTextureFileName.empty())
+					{
+						textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
+					}
+					else
+					{
+						textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+					}
+
+					//textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
 					//textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
 
 
@@ -119,11 +283,11 @@ namespace Kaka
 
 			for (unsigned int j = 0; j < aiMesh->mNumVertices; ++j)
 			{
-				const DirectX::XMFLOAT3 position{aiMesh->mVertices[j].x, aiMesh->mVertices[j].y, aiMesh->mVertices[j].z};
+				const DirectX::XMFLOAT3 position{ aiMesh->mVertices[j].x, aiMesh->mVertices[j].y, aiMesh->mVertices[j].z };
 				const DirectX::XMFLOAT3 normal = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mNormals[j]);
-				DirectX::XMFLOAT2 texCoord{0.0f, 0.0f};
-				DirectX::XMFLOAT3 tangent{0.0f, 0.0f, 0.0f};
-				DirectX::XMFLOAT3 bitangent{0.0f, 0.0f, 0.0f};
+				DirectX::XMFLOAT2 texCoord{ 0.0f, 0.0f };
+				DirectX::XMFLOAT3 tangent{ 0.0f, 0.0f, 0.0f };
+				DirectX::XMFLOAT3 bitangent{ 0.0f, 0.0f, 0.0f };
 
 				// Check if the mesh has texture coordinates
 				if (aiMesh->HasTextureCoords(0))
@@ -140,7 +304,7 @@ namespace Kaka
 					bitangent = *reinterpret_cast<DirectX::XMFLOAT3*>(&aiMesh->mBitangents[j]);
 				}
 
-				mesh.vertices.push_back(Vertex{position, texCoord, normal, tangent, bitangent});
+				mesh.vertices.push_back(Vertex{ position, texCoord, normal, tangent, bitangent });
 			}
 
 			mesh.indices.reserve(aiMesh->mNumFaces * 3);
@@ -157,132 +321,124 @@ namespace Kaka
 
 			mesh.vertexBuffer.Init(aGfx, mesh.vertices);
 			mesh.indexBuffer.Init(aGfx, mesh.indices);
-			//for (unsigned int j = 0; i < aiMesh->mNumFaces; j++)
-			//{
-			//	const auto& face = aiMesh->mFaces[j];
-			//	assert(face.mNumIndices == 3);
-			//	mesh.indices.push_back(static_cast<const unsigned short&>(face.mIndices[0]));
-			//	mesh.indices.push_back(static_cast<const unsigned short&>(face.mIndices[1]));
-			//	mesh.indices.push_back(static_cast<const unsigned short&>(face.mIndices[2]));
-			//}
 		}
 
 
 		return true;
 	}
 
-	bool ModelFactory::LoadStaticFBXModel(const Graphics& aGfx, const std::string& aFilePath, ModelData& aOutModelData)
-	{
-		TGA::FBXModel fbxModel;
+	//bool ModelFactory::LoadStaticFBXModel(const Graphics& aGfx, const std::string& aFilePath, ModelData& aOutModelData)
+	//{
+	//	TGA::FBXModel fbxModel;
 
-		if (meshLists.contains(aFilePath))
-		{
-			aOutModelData.meshList = &meshLists[aFilePath];
-			return true;
-		}
+	//	if (meshLists.contains(aFilePath))
+	//	{
+	//		aOutModelData.meshList = &meshLists[aFilePath];
+	//		return true;
+	//	}
 
-		const std::filesystem::path rootFsPath = std::filesystem::path(aFilePath).parent_path();
-		const std::string rootPath = rootFsPath.string() + "\\";
+	//	const std::filesystem::path rootFsPath = std::filesystem::path(aFilePath).parent_path();
+	//	const std::string rootPath = rootFsPath.string() + "\\";
 
-		if (TGA::FBXImporter::LoadModel(aFilePath, fbxModel))
-		{
-			meshLists[aFilePath] = MeshList();
-			MeshList& meshList = meshLists[aFilePath];
-			aOutModelData.meshList = &meshList;
+	//	if (TGA::FBXImporter::LoadModel(aFilePath, fbxModel))
+	//	{
+	//		meshLists[aFilePath] = MeshList();
+	//		MeshList& meshList = meshLists[aFilePath];
+	//		aOutModelData.meshList = &meshList;
 
-			meshLists[aFilePath].meshes.resize(fbxModel.Meshes.size());
+	//		meshLists[aFilePath].meshes.resize(fbxModel.Meshes.size());
 
-			// Copy model data from FBXImporter to our own model data
-			aOutModelData.meshList = &meshLists[aFilePath];
-			for (size_t i = 0; i < aOutModelData.meshList->meshes.size(); ++i)
-			{
-				// Imported data
-				TGA::FBXModel::FBXMesh& fbxMesh = fbxModel.Meshes[i];
+	//		// Copy model data from FBXImporter to our own model data
+	//		aOutModelData.meshList = &meshLists[aFilePath];
+	//		for (size_t i = 0; i < aOutModelData.meshList->meshes.size(); ++i)
+	//		{
+	//			// Imported data
+	//			TGA::FBXModel::FBXMesh& fbxMesh = fbxModel.Meshes[i];
 
-				// Our own data
-				Mesh& mesh = aOutModelData.meshList->meshes[i];
+	//			// Our own data
+	//			Mesh& mesh = aOutModelData.meshList->meshes[i];
 
-				// Get Material from .fbx
-				{
-					std::string textureFileName;
+	//			// Get Material from .fbx
+	//			{
+	//				std::string textureFileName;
 
-					TGA::FBXMaterial* material = &fbxModel.Materials[fbxMesh.MaterialIndex];
-					std::string materialName = fbxModel.Materials[fbxMesh.MaterialIndex].MaterialName;
-					std::string diffuseTextureFileName = rootPath + material->Diffuse.Path;
-					std::string normalTextureFileName = rootPath + material->NormalMap.Path;
-					std::string materialTextureFileName = rootPath + material->Shininess.Path;
+	//				TGA::FBXMaterial* material = &fbxModel.Materials[fbxMesh.MaterialIndex];
+	//				std::string materialName = fbxModel.Materials[fbxMesh.MaterialIndex].MaterialName;
+	//				std::string diffuseTextureFileName = rootPath + material->Diffuse.Path;
+	//				std::string normalTextureFileName = rootPath + material->NormalMap.Path;
+	//				std::string materialTextureFileName = rootPath + material->Shininess.Path;
 
-					if (textures.contains(materialName))
-					{
-						//return &textures[materialName];
-						mesh.texture = &textures[materialName];
-					}
-					else
-					{
-						textures[materialName] = Texture(1u);
-						//textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
-						textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
+	//				if (textures.contains(materialName))
+	//				{
+	//					//return &textures[materialName];
+	//					mesh.texture = &textures[materialName];
+	//				}
+	//				else
+	//				{
+	//					textures[materialName] = Texture(1u);
+	//					//textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+	//					textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
 
-						//return &textures[aFilePath];
-						mesh.texture = &textures[materialName];
-					}
+	//					//return &textures[aFilePath];
+	//					mesh.texture = &textures[materialName];
+	//				}
 
-					//std::string name = textureFileName.C_Str();
+	//				//std::string name = textureFileName.C_Str();
 
-					//meshList.materialNames.push_back(name);
-				}
+	//				//meshList.materialNames.push_back(name);
+	//			}
 
-				std::vector<Vertex> vertices;
-				vertices.resize(fbxMesh.Vertices.size());
+	//			std::vector<Vertex> vertices;
+	//			vertices.resize(fbxMesh.Vertices.size());
 
-				// Copy vertex data
-				for (size_t v = 0; v < vertices.size(); ++v)
-				{
-					vertices[v].position = {
-						fbxMesh.Vertices[v].Position[0],
-						fbxMesh.Vertices[v].Position[1],
-						fbxMesh.Vertices[v].Position[2]
-					};
+	//			// Copy vertex data
+	//			for (size_t v = 0; v < vertices.size(); ++v)
+	//			{
+	//				vertices[v].position = {
+	//					fbxMesh.Vertices[v].Position[0],
+	//					fbxMesh.Vertices[v].Position[1],
+	//					fbxMesh.Vertices[v].Position[2]
+	//				};
 
-					vertices[v].normal = {
-						fbxMesh.Vertices[v].Normal[0],
-						fbxMesh.Vertices[v].Normal[1],
-						fbxMesh.Vertices[v].Normal[2]
-					};
+	//				vertices[v].normal = {
+	//					fbxMesh.Vertices[v].Normal[0],
+	//					fbxMesh.Vertices[v].Normal[1],
+	//					fbxMesh.Vertices[v].Normal[2]
+	//				};
 
-					vertices[v].tangent = {
-						fbxMesh.Vertices[v].Tangent[0],
-						fbxMesh.Vertices[v].Tangent[1],
-						fbxMesh.Vertices[v].Tangent[2]
-					};
+	//				vertices[v].tangent = {
+	//					fbxMesh.Vertices[v].Tangent[0],
+	//					fbxMesh.Vertices[v].Tangent[1],
+	//					fbxMesh.Vertices[v].Tangent[2]
+	//				};
 
-					vertices[v].bitangent = {
-						fbxMesh.Vertices[v].Binormal[0],
-						fbxMesh.Vertices[v].Binormal[1],
-						fbxMesh.Vertices[v].Binormal[2]
-					};
+	//				vertices[v].bitangent = {
+	//					fbxMesh.Vertices[v].Binormal[0],
+	//					fbxMesh.Vertices[v].Binormal[1],
+	//					fbxMesh.Vertices[v].Binormal[2]
+	//				};
 
-					vertices[v].texCoord.x = fbxMesh.Vertices[v].UVs[0][0];
-					vertices[v].texCoord.y = fbxMesh.Vertices[v].UVs[0][1];
-				}
+	//				vertices[v].texCoord.x = fbxMesh.Vertices[v].UVs[0][0];
+	//				vertices[v].texCoord.y = fbxMesh.Vertices[v].UVs[0][1];
+	//			}
 
-				mesh.vertices = vertices;
+	//			mesh.vertices = vertices;
 
-				for (const auto& index : fbxMesh.Indices)
-				{
-					mesh.indices.push_back(static_cast<unsigned short>(index));
-				}
+	//			for (const auto& index : fbxMesh.Indices)
+	//			{
+	//				mesh.indices.push_back(static_cast<unsigned short>(index));
+	//			}
 
-				mesh.vertexBuffer.Init(aGfx, mesh.vertices);
-				mesh.indexBuffer.Init(aGfx, mesh.indices);
+	//			mesh.vertexBuffer.Init(aGfx, mesh.vertices);
+	//			mesh.indexBuffer.Init(aGfx, mesh.indices);
 
-				// Assign material name
-				//aOutModelData.meshList->materialNames.push_back(fbxModel.Materials[fbxMesh.MaterialIndex].MaterialName);
-			}
-			return true;
-		}
-		return false;
-	}
+	//			// Assign material name
+	//			//aOutModelData.meshList->materialNames.push_back(fbxModel.Materials[fbxMesh.MaterialIndex].MaterialName);
+	//		}
+	//		return true;
+	//	}
+	//	return false;
+	//}
 
 	bool ModelFactory::LoadAnimatedModel(AnimatedModelData& aOutModelData, const std::string& aFilePath)
 	{
@@ -437,20 +593,20 @@ namespace Kaka
 		return true;
 	}
 
-	bool ModelFactory::LoadTexture(const Graphics& aGfx, ModelData& aOutModelData, const std::string& aFilePath)
-	{
-		if (textures.contains(aFilePath))
-		{
-			aOutModelData.texture = &textures[aFilePath];
-			return true;
-		}
+	//bool ModelFactory::LoadTexture(const Graphics& aGfx, ModelData& aOutModelData, const std::string& aFilePath)
+	//{
+	//	if (textures.contains(aFilePath))
+	//	{
+	//		aOutModelData.texture = &textures[aFilePath];
+	//		return true;
+	//	}
 
-		textures[aFilePath] = Texture(1u);
-		textures[aFilePath].LoadTextureFromModel(aGfx, aFilePath);
-		aOutModelData.texture = &textures[aFilePath];
+	//	textures[aFilePath] = Texture(1u);
+	//	textures[aFilePath].LoadTextureFromModel(aGfx, aFilePath);
+	//	aOutModelData.texture = &textures[aFilePath];
 
-		return true;
-	}
+	//	return true;
+	//}
 
 	Texture* ModelFactory::LoadTexture(const Graphics& aGfx, const std::string& aFilePath, const UINT aSlot)
 	{

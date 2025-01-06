@@ -32,7 +32,7 @@ namespace Kaka
 		{
 			auto& transform = transforms[entity];
 
-			aGfx.RegisterRenderPackage(RenderData{ model.filePath, model.meshList, model.vertexShader, model.pixelShader, &transform.objectToWorld });
+			aGfx.RegisterRenderData(RenderData{ model.filePath, model.meshList, model.vertexShader, model.pixelShader, &transform.objectToWorld });
 		}
 	}
 }

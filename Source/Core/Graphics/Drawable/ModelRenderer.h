@@ -14,6 +14,7 @@ namespace Kaka
 			MeshList* meshList;
 			VertexShader* vertexShader;
 			PixelShader* pixelShader;
+			// TODO This vector could cause problems when resized or if transforms are moved in memory
 			std::vector<DirectX::XMMATRIX*> instanceTransforms;
 			InstanceBuffer<DirectX::XMMATRIX> instanceBuffer = { 11u };
 		};

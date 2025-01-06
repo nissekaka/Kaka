@@ -29,7 +29,6 @@
 
 namespace Kaka
 {
-	//class ECS;
 	class Texture;
 	class VertexShader;
 	class PixelShader;
@@ -42,27 +41,6 @@ namespace Kaka
 		float totalTime;
 		float fps;
 	};
-
-	//struct Transforms
-	//{
-	//	DirectX::XMMATRIX objectToWorld = {};
-	//	DirectX::XMMATRIX objectToClip = {};
-	//};
-
-	//struct RenderData
-	//{
-	//	std::string filePath = "";
-	//	MeshList* meshList = nullptr;
-	//	VertexShader* vertexShader = nullptr;
-	//	PixelShader* pixelShader = nullptr;
-	//	DirectX::XMMATRIX* transform;
-	//};
-
-	//struct RenderPackage
-	//{
-	//	MeshList* meshList;
-	//	DirectX::XMMATRIX* transform;
-	//};
 
 	class Graphics
 	{
@@ -93,11 +71,9 @@ namespace Kaka
 		void EndFrame();
 		void DrawIndexed(UINT aCount);
 		void DrawIndexedInstanced(UINT aCount, UINT aInstanceCount);
-		void RegisterRenderPackage(const RenderData& aRenderData);
-		void ClearRenderPackages();
+		void RegisterRenderData(const RenderData& aRenderData);
+		void ClearRenderData();
 		void BuildRenderQueue();
-		//void RenderQueue();
-		//void TempSetupModelRender();
 		void Render(const RenderContext& aContext);
 		void LoadModel(const std::string& aFilePath);
 
@@ -206,7 +182,6 @@ namespace Kaka
 		float skyboxSpeed = 0.005f;
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
-		std::vector<ModelData> modelData;
 		std::vector<RenderData> modelRenderData;
 
 		ModelRenderer modelRenderer;

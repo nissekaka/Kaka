@@ -37,7 +37,7 @@ namespace Kaka
 		else
 		{
 			modelType = eModelType::Static;
-			ModelFactory::LoadStaticModel(aGfx, aFilePath, modelData);
+			//ModelFactory::LoadStaticModel(aGfx, aFilePath, modelData);
 
 			//for (Mesh& mesh : modelData.meshList->meshes)
 			//{
@@ -124,7 +124,7 @@ namespace Kaka
 			pixelShader->Bind(aGfx);
 		}
 
-		for (Mesh& mesh : modelData.meshList->meshes)
+		/*for (Mesh& mesh : modelData.meshList->meshes)
 		{
 			if (aFrustumCulling)
 			{
@@ -155,7 +155,7 @@ namespace Kaka
 			{
 				aGfx.SetRasterizerState(eRasterizerStates::BackfaceCulling);
 			}
-		}
+		}*/
 
 		// Unbind shader resources
 		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
@@ -513,7 +513,7 @@ namespace Kaka
 	{
 		if (modelType == eModelType::Static)
 		{
-			modelData.texture = aTexture;
+			//modelData.texture = aTexture;
 		}
 		else if (modelType == eModelType::Skeletal)
 		{
@@ -525,7 +525,7 @@ namespace Kaka
 	{
 		if (modelType == eModelType::Static)
 		{
-			modelData.texture->SetTextureAtIndex(aTexture->GetTextureAtIndex(aIndex), aIndex);
+			//modelData.texture->SetTextureAtIndex(aTexture->GetTextureAtIndex(aIndex), aIndex);
 		}
 		else if (modelType == eModelType::Skeletal)
 		{
