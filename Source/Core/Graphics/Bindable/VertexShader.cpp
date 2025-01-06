@@ -6,6 +6,8 @@ namespace Kaka
 {
 	void VertexShader::Init(const Graphics& aGfx, const eVertexShaderType aType)
 	{
+		type = aType;
+
 		std::wstring path = ShaderFactory::vertexShaderTypePathMap[aType];
 
 		D3DReadFileToBlob(path.c_str(), &pBytecodeBlob);
@@ -32,6 +34,20 @@ namespace Kaka
 				};
 			}
 			break;
+			case eVertexShaderType::ModelTAAInstanced:
+			{
+				ied =
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					// Data from the instance buffer
+					{"INSTANCE_ID", 0, DXGI_FORMAT_R32_UINT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+				};
+			}
+			break;
 			case eVertexShaderType::ModelNoTAA:
 			{
 				ied =
@@ -41,6 +57,16 @@ namespace Kaka
 				};
 			}
 			break;
+			case eVertexShaderType::ModelNoTAAInstanced:
+			{
+				ied =
+				{
+					{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0,D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+					// Data from the instance buffer
+					{"INSTANCE_ID", 0, DXGI_FORMAT_R32_UINT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1}
+				};
+			}
 			case eVertexShaderType::ModelAnimated:
 			{
 				ied =

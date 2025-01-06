@@ -102,8 +102,8 @@ namespace Kaka
 				else
 				{
 					textures[materialName] = Texture(1u);
-					//textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
-					textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
+					textures[materialName].LoadTextureFromModel(aGfx, aFilePath);
+					//textures[materialName].LoadMaterialFromPaths(aGfx, diffuseTextureFileName, normalTextureFileName, materialTextureFileName);
 
 
 					//return &textures[aFilePath];

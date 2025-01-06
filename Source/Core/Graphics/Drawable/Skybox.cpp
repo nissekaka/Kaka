@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Skybox.h"
 
+#include "Graphics/Bindable/SkyboxTransformConstantBuffer.h"
+
 namespace Kaka
 {
 	void Skybox::Init(const Graphics& aGfx, const std::string& aDayPath, const std::string& aNightPath)

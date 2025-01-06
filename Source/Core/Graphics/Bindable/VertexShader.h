@@ -7,7 +7,9 @@ namespace Kaka
 	enum class eVertexShaderType
 	{
 		ModelTAA,
+		ModelTAAInstanced,
 		ModelNoTAA,
+		ModelNoTAAInstanced,
 		ModelAnimated,
 		Skybox,
 		Sprite,
@@ -25,6 +27,7 @@ namespace Kaka
 		VertexShader() = default;
 		void Init(const Graphics& aGfx, eVertexShaderType aType);
 		void Bind(const Graphics& aGfx) override;
+		eVertexShaderType GetType() const { return type; }
 
 	private:
 		ID3DBlob* GetBytecode() const;
@@ -34,6 +37,7 @@ namespace Kaka
 		Microsoft::WRL::ComPtr<ID3D11VertexShader> pVertexShader;
 
 	private:
+		eVertexShaderType type;
 		std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
 		InputLayout inputLayout;
 	};

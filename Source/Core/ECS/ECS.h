@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/ECS/Systems.h"
+#include <ranges>
 
 namespace Kaka
 {
@@ -15,6 +16,7 @@ namespace Kaka
 		class Entity
 		{
 		public:
+			Entity() = default;
 			Entity(ECS* aEcs, const EntityID aId) : id(aId), ecs(aEcs) {}
 			~Entity() = default;
 
@@ -63,49 +65,50 @@ namespace Kaka
 
 		inline void UpdateComponents(const float aDeltaTime)
 		{
+			UNREFERENCED_PARAMETER(aDeltaTime);
 			UpdateModelComponents();
 		}
 
 		template <typename T>
-		inline void AddComponent(EntityID entityID, T component)
+		inline void AddComponent(EntityID aId, T aComponent)
 		{
 			auto& componentMap = registry.GetComponentMap<T>();
 
-			if (componentMap.contains(entityID))
+			if (componentMap.contains(aId))
 			{
 				std::cerr << "Entity already has component of type " << typeid(T).name() << std::endl;
 				return;
 			}
 
-			componentMap[entityID] = component;
+			componentMap[aId] = aComponent;
 		}
 
 		template <typename T>
-		inline void RemoveComponent(EntityID entityID)
+		inline void RemoveComponent(EntityID aId)
 		{
 			auto& componentMap = registry.GetComponentMap<T>();
 
-			if (!componentMap.contains(entityID))
+			if (!componentMap.contains(aId))
 			{
 				std::cerr << "Entity does not have component of type " << typeid(T).name() << std::endl;
 				return;
 			}
 
-			componentMap.erase(entityID);
+			componentMap.erase(aId);
 		}
 
 		template <typename T>
-		inline T* GetComponent(EntityID entityID)
+		inline T* GetComponent(EntityID aId)
 		{
 			auto& componentMap = registry.GetComponentMap<T>();
 
-			if (!componentMap.contains(entityID))
+			if (!componentMap.contains(aId))
 			{
 				std::cerr << "Entity does not have component of type " << typeid(T).name() << std::endl;
 				return nullptr;
 			}
 
-			return &componentMap[entityID];
+			return &componentMap[aId];
 		}
 
 		template <typename T>
@@ -114,15 +117,47 @@ namespace Kaka
 			return registry.GetComponentMap<T>();
 		}
 
-		inline Entity CreateEntity()
+		inline Entity* CreateEntity()
 		{
-			return Entity{ this, entities++ };
+			entityMap[entities] = Entity{ this, entities };
+			return &entityMap[entities++];
+		}
+
+		inline void DestroyEntity(const EntityID aId)
+		{
+			// Remove the entity from the entity map
+			if (entityMap.contains(aId))
+			{
+				entityMap.erase(aId);
+			}
+			else
+			{
+				std::cerr << "Attempted to destroy non-existent entity with ID " << aId << std::endl;
+				return;
+			}
+
+			// Remove all components associated with the entity
+			for (const auto& baseMap : registry.maps | std::views::values)
+			{
+				baseMap->erase(aId);
+			}
+		}
+
+		inline Entity* GetEntity(const EntityID aId)
+		{
+			if (entityMap.contains(aId))
+			{
+				return &entityMap[aId];
+			}
+
+			return nullptr;
 		}
 
 	private:
 		Systems systems;
 		EntityID entities = 0;
 		ComponentRegistry registry;
+		std::unordered_map<EntityID, Entity> entityMap;
 	};
 
 #pragma endregion

@@ -9,8 +9,6 @@
 #include <complex>
 #include <DirectXMath.h>
 
-#include "ECS/ECS.h"
-
 namespace WRL = Microsoft::WRL;
 
 namespace Kaka
@@ -150,10 +148,11 @@ namespace Kaka
 		SetupCamera(static_cast<float>(width), static_cast<float>(height), 80.0f, 0.1f, 1000.0f);
 
 		// TODO Move this to a model renderer or something
-		transformBuffer.Init(*this, Transforms{});
-		topology.Init(*this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//transformBuffer.Init(*this, Transforms{});
+		/*topology.Init(*this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);*/
 
-		renderPackages.reserve(10000);
+		modelRenderer.Init(*this);
+		//renderPackages.reserve(10000);
 	}
 
 	Graphics::~Graphics()
@@ -208,110 +207,115 @@ namespace Kaka
 		pContext->DrawIndexedInstanced(aCount, aInstanceCount, 0u, 0u, 0u);
 	}
 
-	void Graphics::RegisterRenderPackage(const EntityRenderPackage& aRenderPackage)
+	void Graphics::RegisterRenderPackage(const RenderData& aRenderData)
 	{
-		renderPackages.push_back(aRenderPackage);
+		modelRenderData.push_back(aRenderData);
 	}
 
-	void Graphics::RenderQueue()
+	void Graphics::ClearRenderPackages()
 	{
-		Texture* boundTexture = nullptr;
-
-		for (const auto& renderPackage : renderPackages)
-		{
-			DirectX::XMMATRIX objectToWorld = *renderPackage.objectToWorld;
-			DirectX::XMMATRIX objectToClip = objectToWorld * GetCameraInverseView();
-			objectToClip = objectToClip * GetJitteredProjection();
-
-			Transforms transforms = { objectToWorld, objectToClip };
-
-			transformBuffer.Update(*this, transforms);
-			transformBuffer.Bind(*this);
-
-			MeshList& meshList = *renderPackage.meshList;
-			//MeshList& meshList = ModelFactory::GetMeshList(renderPackage.modelPath);
-
-			std::vector<bool> visible = currentCamera->AreMeshesInFrustum(meshList.meshes, objectToWorld);
-
-			for (int i = 0; i < meshList.meshes.size(); ++i)
-				//for (Mesh& mesh : meshList.meshes)
-			{
-				//if (aFrustumCulling)
-				//{
-					//if (!IsBoundingBoxInFrustum(Model::GetTranslatedAABB(mesh, objectToWorld).minBound, Model::GetTranslatedAABB(mesh, objectToWorld).maxBound))
-				if (!visible[i])
-				{
-					continue;
-				}
-				//}
-
-				Mesh& mesh = meshList.meshes[i];
-
-				bool hasAlpha = false;
-				if (mesh.texture != nullptr)
-				{
-					if (boundTexture == nullptr || mesh.texture != boundTexture)
-					{
-						mesh.texture->Bind(*this);
-
-						if (mesh.texture->HasAlpha())
-						{
-							hasAlpha = true;
-							SetRasterizerState(eRasterizerStates::NoCulling);
-						}
-					}
-				}
-
-				mesh.vertexBuffer.Bind(*this);
-				mesh.indexBuffer.Bind(*this);
-
-				DrawIndexed(mesh.indexBuffer.GetCount());
-
-				if (hasAlpha)
-				{
-					SetRasterizerState(eRasterizerStates::BackfaceCulling);
-				}
-
-				//if (aDrawDebug)
-				//{
-				//	DrawDebugAABB(aGfx, mesh, objectToWorld);
-				//}
-			}
-
-			// Unbind shader resources
-			ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
-			pContext->PSSetShaderResources(1u, 3u, nullSRVs);
-		}
+		modelRenderData.clear();
 	}
 
-	void Graphics::TempSetupModelRender()
+	void Graphics::BuildRenderQueue()
 	{
-		if (HasVertexShaderOverride())
-		{
-			GetVertexShaderOverride()->Bind(*this);
-		}
-		else
-		{
-			modelData.back().vertexShader->Bind(*this);
-		}
-		if (HasPixelShaderOverride())
-		{
-			GetPixelShaderOverride()->Bind(*this);
-		}
-		else
-		{
-			modelData.back().pixelShader->Bind(*this);
-		}
-		topology.Bind(*this);
+		modelRenderer.BuildRenderQueue(*this, renderQueue, modelRenderData);
 	}
+
+	//void Graphics::RenderQueue()
+	//{
+	//	Texture* boundTexture = nullptr;
+
+	//	for (const auto& renderPackage : renderPackages)
+	//	{
+	//		DirectX::XMMATRIX objectToWorld = *renderPackage.transform;
+	//		DirectX::XMMATRIX objectToClip = objectToWorld * GetCameraInverseView();
+	//		objectToClip = objectToClip * GetJitteredProjection();
+
+	//		Transforms transforms = { objectToWorld, objectToClip };
+
+	//		transformBuffer.Update(*this, transforms);
+	//		transformBuffer.Bind(*this);
+
+	//		MeshList& meshList = *renderPackage.meshList;
+	//		//MeshList& meshList = ModelFactory::GetMeshList(renderPackage.modelPath);
+
+	//		std::vector<bool> visible = currentCamera->AreMeshesInFrustum(meshList.meshes, objectToWorld);
+
+	//		for (int i = 0; i < meshList.meshes.size(); ++i)
+	//			//for (Mesh& mesh : meshList.meshes)
+	//		{
+	//			//if (aFrustumCulling)
+	//			//{
+	//				//if (!IsBoundingBoxInFrustum(Model::GetTranslatedAABB(mesh, objectToWorld).minBound, Model::GetTranslatedAABB(mesh, objectToWorld).maxBound))
+	//			if (!visible[i])
+	//			{
+	//				continue;
+	//			}
+	//			//}
+
+	//			Mesh& mesh = meshList.meshes[i];
+
+	//			bool hasAlpha = false;
+	//			if (mesh.texture != nullptr)
+	//			{
+	//				if (boundTexture == nullptr || mesh.texture != boundTexture)
+	//				{
+	//					mesh.texture->Bind(*this);
+
+	//					if (mesh.texture->HasAlpha())
+	//					{
+	//						hasAlpha = true;
+	//						SetRasterizerState(eRasterizerStates::NoCulling);
+	//					}
+	//				}
+	//			}
+
+	//			mesh.vertexBuffer.Bind(*this);
+	//			mesh.indexBuffer.Bind(*this);
+
+	//			DrawIndexed(mesh.indexBuffer.GetCount());
+
+	//			if (hasAlpha)
+	//			{
+	//				SetRasterizerState(eRasterizerStates::BackfaceCulling);
+	//			}
+
+	//			//if (aDrawDebug)
+	//			//{
+	//			//	DrawDebugAABB(aGfx, mesh, objectToWorld);
+	//			//}
+	//		}
+
+	//		// Unbind shader resources
+	//		ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
+	//		pContext->PSSetShaderResources(1u, 3u, nullSRVs);
+	//	}
+	//}
+
+	//void Graphics::TempSetupModelRender()
+	//{
+	//	if (HasVertexShaderOverride())
+	//	{
+	//		GetVertexShaderOverride()->Bind(*this);
+	//	}
+	//	else
+	//	{
+	//		modelData.back().vertexShader->Bind(*this);
+	//	}
+	//	if (HasPixelShaderOverride())
+	//	{
+	//		GetPixelShaderOverride()->Bind(*this);
+	//	}
+	//	else
+	//	{
+	//		modelData.back().pixelShader->Bind(*this);
+	//	}
+	//	//topology.Bind(*this);
+	//}
 
 	void Graphics::Render(const RenderContext& aContext)
 	{
-		BeginFrame();
-
-		// Need some kind of model renderer in GFX
-		// Need a GameObject and component system
-
 		/// ---------- SETUP ---------- BEGIN
 		{
 			SetCamera(camera);
@@ -356,8 +360,9 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					TempSetupModelRender();
-					RenderQueue();
+					//TempSetupModelRender();
+					//RenderQueue();
+					modelRenderer.DrawRenderQueue(*this, renderQueue);
 				}
 
 				ResetShadows(camera);
@@ -376,8 +381,9 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					TempSetupModelRender();
-					RenderQueue();
+					//TempSetupModelRender();
+					//RenderQueue();
+					modelRenderer.DrawRenderQueue(*this, renderQueue, true);
 				}
 
 				ResetShadows(camera);
@@ -396,8 +402,9 @@ namespace Kaka
 
 			// Render all models to the GBuffer
 			{
-				TempSetupModelRender();
-				RenderQueue();
+				//TempSetupModelRender();
+				//RenderQueue();
+				modelRenderer.DrawRenderQueue(*this, renderQueue);
 			}
 
 			SetRenderTarget(eRenderTargetType::None, nullptr);
@@ -569,19 +576,11 @@ namespace Kaka
 
 		// TODO This will move ? when there is an Editor project/class
 		ShowImGui(aContext.fps);
-
-		EndFrame();
 	}
 
 	void Graphics::LoadModel(const std::string& aFilePath)
 	{
-		if (ModelFactory::LoadStaticFBXModel(*this, aFilePath, modelData.emplace_back()))
-		{
-			// TODO Shader should be set from Editor or something
-			modelData.back().vertexShader = ShaderFactory::GetVertexShader(*this, eVertexShaderType::ModelTAA);
-			modelData.back().pixelShader = ShaderFactory::GetPixelShader(*this, ePixelShaderType::Model);
-		}
-		else
+		if (!ModelFactory::LoadStaticModel(*this, aFilePath, modelData.emplace_back()))
 		{
 			modelData.pop_back();
 		}
@@ -705,7 +704,7 @@ namespace Kaka
 		SetCamera(aCamera);
 		aCamera.SetDirection(aLightDirection);
 
-		SetVertexShaderOverride(eVertexShaderType::ModelNoTAA);
+		SetVertexShaderOverride(eVertexShaderType::ModelNoTAAInstanced);
 		SetPixelShaderOverride(ePixelShaderType::ModelShadows);
 	}
 
@@ -876,6 +875,51 @@ namespace Kaka
 		ImGui::End();
 	}
 
+	void Graphics::ShowEntities(const std::vector<ECS::Entity*>& aEntities, EntityID& aOutSelectedEntity)
+	{
+		if (ImGui::Begin("Entities"))
+		{
+			std::string node;
+			for (ECS::Entity* entity : aEntities)
+			{
+				node = "Entity " + std::to_string(entity->GetID());
+				if (ImGui::TreeNode(node.c_str()))
+				{
+					if (ImGui::Button("Select"))
+					{
+						aOutSelectedEntity = entity->GetID();
+					}
+
+					if (aOutSelectedEntity == entity->GetID())
+					{
+						if (ImGui::TreeNode("Transform"))
+						{
+							TransformComponent* transform = entity->GetComponent<TransformComponent>();
+							ImGui::DragFloat("X", &transform->x, 0.1f);
+							ImGui::DragFloat("Y", &transform->y, 0.1f);
+							ImGui::DragFloat("Z", &transform->z, 0.1f);
+							ImGui::DragFloat("Roll", &transform->roll, 0.1f);
+							ImGui::DragFloat("Pitch", &transform->pitch, 0.1f);
+							ImGui::DragFloat("Yaw", &transform->yaw, 0.1f);
+							ImGui::DragFloat("Scale", &transform->scale, 0.1f);
+							ImGui::TreePop();
+						}
+
+						if (ImGui::TreeNode("Model"))
+						{
+							const ModelComponent* model = entity->GetComponent<ModelComponent>();
+							ImGui::Text(model->filePath.c_str());
+							ImGui::TreePop();
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
+		}
+		ImGui::End();
+	}
+
 	void Graphics::EnableImGui()
 	{
 		imGuiEnabled = true;
@@ -974,5 +1018,22 @@ namespace Kaka
 				IM_COL32(0, 255, 0, 255)
 			);
 		}
+	}
+
+	ID3D11Buffer* Graphics::CreateInstanceBuffer(const std::vector<DirectX::XMMATRIX>& instanceTransforms)
+	{
+		D3D11_BUFFER_DESC bufferDesc = {};
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.ByteWidth = sizeof(DirectX::XMMATRIX) * instanceTransforms.size();
+		bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		D3D11_SUBRESOURCE_DATA initData = {};
+		initData.pSysMem = instanceTransforms.data();
+
+		ID3D11Buffer* instanceBuffer;
+		pDevice->CreateBuffer(&bufferDesc, &initData, &instanceBuffer);
+
+		return instanceBuffer;
 	}
 }

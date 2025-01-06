@@ -12,20 +12,24 @@
 #include "Core/Graphics/AntiAliasing/TemporalAntiAliasing.h"
 #include "Core/Graphics/Lighting/DeferredLights.h"
 #include "Core/Graphics/Lighting/IndirectLighting.h"
-#include "Core/Graphics/Bindable/ConstantBuffers.h"
 #include "Core/Graphics/Bindable/DepthStencil.h"
 #include "Core/Graphics/Bindable/BlendState.h"
+#include "Core/Graphics/Bindable/PixelShader.h"
+#include "Core/Graphics/Bindable/Sampler.h"
+#include "Core/Graphics/Bindable/Texture.h"
+#include "Core/Graphics/Bindable/VertexShader.h"
+#include "Core/Graphics/Bindable/Rasterizer.h"
 #include "Core/Graphics/Bindable/CommonBuffer.h"
 #include "Core/Graphics/Drawable/Skybox.h"
-#include "Core/Graphics/Drawable/Model.h"
+#include "Core/Graphics/Drawable/ModelData.h"
 #include "Core/Graphics/Drawable/ModelRenderer.h"
-#include "ECS/Entity.h"
+#include "ECS/ECS.h"
 
 #define KAKA_BG_COLOUR {0.1f, 0.2f, 0.3f, 1.0f}
 
 namespace Kaka
 {
-	class ECS;
+	//class ECS;
 	class Texture;
 	class VertexShader;
 	class PixelShader;
@@ -39,17 +43,26 @@ namespace Kaka
 		float fps;
 	};
 
-	struct Transforms
-	{
-		DirectX::XMMATRIX objectToWorld = {};
-		DirectX::XMMATRIX objectToClip = {};
-	};
+	//struct Transforms
+	//{
+	//	DirectX::XMMATRIX objectToWorld = {};
+	//	DirectX::XMMATRIX objectToClip = {};
+	//};
 
-	struct EntityRenderPackage
-	{
-		MeshList* meshList;
-		DirectX::XMMATRIX* objectToWorld;
-	};
+	//struct RenderData
+	//{
+	//	std::string filePath = "";
+	//	MeshList* meshList = nullptr;
+	//	VertexShader* vertexShader = nullptr;
+	//	PixelShader* pixelShader = nullptr;
+	//	DirectX::XMMATRIX* transform;
+	//};
+
+	//struct RenderPackage
+	//{
+	//	MeshList* meshList;
+	//	DirectX::XMMATRIX* transform;
+	//};
 
 	class Graphics
 	{
@@ -69,7 +82,7 @@ namespace Kaka
 		friend class Game;
 		friend class PostProcessing;
 		friend class Sprite;
-		friend class Systems;
+		friend class ModelRenderer;
 
 	public:
 		Graphics(HWND aHWnd, UINT aWidth, UINT aHeight);
@@ -80,9 +93,11 @@ namespace Kaka
 		void EndFrame();
 		void DrawIndexed(UINT aCount);
 		void DrawIndexedInstanced(UINT aCount, UINT aInstanceCount);
-		void RegisterRenderPackage(const EntityRenderPackage& aRenderPackage);
-		void RenderQueue();
-		void TempSetupModelRender();
+		void RegisterRenderPackage(const RenderData& aRenderData);
+		void ClearRenderPackages();
+		void BuildRenderQueue();
+		//void RenderQueue();
+		//void TempSetupModelRender();
 		void Render(const RenderContext& aContext);
 		void LoadModel(const std::string& aFilePath);
 
@@ -128,6 +143,7 @@ namespace Kaka
 		// ImGui
 		void ShowImGui(const float aFPS);
 		void ShowStatsWindow(const float aFPS);
+		void ShowEntities(const std::vector<ECS::Entity*>& aEntities, EntityID& aOutSelectedEntity);
 		void EnableImGui();
 		void DisableImGui();
 		bool IsImGuiEnabled() const;
@@ -141,6 +157,7 @@ namespace Kaka
 	public:
 		void UpdateLights(const float aDeltaTime);
 		void ProcessFileChangeEngine(const std::wstring& aPath, filewatch::Event aEvent);
+		ID3D11Buffer* CreateInstanceBuffer(const std::vector<DirectX::XMMATRIX>& instanceTransforms);
 
 	private:
 		UINT width;
@@ -190,8 +207,9 @@ namespace Kaka
 		DirectX::XMFLOAT3 skyboxAngle = {};
 
 		std::vector<ModelData> modelData;
-		std::vector<EntityRenderPackage> renderPackages;
-		VertexConstantBuffer<Transforms> transformBuffer = { 0u };
-		Topology topology = {};
+		std::vector<RenderData> modelRenderData;
+
+		ModelRenderer modelRenderer;
+		RenderQueue renderQueue;
 	};
 }

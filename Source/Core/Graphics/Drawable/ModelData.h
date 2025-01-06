@@ -94,4 +94,13 @@ namespace Kaka
 		std::vector<DirectX::XMMATRIX> combinedTransforms = {};
 		std::vector<DirectX::XMMATRIX> finalTransforms = {};
 	};
+
+	struct RenderData
+	{
+		std::string filePath = "";
+		MeshList* meshList = nullptr;
+		VertexShader* vertexShader = nullptr;
+		PixelShader* pixelShader = nullptr;
+		DirectX::XMMATRIX* transform;
+	};
 }

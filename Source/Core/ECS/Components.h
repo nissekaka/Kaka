@@ -8,12 +8,6 @@ namespace Kaka
 {
 #pragma region Components
 
-	//struct Transforms
-	//{
-	//	DirectX::XMMATRIX objectToWorld = {};
-	//	DirectX::XMMATRIX objectToClip = {};
-	//};
-
 	struct TransformComponent
 	{
 		DirectX::XMMATRIX objectToWorld;
@@ -24,8 +18,6 @@ namespace Kaka
 		float y = 0.0f;
 		float z = 0.0f;
 		float scale = 1.0f;
-
-		//Transforms transforms = {};
 	};
 
 	struct ModelComponent
@@ -48,6 +40,7 @@ namespace Kaka
 	{
 	public:
 		virtual ~BaseComponentMap() = default;
+		virtual void erase(EntityID entityID) = 0;
 	};
 
 	template <typename T>
@@ -55,6 +48,11 @@ namespace Kaka
 	{
 	public:
 		ComponentMap<T> map;
+
+		void erase(EntityID entityID) override
+		{
+			map.erase(entityID);
+		}
 	};
 
 	// A registry to store all component maps by type
@@ -72,7 +70,6 @@ namespace Kaka
 			return static_cast<ComponentMapWrapper<T>*>(maps[typeIndex].get())->map;
 		}
 
-	private:
 		std::unordered_map<std::type_index, std::unique_ptr<BaseComponentMap>> maps;
 	};
 

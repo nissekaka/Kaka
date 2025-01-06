@@ -26,7 +26,9 @@ namespace Kaka
 	public:
 		inline static std::unordered_map<eVertexShaderType, std::wstring> vertexShaderTypePathMap = {
 			{ eVertexShaderType::ModelTAA,			L"Shaders/Model_TAA_VS.cso" },
+			{ eVertexShaderType::ModelTAAInstanced,	L"Shaders/Model_TAA_Instanced_VS.cso" },
 			{ eVertexShaderType::ModelNoTAA,			L"Shaders/Model_NO_TAA_VS.cso" },
+			{ eVertexShaderType::ModelNoTAAInstanced,	L"Shaders/Model_NO_TAA_Instanced_VS.cso" },
 			{ eVertexShaderType::ModelAnimated,		L"Shaders/Model_Anim_VS.cso" },
 			{ eVertexShaderType::Skybox,				L"Shaders/Skybox_VS.cso" },
 			{ eVertexShaderType::Sprite,				L"Shaders/Sprite_VS.cso" },

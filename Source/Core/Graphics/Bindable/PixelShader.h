@@ -35,8 +35,12 @@ namespace Kaka
 		PixelShader(const Graphics& aGfx, const std::wstring& aPath);
 		void Init(const Graphics& aGfx, const std::wstring& aPath);
 		void Bind(const Graphics& aGfx) override;
+		ePixelShaderType GetType() const { return type; }
 
 	protected:
 		Microsoft::WRL::ComPtr<ID3D11PixelShader> pPixelShader;
+
+	private:
+		ePixelShaderType type;
 	};
 }

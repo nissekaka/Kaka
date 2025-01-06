@@ -2,6 +2,7 @@
 #include <Core/Utility/KakaMath.h>
 
 #include "Graphics/Drawable/ModelFactory.h"
+#include "imgui/imgui.h"
 
 constexpr int WINDOW_WIDTH = 1920;
 constexpr int WINDOW_HEIGHT = 1080;
@@ -13,25 +14,38 @@ namespace Kaka
 
 	int Game::Go()
 	{
-		entities.reserve(1600);
+		entities.reserve(2000);
+
+		//entities.push_back(ecs.CreateEntity());
+		//entities.back()->AddComponent(TransformComponent{});
+		//entities.back()->AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" });
+		//entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+		//entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+		//entities.back()->GetComponent<TransformComponent>()->scale = 0.1f;
 
 		//entities.push_back(ecs.CreateEntity());
 		//entities.back().AddComponent(TransformComponent{});
-		//entities.back().AddComponent(ModelComponent{ "Assets/Models/sponza_pbr/Sponza.obj" });
+		//entities.back().AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
+		//entities.back().GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+		//entities.back().GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+		//entities.back().GetComponent<TransformComponent>()->x = 20.0f;
+		//entities.back().GetComponent<TransformComponent>()->z = 20.0f;
 		//entities.back().GetComponent<TransformComponent>()->scale = 0.1f;
 
-		for (int i = 0; i < 40; i++)
-		{
-			for (int j = 0; j < 40; j++)
-			{
-				entities.push_back(ecs.CreateEntity());
-				entities.back().AddComponent(TransformComponent{});
-				entities.back().AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
-				entities.back().GetComponent<TransformComponent>()->x = i * 20.0f;
-				entities.back().GetComponent<TransformComponent>()->z = j * 20.0f;
-				entities.back().GetComponent<TransformComponent>()->scale = 0.1f;
-			}
-		}
+		//for (int i = 0; i < 40; i++)
+		//{
+		//	for (int j = 0; j < 40; j++)
+		//	{
+		//		entities.push_back(ecs.CreateEntity());
+		//		entities.back()->AddComponent(TransformComponent{});
+		//		entities.back()->AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
+		//		entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+		//		entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+		//		entities.back()->GetComponent<TransformComponent>()->x = i * 20.0f;
+		//		entities.back()->GetComponent<TransformComponent>()->z = j * 20.0f;
+		//		entities.back()->GetComponent<TransformComponent>()->scale = 0.1f;
+		//	}
+		//}
 
 		for (auto& model : ecs.GetComponentMap<ModelComponent>() | std::views::values)
 		{
@@ -40,6 +54,7 @@ namespace Kaka
 		}
 
 		ecs.RegisterModelComponents(wnd.Gfx());
+		wnd.Gfx().BuildRenderQueue();
 
 		while (true)
 		{
@@ -58,11 +73,23 @@ namespace Kaka
 	{
 		HandleInput(aDeltaTime);
 
+		//ecs.GetEntity(0)->GetComponent<TransformComponent>()->yaw += 0.1f * aDeltaTime;
+
 		ecs.UpdateComponents(aDeltaTime);
 
 		wnd.Gfx().UpdateLights(aDeltaTime);
 		RenderContext renderContext = { aDeltaTime, timer.GetTotalTime(), timer.GetFPS() };
+
+		wnd.Gfx().BeginFrame();
 		wnd.Gfx().Render(renderContext);
+
+		// Display all entities with their components with ImGui
+		if (wnd.Gfx().showImGui)
+		{
+			wnd.Gfx().ShowEntities(entities, selectedEntity);
+		}
+
+		wnd.Gfx().EndFrame();
 	}
 
 	void Game::HandleInput(const float aDeltaTime)
@@ -107,8 +134,46 @@ namespace Kaka
 				case 'T':
 					wnd.Gfx().temporalAntiAliasing.taaData.useTAA = !wnd.Gfx().temporalAntiAliasing.taaData.useTAA;
 					break;
+				case 'C':
+				{
+					// Create entity
+					entities.push_back(ecs.CreateEntity());
+					entities.back()->AddComponent(TransformComponent{});
+					entities.back()->AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
+					entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+					entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+					entities.back()->GetComponent<TransformComponent>()->x = entities.size() * 20.0f;
+					entities.back()->GetComponent<TransformComponent>()->scale = 0.1f;
+
+					std::string filePath = entities.back()->GetComponent<ModelComponent>()->filePath;
+					wnd.Gfx().LoadModel(filePath);
+					entities.back()->GetComponent<ModelComponent>()->meshList = &ModelFactory::GetMeshList(filePath);
+
+					wnd.Gfx().ClearRenderPackages();
+					ecs.RegisterModelComponents(wnd.Gfx());
+					wnd.Gfx().BuildRenderQueue();
+					selectedEntity = entities.back()->GetID();
+				}
+				break;
 				case 'F':
-					break;
+				{
+					// Destroy entity
+					if (entities.size() > 0)
+					{
+						ecs.DestroyEntity(entities.back()->GetID());
+						wnd.Gfx().ClearRenderPackages();
+						ecs.RegisterModelComponents(wnd.Gfx());
+						wnd.Gfx().BuildRenderQueue();
+
+						entities.pop_back();
+
+						if (entities.size() > 0)
+						{
+							selectedEntity = entities.back()->GetID();
+						}
+					}
+				}
+				break;
 				case 'R':
 					wnd.Gfx().useReflectiveShadowMap = !wnd.Gfx().useReflectiveShadowMap;
 					break;

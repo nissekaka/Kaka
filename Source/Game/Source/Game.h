@@ -22,6 +22,9 @@ namespace Kaka
 		Window wnd;
 		Timer timer;
 		ECS ecs;
-		std::vector<ECS::Entity> entities;
+
+		std::vector<ECS::Entity*> entities;
+
+		EntityID selectedEntity = 0;
 	};
 }

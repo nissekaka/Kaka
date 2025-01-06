@@ -4,6 +4,8 @@
 #include "External/include/imgui/imgui.h"
 #include <algorithm>
 
+#include "Graphics/Drawable/Model.h"
+
 namespace Kaka
 {
 	Camera::Camera()

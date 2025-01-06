@@ -1,29 +1,39 @@
-//#pragma once
-//#include <ECS/Entity.h>
-//
-//namespace Kaka
-//{
-//	struct TransformComponent;
-//	struct ModelComponent;
-//
-//	struct RenderRequest
-//	{
-//		ModelComponent* modelComponent;
-//		TransformComponent* transformComponent;
-//	};
-//
-//	class ModelRenderer
-//	{
-//	public:
-//		ModelRenderer();
-//		~ModelRenderer() = default;
-//		void RegisterEntity(const EntityID aEntity);
-//		void DeregisterEntity(const EntityID aEntity);
-//		void LoadModel(const Graphics& aGfx, const std::string& aFilePath);
-//		void RenderQueue(const Graphics& aGfx);
-//
-//	private:
-//		std::vector<ModelData> modelData = {};
-//		std::vector<RenderRequest> renderQueue = {};
-//	};
-//}
+#pragma once
+#include "Graphics/Bindable/InstanceBuffer.h"
+
+namespace Kaka
+{
+	struct RenderPackage;
+	struct TransformComponent;
+	struct ModelComponent;
+
+	struct RenderQueue
+	{
+		struct RenderCommand
+		{
+			MeshList* meshList;
+			VertexShader* vertexShader;
+			PixelShader* pixelShader;
+			std::vector<DirectX::XMMATRIX*> instanceTransforms;
+			InstanceBuffer<DirectX::XMMATRIX> instanceBuffer = { 11u };
+		};
+
+		std::vector<RenderCommand> commands;
+	};
+
+	class ModelRenderer
+	{
+	public:
+		ModelRenderer() = default;
+		~ModelRenderer() = default;
+		void Init(const Graphics& aGfx);
+		void BuildRenderQueue(const Graphics& aGfx, RenderQueue& aRenderQueue, const std::vector<RenderData>& aRenderPackages);
+		void DrawRenderQueue(Graphics& aGfx, RenderQueue& aRenderQueue, const bool aShadowPass = false);
+
+	private:
+		Topology topology = {};
+
+		VertexShader* currentVertexShader = nullptr;
+		PixelShader* currentPixelShader = nullptr;
+	};
+}
