@@ -23,19 +23,19 @@ namespace Kaka
 			EntityID GetID() const { return id; }
 
 			template <typename T>
-			inline void AddComponent(T aComponent)
+			void AddComponent(T aComponent)
 			{
 				ecs->AddComponent(id, aComponent);
 			}
 
 			template <typename T>
-			inline void RemoveComponent()
+			void RemoveComponent()
 			{
 				ecs->RemoveComponent<T>(id);
 			}
 
 			template <typename T>
-			inline T* GetComponent()
+			T* GetComponent()
 			{
 				return ecs->GetComponent<T>(id);
 			}
@@ -53,79 +53,72 @@ namespace Kaka
 		ECS() = default;
 		~ECS() = default;
 
-		inline void RegisterModelComponents(Graphics& aGfx)
+		void RegisterModelComponents(Graphics& aGfx)
 		{
 			systems.RegisterModelComponents(aGfx, registry);
 		}
 
-		inline void UpdateModelComponents()
+		void UpdateModelComponents()
 		{
 			systems.UpdateModelComponents(registry);
 		}
 
-		inline void UpdateComponents(const float aDeltaTime)
+		void UpdateComponents(const float aDeltaTime)
 		{
 			UNREFERENCED_PARAMETER(aDeltaTime);
 			UpdateModelComponents();
 		}
 
 		template <typename T>
-		inline void AddComponent(EntityID aId, T aComponent)
+		void AddComponent(EntityID aId, T aComponent)
 		{
-			auto& componentMap = registry.GetComponentMap<T>();
-
-			if (componentMap.contains(aId))
-			{
-				std::cerr << "Entity already has component of type " << typeid(T).name() << std::endl;
-				return;
-			}
-
-			componentMap[aId] = aComponent;
+			SparseSet<T>& componentSet = registry.GetComponentSet<T>();
+			componentSet.AddComponent(aId, aComponent);
 		}
 
 		template <typename T>
-		inline void RemoveComponent(EntityID aId)
+		void RemoveComponent(EntityID aId)
 		{
-			auto& componentMap = registry.GetComponentMap<T>();
+			auto& componentSet = registry.GetComponentSet<T>();
 
-			if (!componentMap.contains(aId))
+			if (!componentSet.entityToIndex.contains(aId))
 			{
 				std::cerr << "Entity does not have component of type " << typeid(T).name() << std::endl;
 				return;
 			}
 
-			componentMap.erase(aId);
+			componentSet.RemoveComponent(aId);
 		}
 
 		template <typename T>
-		inline T* GetComponent(EntityID aId)
+		T* GetComponent(EntityID aId)
 		{
-			auto& componentMap = registry.GetComponentMap<T>();
+			auto& componentSet = registry.GetComponentSet<T>();
 
-			if (!componentMap.contains(aId))
+			if (!componentSet.entityToIndex.contains(aId))
 			{
 				std::cerr << "Entity does not have component of type " << typeid(T).name() << std::endl;
 				return nullptr;
 			}
 
-			return &componentMap[aId];
+			const size_t index = componentSet.entityToIndex[aId];
+			return &componentSet.components[index];
 		}
 
 		template <typename T>
-		inline ComponentMap<T>& GetComponentMap()
+		std::vector<T>& GetComponents()
 		{
-			return registry.GetComponentMap<T>();
+			return registry.GetComponents<T>();
 		}
 
-		inline Entity* CreateEntity()
+		Entity* CreateEntity()
 		{
 			entityMap[entities] = Entity{ this, entities };
 			return &entityMap[entities++];
 		}
 
-		inline void DestroyEntity(const EntityID aId)
+		void DestroyEntity(const EntityID aId)
 		{
-			// Remove the entity from the entity map
 			if (entityMap.contains(aId))
 			{
 				entityMap.erase(aId);
@@ -136,14 +129,13 @@ namespace Kaka
 				return;
 			}
 
-			// Remove all components associated with the entity
-			for (const auto& baseMap : registry.maps | std::views::values)
+			for (const auto& baseMap : registry.sets | std::views::values)
 			{
-				baseMap->erase(aId);
+				baseMap->Erase(aId);
 			}
 		}
 
-		inline Entity* GetEntity(const EntityID aId)
+		Entity* GetEntity(const EntityID aId)
 		{
 			if (entityMap.contains(aId))
 			{

@@ -23,7 +23,7 @@ namespace Kaka
 		{
 			std::string key = std::to_string(static_cast<int>(package.vertexShader->GetType())) + "|" +
 				std::to_string(static_cast<int>(package.pixelShader->GetType())) + "|" +
-				package.filePath;
+				package.meshList->filePath;
 
 			RenderQueue::RenderCommand& renderCommand = groups[key];
 			renderCommand.vertexShader = package.vertexShader;

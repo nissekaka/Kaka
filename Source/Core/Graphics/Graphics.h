@@ -76,6 +76,7 @@ namespace Kaka
 		void BuildRenderQueue();
 		void Render(const RenderContext& aContext);
 		void LoadModel(const std::string& aFilePath);
+		MeshList& LoadMeshList(const std::string& aFilePath) const;
 
 		// Camera
 		DirectX::XMMATRIX GetProjection() const;

@@ -198,7 +198,7 @@ namespace Kaka
 		}
 		meshLists[aFilePath] = MeshList();
 		MeshList& meshList = meshLists[aFilePath];
-
+		meshList.filePath = aFilePath;
 		meshList.meshes.resize(scene->mNumMeshes);
 
 		for (size_t i = 0; i < meshList.meshes.size(); ++i)

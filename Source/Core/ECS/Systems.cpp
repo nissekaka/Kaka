@@ -1,33 +1,31 @@
 #include "stdafx.h"
 #include "Systems.h"
 
-#include <ranges>
 #include "Core/Graphics/Drawable/ModelData.h"
 
 namespace Kaka
 {
 	void Systems::UpdateModelComponents(ComponentRegistry& aRegistry)
 	{
-		auto& transforms = aRegistry.GetComponentMap<TransformComponent>();
+		SparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
 
-		for (const auto& entity : transforms | std::views::keys)
+		for (TransformComponent& transform : transforms.GetComponents())
 		{
-			auto& transform = transforms[entity];
-
 			transform.SetObjectToWorldMatrix();
 		}
 	}
 
 	void Systems::RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry)
 	{
-		auto& models = aRegistry.GetComponentMap<ModelComponent>();
-		auto& transforms = aRegistry.GetComponentMap<TransformComponent>();
+		SparseSet<ModelComponent>& models = aRegistry.GetComponentSet<ModelComponent>();
+		SparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
 
-		for (auto& [entity, model] : models)
+		for (const EntityID& entityId : models.indexToEntity)
 		{
-			auto& transform = transforms[entity];
+			ModelComponent* model = models.GetComponent(entityId);
+			TransformComponent* transform = transforms.GetComponent(entityId);
 
-			aGfx.RegisterRenderData(RenderData{ model.filePath, model.meshList, model.vertexShader, model.pixelShader, transform.GetObjectToWorldMatrix()});
+			aGfx.RegisterRenderData(RenderData{ model->meshList, model->vertexShader, model->pixelShader, &transform->GetObjectToWorldMatrix() });
 		}
 	}
 }

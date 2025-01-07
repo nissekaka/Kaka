@@ -487,6 +487,16 @@ namespace Kaka
 		}
 	}
 
+	MeshList& Graphics::LoadMeshList(const std::string& aFilePath) const
+	{
+		if (!ModelFactory::LoadStaticModel(*this, aFilePath))
+		{
+			assert(false && "Failed to load model");
+		}
+
+		return ModelFactory::GetMeshList(aFilePath);
+	}
+
 	DirectX::XMMATRIX Graphics::GetProjection() const
 	{
 		return currentCamera->GetProjection();
@@ -839,7 +849,7 @@ namespace Kaka
 						if (ImGui::TreeNode("Model"))
 						{
 							const ModelComponent* model = entity->GetComponent<ModelComponent>();
-							ImGui::Text(model->filePath.c_str());
+							ImGui::Text(model->meshList->filePath.c_str());
 							ImGui::TreePop();
 						}
 					}

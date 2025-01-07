@@ -48,6 +48,7 @@ namespace Kaka
 	struct MeshList
 	{
 		std::vector<Mesh> meshes;
+		std::string filePath;
 	};
 
 	struct AnimatedMesh
@@ -89,7 +90,6 @@ namespace Kaka
 
 	struct RenderData
 	{
-		std::string filePath = "";
 		MeshList* meshList = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
