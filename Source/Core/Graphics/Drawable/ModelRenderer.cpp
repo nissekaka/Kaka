@@ -3,6 +3,8 @@
 
 #include <ranges>
 
+#include "Model.h"
+
 namespace Kaka
 {
 
@@ -89,16 +91,52 @@ namespace Kaka
 
 			for (DirectX::XMMATRIX* matrixPtr : command.instanceTransforms)
 			{
-				DirectX::XMMATRIX transform = *matrixPtr;
-				if (aShadowPass)
-				{
-					DirectX::XMMATRIX objectToClip = transform * aGfx.GetCameraInverseView();
-					objectToClip = objectToClip * aGfx.GetProjection();
-					transform = objectToClip;
-				}
+				AABB aabb = Model::GetTranslatedAABB(command.meshList->meshes[0], *matrixPtr);
 
-				instanceData.push_back(transform); // Dereference the pointer and copy the matrix
+				if (aGfx.IsBoundingBoxInFrustum(aabb.minBound, aabb.maxBound))
+				{
+					DirectX::XMMATRIX transform = *matrixPtr;
+					if (aShadowPass)
+					{
+						DirectX::XMMATRIX objectToClip = transform * aGfx.GetCameraInverseView();
+						objectToClip = objectToClip * aGfx.GetProjection();
+						transform = objectToClip;
+					}
+
+					instanceData.push_back(transform);
+				}
 			}
+
+			//std::vector<DirectX::XMMATRIX> instanceData;
+			//instanceData.reserve(instanceDataPreCulling.size());
+
+			//for (DirectX::XMMATRIX transform : instanceDataPreCulling)
+			//{
+			//	if (aShadowPass)
+			//	{
+			//		DirectX::XMMATRIX objectToClip = transform * aGfx.GetCameraInverseView();
+			//		objectToClip = objectToClip * aGfx.GetProjection();
+			//		transform = objectToClip;
+			//	}
+
+			//	instanceData.push_back(transform); // Dereference the pointer and copy the matrix
+			//}
+
+			//std::vector<DirectX::XMMATRIX> instanceData;
+			//instanceData.reserve(command.instanceTransforms.size());
+
+			//for (DirectX::XMMATRIX* matrixPtr : command.instanceTransforms)
+			//{
+			//	DirectX::XMMATRIX transform = *matrixPtr;
+			//	if (aShadowPass)
+			//	{
+			//		DirectX::XMMATRIX objectToClip = transform * aGfx.GetCameraInverseView();
+			//		objectToClip = objectToClip * aGfx.GetProjection();
+			//		transform = objectToClip;
+			//	}
+
+			//	instanceData.push_back(transform); // Dereference the pointer and copy the matrix
+			//}
 
 			// Update data in instance buffer
 			command.instanceBuffer.Update(aGfx, instanceData);
@@ -129,7 +167,7 @@ namespace Kaka
 					aGfx.SetRasterizerState(eRasterizerStates::BackfaceCulling);
 				}
 
-				aGfx.DrawIndexedInstanced(mesh.indexBuffer.GetCount(), command.instanceTransforms.size());
+				aGfx.DrawIndexedInstanced(mesh.indexBuffer.GetCount(), instanceData.size());
 			}
 
 			// Unbind shader resources

@@ -56,7 +56,8 @@ namespace Kaka
 		void SetPerspective(float aWidth, float aHeight, float aVFov, float aNearZ, float aFarZ);
 		void SetOrthographic(float aWidth, float aHeight, float aNearZ, float aFarZ);
 		void ApplyProjectionJitter(float aJitterX, float aJitterY);
-		void ResetFrustumFlag();
+		//void ResetFrustumFlag();
+		void MarkDirty() { dirty = true; }
 
 	private:
 		PerspectiveData perspectiveData;
@@ -89,6 +90,7 @@ namespace Kaka
 		float cameraSpeedBoost = 6.0f;
 
 		FrustumPlanes frustum;
-		bool extractedFrustumThisFrame = false;
+		//bool extractedFrustumThisFrame = false;
+		bool dirty = true;
 	};
 }

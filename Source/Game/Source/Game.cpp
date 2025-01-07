@@ -14,7 +14,7 @@ namespace Kaka
 
 	int Game::Go()
 	{
-		entities.reserve(2000);
+		entities.reserve(10000);
 
 		//entities.push_back(ecs.CreateEntity());
 		//entities.back()->AddComponent(TransformComponent{});
@@ -32,21 +32,29 @@ namespace Kaka
 		//entities.back().GetComponent<TransformComponent>()->z = 20.0f;
 		//entities.back().GetComponent<TransformComponent>()->scale = 0.1f;
 
-		//for (int i = 0; i < 40; i++)
-		//{
-		//	for (int j = 0; j < 40; j++)
-		//	{
-		//		entities.push_back(ecs.CreateEntity());
-		//		entities.back()->AddComponent(TransformComponent{});
-		//		entities.back()->AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
-		//		entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
-		//		entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
-		//		entities.back()->GetComponent<TransformComponent>()->x = i * 20.0f;
-		//		entities.back()->GetComponent<TransformComponent>()->z = j * 20.0f;
-		//		entities.back()->GetComponent<TransformComponent>()->scale = 0.1f;
-		//	}
-		//}
+		// Two random numbers between 0 and 1
 
+
+		for (int i = 0; i < 100; i++)
+		{
+			for (int j = 0; j < 100; j++)
+			{
+				float randomX = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+				float randomZ = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+
+				entities.push_back(ecs.CreateEntity());
+				entities.back()->AddComponent(TransformComponent{});
+				entities.back()->AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
+				entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+				entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+				TransformComponent* transform = entities.back()->GetComponent<TransformComponent>();
+				transform->SetPositionX(i * 10.0f + randomX);
+				transform->SetPositionZ(j * 10.0f + randomZ);
+				transform->SetScale(0.1f);
+			}
+		}
+
+		//for (ModelComponent& model : ecs.GetComponents<ModelComponent>())
 		for (auto& model : ecs.GetComponentMap<ModelComponent>() | std::views::values)
 		{
 			wnd.Gfx().LoadModel(model.filePath);
@@ -64,6 +72,7 @@ namespace Kaka
 				// If return optional has value, we're quitting
 				return *code;
 			}
+
 			// If no value
 			Update(timer.UpdateDeltaTime());
 		}
@@ -86,7 +95,7 @@ namespace Kaka
 		// Display all entities with their components with ImGui
 		if (wnd.Gfx().showImGui)
 		{
-			wnd.Gfx().ShowEntities(entities, selectedEntity);
+			//wnd.Gfx().ShowEntities(entities, selectedEntity);
 		}
 
 		wnd.Gfx().EndFrame();
@@ -143,8 +152,9 @@ namespace Kaka
 					entities.back()->AddComponent(ModelComponent{ "Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx" });
 					entities.back()->GetComponent<ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
 					entities.back()->GetComponent<ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
-					entities.back()->GetComponent<TransformComponent>()->x = entities.size() * 20.0f;
-					entities.back()->GetComponent<TransformComponent>()->scale = 0.1f;
+					TransformComponent* transformComponent = entities.back()->GetComponent<TransformComponent>();
+					transformComponent->SetPosition(entities.size() * 20.0f, transformComponent->GetPosition().y, transformComponent->GetPosition().z);
+					transformComponent->SetScale(0.1f);
 
 					std::string filePath = entities.back()->GetComponent<ModelComponent>()->filePath;
 					wnd.Gfx().LoadModel(filePath);

@@ -14,12 +14,7 @@ namespace Kaka
 		{
 			auto& transform = transforms[entity];
 
-			// TODO This needs optimization
-			const DirectX::XMMATRIX objectToWorld = DirectX::XMMatrixScaling(transform.scale, transform.scale, transform.scale) *
-				DirectX::XMMatrixRotationRollPitchYaw(transform.roll, transform.pitch, transform.yaw) *
-				DirectX::XMMatrixTranslation(transform.x, transform.y, transform.z);
-
-			transform.objectToWorld = objectToWorld;
+			transform.SetObjectToWorldMatrix();
 		}
 	}
 
@@ -32,7 +27,7 @@ namespace Kaka
 		{
 			auto& transform = transforms[entity];
 
-			aGfx.RegisterRenderData(RenderData{ model.filePath, model.meshList, model.vertexShader, model.pixelShader, &transform.objectToWorld });
+			aGfx.RegisterRenderData(RenderData{ model.filePath, model.meshList, model.vertexShader, model.pixelShader, transform.GetObjectToWorldMatrix()});
 		}
 	}
 }

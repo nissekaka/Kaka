@@ -10,14 +10,100 @@ namespace Kaka
 
 	struct TransformComponent
 	{
-		DirectX::XMMATRIX objectToWorld;
-		float roll = 0.0f;
-		float pitch = 0.0f;
-		float yaw = 0.0f;
-		float x = 0.0f;
-		float y = 0.0f;
-		float z = 0.0f;
-		float scale = 1.0f;
+	private:
+		DirectX::XMFLOAT3 position{ 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 rotation{ 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 scale{ 1.0f, 1.0f, 1.0f };
+
+		mutable DirectX::XMMATRIX objectToWorld = {};
+		mutable bool isDirty = true;
+
+	public:
+		// Getters
+		const DirectX::XMFLOAT3& GetPosition() const { return position; }
+		const DirectX::XMFLOAT3& GetRotation() const { return rotation; }
+		const DirectX::XMFLOAT3& GetScale() const { return scale; }
+
+		// Setters with automatic MarkDirty
+		void SetPosition(const DirectX::XMFLOAT3& aNewPosition)
+		{
+			position = aNewPosition;
+			MarkDirty();
+		}
+
+		void SetPosition(const float aX, const float aY, const float aZ)
+		{
+			position = { aX, aY, aZ };
+			MarkDirty();
+		}
+
+		void SetPositionX(const float aX) { position.x = aX; MarkDirty(); }
+		void SetPositionY(const float aY) { position.y = aY; MarkDirty(); }
+		void SetPositionZ(const float aZ) { position.z = aZ; MarkDirty(); }
+
+		void SetRotation(const DirectX::XMFLOAT3& aNewRotation)
+		{
+			rotation = aNewRotation;
+			MarkDirty();
+		}
+
+		void SetRotation(const float aRoll, const float aPitch, const float aYaw)
+		{
+			rotation = { aRoll, aPitch, aYaw };
+			MarkDirty();
+		}
+
+		void SetRotationRoll(const float aRoll) { rotation.x = aRoll; MarkDirty(); }
+		void SetRotationPitch(const float aPitch) { rotation.y = aPitch; MarkDirty(); }
+		void SetRotationYaw(const float aYaw) { rotation.z = aYaw; MarkDirty(); }
+
+		void SetScale(const DirectX::XMFLOAT3& aNewScale)
+		{
+			scale = aNewScale;
+			MarkDirty();
+		}
+
+		void SetScale(const float aScale)
+		{
+			scale = { aScale, aScale, aScale };
+			MarkDirty();
+		}
+
+		void SetScale(const float aX, const float aY, const float aZ)
+		{
+			scale = { aX, aY, aZ };
+			MarkDirty();
+		}
+
+	private:
+		void MarkDirty() const { isDirty = true; }
+
+	public:
+		const DirectX::XMMATRIX& GetObjectToWorldMatrix() const
+		{
+			if (isDirty)
+			{
+				using namespace DirectX;
+				const XMMATRIX scalingMatrix = XMMatrixScaling(scale.x, scale.y, scale.z);
+				const XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
+				const XMMATRIX translationMatrix = XMMatrixTranslation(position.x, position.y, position.z);
+
+				objectToWorld = scalingMatrix * rotationMatrix * translationMatrix;
+				isDirty = false;
+			}
+
+			return objectToWorld;
+		}
+
+		DirectX::XMMATRIX* GetObjectToWorldMatrix()
+		{
+			return &objectToWorld;
+		}
+
+		void SetObjectToWorldMatrix() const
+		{
+			objectToWorld = GetObjectToWorldMatrix();
+		}
 	};
 
 	struct ModelComponent

@@ -36,12 +36,16 @@ namespace Kaka
 		//position = {0.0f,140.0f,-450.0f};
 		pitch = 0.0f;
 		yaw = -PI * 2 / 5;
+
+		MarkDirty();
 	}
 
 	void Camera::Rotate(const float aDx, const float aDy)
 	{
 		yaw = WrapAngle(yaw + aDx * ROTATION_SPEED);
 		pitch = std::clamp(pitch + aDy * ROTATION_SPEED, 0.995f * -PI / 2.0f, 0.995f * PI / 2.0f);
+
+		MarkDirty();
 	}
 
 	void Camera::Translate(DirectX::XMFLOAT3 aTranslation)
@@ -57,17 +61,24 @@ namespace Kaka
 			position.y + aTranslation.y,
 			position.z + aTranslation.z
 		};
+
+		MarkDirty();
+
 	}
 
 	void Camera::SetPosition(const DirectX::XMFLOAT3 aPosition)
 	{
 		position = aPosition;
+
+		MarkDirty();
 	}
 
 	void Camera::SetRotationDegrees(const float aPitch, const float aYaw)
 	{
 		pitch = DegToRad(aPitch);
 		yaw = DegToRad(aYaw);
+
+		MarkDirty();
 	}
 
 	void Camera::SetDirection(const DirectX::XMFLOAT3 aDirection)
@@ -81,6 +92,8 @@ namespace Kaka
 		// Not sure if needed for yaw but it's here for now
 		yaw = atan2(-DirectX::XMVectorGetX(direction), DirectX::XMVectorGetZ(direction));
 		//yaw = atan2(aDirection.x, aDirection.z);
+
+		MarkDirty();
 	}
 
 	DirectX::XMMATRIX Camera::GetView() const
@@ -189,12 +202,13 @@ namespace Kaka
 
 	Camera::FrustumPlanes Camera::ExtractFrustumPlanes() 
 	{
-		if (extractedFrustumThisFrame)
+		if (!dirty)
 		{
 			return frustum;
 		}
 
-		extractedFrustumThisFrame = true;
+		//extractedFrustumThisFrame = true;
+		dirty = false;
 
 		// Extract the rows of the view-projection matrix
 		DirectX::XMFLOAT4X4 VP;
@@ -229,11 +243,6 @@ namespace Kaka
 		}
 
 		return frustum;
-	}
-
-	void Camera::ResetFrustumFlag()
-	{
-		extractedFrustumThisFrame = false;
 	}
 
 	bool Camera::IsPointInFrustum(const DirectX::XMFLOAT3& aPoint)

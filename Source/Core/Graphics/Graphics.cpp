@@ -186,8 +186,6 @@ namespace Kaka
 		}
 
 		drawcallCount = 0u;
-
-		currentCamera->ResetFrustumFlag();
 	}
 
 	void Graphics::DrawIndexed(const UINT aCount)
@@ -502,8 +500,8 @@ namespace Kaka
 	void Graphics::SetupCamera(const float aWidth, const float aHeight, const float aFoV, const float aNearZ, const float aFarZ)
 	{
 		camera.SetPerspective(aWidth, aHeight, aFoV, aNearZ, aFarZ);
-		camera.SetPosition({ -11.0f, 28.0f, 26.0f });
-		camera.SetRotationDegrees(29.0f, 138.0f);
+		camera.SetPosition({ -17.5f, 60.0f, 20.0f });
+		camera.SetRotationDegrees(12.0f, 40.0f);
 	}
 
 	void Graphics::SetCamera(Camera& aCamera)
@@ -797,14 +795,44 @@ namespace Kaka
 					{
 						if (ImGui::TreeNode("Transform"))
 						{
+							// Only sets transform data if it has changed
+							// Transform component then marks itself as dirty and updates the world matrix
 							TransformComponent* transform = entity->GetComponent<TransformComponent>();
-							ImGui::DragFloat("X", &transform->x, 0.1f);
-							ImGui::DragFloat("Y", &transform->y, 0.1f);
-							ImGui::DragFloat("Z", &transform->z, 0.1f);
-							ImGui::DragFloat("Roll", &transform->roll, 0.1f);
-							ImGui::DragFloat("Pitch", &transform->pitch, 0.1f);
-							ImGui::DragFloat("Yaw", &transform->yaw, 0.1f);
-							ImGui::DragFloat("Scale", &transform->scale, 0.1f);
+							float position[3] = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
+							ImGui::DragFloat("X", &position[0], 0.1f);
+							ImGui::DragFloat("Y", &position[1], 0.1f);
+							ImGui::DragFloat("Z", &position[2], 0.1f);
+
+							if (position[0] != transform->GetPosition().x ||
+								position[1] != transform->GetPosition().y ||
+								position[2] != transform->GetPosition().z)
+							{
+								transform->SetPosition({ position[0], position[1], position[2] });
+							}
+
+							float rotation[3] = { transform->GetRotation().x, transform->GetRotation().y, transform->GetRotation().z };
+							ImGui::DragFloat("Roll", &rotation[0], 0.1f);
+							ImGui::DragFloat("Pitch", &rotation[1], 0.1f);
+							ImGui::DragFloat("Yaw", &rotation[2], 0.1f);
+
+							if (rotation[0] != transform->GetRotation().x ||
+								rotation[1] != transform->GetRotation().y ||
+								rotation[2] != transform->GetRotation().z)
+							{
+								transform->SetRotation({ rotation[0], rotation[1], rotation[2] });
+							}
+
+							float scale[3] = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
+							ImGui::DragFloat("Scale X", &scale[0], 0.1f);
+							ImGui::DragFloat("Scale Y", &scale[1], 0.1f);
+							ImGui::DragFloat("Scale Z", &scale[2], 0.1f);
+
+							if (scale[0] != transform->GetScale().x ||
+								scale[1] != transform->GetScale().y ||
+								scale[2] != transform->GetScale().z)
+							{
+								transform->SetScale({ scale[0], scale[1], scale[2] });
+							}
 							ImGui::TreePop();
 						}
 
