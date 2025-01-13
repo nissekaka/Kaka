@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/ECS/Systems.h"
+#include "Core/ECS/System.h"
 #include <ranges>
 
 namespace Kaka
@@ -58,15 +58,10 @@ namespace Kaka
 			systems.RegisterModelComponents(aGfx, registry);
 		}
 
-		void UpdateModelComponents()
-		{
-			systems.UpdateModelComponents(registry);
-		}
-
 		void UpdateComponents(const float aDeltaTime)
 		{
 			UNREFERENCED_PARAMETER(aDeltaTime);
-			UpdateModelComponents();
+			systems.UpdateTransformComponents(registry, aDeltaTime);
 		}
 
 		template <typename T>
@@ -133,6 +128,8 @@ namespace Kaka
 			{
 				baseMap->Erase(aId);
 			}
+
+			// TODO Maybe send event to observers to remove entity from their lists
 		}
 
 		Entity* GetEntity(const EntityID aId)
@@ -146,7 +143,7 @@ namespace Kaka
 		}
 
 	private:
-		Systems systems;
+		System systems;
 		EntityID entities = 0;
 		ComponentRegistry registry;
 		std::unordered_map<EntityID, Entity> entityMap;

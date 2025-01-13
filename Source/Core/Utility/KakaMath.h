@@ -41,6 +41,12 @@ namespace Kaka
 	}
 
 	template <typename T>
+	constexpr T DegToRad(T* aDegrees) noexcept
+	{
+		return &aDegrees * PI / static_cast<T>(180.0);
+	}
+
+	template <typename T>
 	constexpr T RadToDeg(T aRad) noexcept
 	{
 		return aRad / PI * static_cast<T>(180.0);

@@ -15,7 +15,8 @@ namespace Kaka
 			VertexShader* vertexShader;
 			PixelShader* pixelShader;
 			// TODO This vector could cause problems when resized or if transforms are moved in memory
-			std::vector<DirectX::XMMATRIX*> instanceTransforms;
+			//std::vector<DirectX::XMMATRIX> instanceTransforms;
+			std::vector<TransformComponent*> transformComponents;
 			InstanceBuffer<DirectX::XMMATRIX> instanceBuffer = { 11u };
 		};
 
@@ -28,8 +29,9 @@ namespace Kaka
 		ModelRenderer() = default;
 		~ModelRenderer() = default;
 		void Init(const Graphics& aGfx);
-		void BuildRenderQueue(const Graphics& aGfx, RenderQueue& aRenderQueue, const std::vector<RenderData>& aRenderPackages);
+		void BuildRenderQueue(const Graphics& aGfx, RenderQueue& aRenderQueue, std::vector<RenderData>& aRenderData);
 		void DrawRenderQueue(Graphics& aGfx, RenderQueue& aRenderQueue, const bool aShadowPass = false);
+		static DirectX::XMMATRIX CreateTransformMatrix(const TransformComponent* aTransform);
 
 	private:
 		Topology topology = {};

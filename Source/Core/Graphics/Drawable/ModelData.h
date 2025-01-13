@@ -6,6 +6,8 @@
 
 namespace Kaka
 {
+	struct TransformComponent;
+
 	enum class eModelType { None, Static, Skeletal };
 
 	struct AABB
@@ -93,6 +95,7 @@ namespace Kaka
 		MeshList* meshList = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
-		DirectX::XMMATRIX* transform;
+		TransformComponent* transform = nullptr;
+		//DirectX::XMMATRIX* transform;
 	};
 }

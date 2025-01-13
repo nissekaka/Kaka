@@ -53,6 +53,12 @@ namespace Kaka
 			GetContext(aGfx)->VSSetShaderResources(slot, 1u, pInstanceSRV.GetAddressOf());
 		}
 
+		void Reset()
+		{
+			pInstanceBuffer.Reset();
+			pInstanceSRV.Reset();
+		}
+
 	private:
 		UINT slot;
 		Microsoft::WRL::ComPtr<ID3D11Buffer> pInstanceBuffer;

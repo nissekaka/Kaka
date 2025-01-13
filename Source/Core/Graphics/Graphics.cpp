@@ -9,6 +9,9 @@
 #include <complex>
 #include <DirectXMath.h>
 
+#include "Core/Utility/KakaMath.h"
+#include "ECS/Components/Components.h"
+
 namespace WRL = Microsoft::WRL;
 
 namespace Kaka
@@ -788,6 +791,10 @@ namespace Kaka
 
 	void Graphics::ShowEntities(const std::vector<ECS::Entity*>& aEntities, EntityID& aOutSelectedEntity)
 	{
+		// TODO Has no cleanup, if an entity is removed, it will stay in this map
+		// TODO Maybe implement a callback (event system) to remove entities from this map
+		static std::unordered_map<EntityID, float[3]> rotationMap;
+
 		if (ImGui::Begin("Entities"))
 		{
 			std::string node;
@@ -805,13 +812,16 @@ namespace Kaka
 					{
 						if (ImGui::TreeNode("Transform"))
 						{
-							// Only sets transform data if it has changed
-							// Transform component then marks itself as dirty and updates the world matrix
 							TransformComponent* transform = entity->GetComponent<TransformComponent>();
+
+							// ---- Position ----
 							float position[3] = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
+							ImGui::PushID("Position");
+							ImGui::Text("Position");
 							ImGui::DragFloat("X", &position[0], 0.1f);
 							ImGui::DragFloat("Y", &position[1], 0.1f);
 							ImGui::DragFloat("Z", &position[2], 0.1f);
+							ImGui::PopID();
 
 							if (position[0] != transform->GetPosition().x ||
 								position[1] != transform->GetPosition().y ||
@@ -820,22 +830,37 @@ namespace Kaka
 								transform->SetPosition({ position[0], position[1], position[2] });
 							}
 
-							float rotation[3] = { transform->GetRotation().x, transform->GetRotation().y, transform->GetRotation().z };
-							ImGui::DragFloat("Roll", &rotation[0], 0.1f);
-							ImGui::DragFloat("Pitch", &rotation[1], 0.1f);
-							ImGui::DragFloat("Yaw", &rotation[2], 0.1f);
-
-							if (rotation[0] != transform->GetRotation().x ||
-								rotation[1] != transform->GetRotation().y ||
-								rotation[2] != transform->GetRotation().z)
+							// ---- Rotation ----
+							if (!rotationMap.contains(entity->GetID()))
 							{
-								transform->SetRotation({ rotation[0], rotation[1], rotation[2] });
+								rotationMap[entity->GetID()][0] = transform->GetEulerRotation().x;
+								rotationMap[entity->GetID()][1] = transform->GetEulerRotation().y;
+								rotationMap[entity->GetID()][2] = transform->GetEulerRotation().z;
 							}
 
+							float* rotation = rotationMap[entity->GetID()];
+							ImGui::PushID("Rotation");
+							ImGui::Text("Rotation");
+							ImGui::DragFloat("X", &rotation[0], 0.1f, -180.0f, 180.0f);
+							ImGui::DragFloat("Y", &rotation[1], 0.1f, -180.0f, 180.0f);
+							ImGui::DragFloat("Z", &rotation[2], 0.1f, -180.0f, 180.0f);
+							ImGui::PopID();
+
+							if (rotation[0] != transform->GetEulerRotation().x ||
+								rotation[1] != transform->GetEulerRotation().y ||
+								rotation[2] != transform->GetEulerRotation().z)
+							{
+								transform->SetEulerRotation({ DegToRad(rotation[0]), DegToRad(rotation[1]), DegToRad(rotation[2])});
+							}
+
+							// ---- Scale ----
 							float scale[3] = { transform->GetScale().x, transform->GetScale().y, transform->GetScale().z };
-							ImGui::DragFloat("Scale X", &scale[0], 0.1f);
-							ImGui::DragFloat("Scale Y", &scale[1], 0.1f);
-							ImGui::DragFloat("Scale Z", &scale[2], 0.1f);
+							ImGui::PushID("Scale");
+							ImGui::Text("Scale");
+							ImGui::DragFloat("X", &scale[0], 0.1f);
+							ImGui::DragFloat("Y", &scale[1], 0.1f);
+							ImGui::DragFloat("Z", &scale[2], 0.1f);
+							ImGui::PopID();
 
 							if (scale[0] != transform->GetScale().x ||
 								scale[1] != transform->GetScale().y ||
@@ -843,6 +868,7 @@ namespace Kaka
 							{
 								transform->SetScale({ scale[0], scale[1], scale[2] });
 							}
+
 							ImGui::TreePop();
 						}
 

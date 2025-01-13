@@ -13,10 +13,14 @@
 
 ------ TO DO ------
 
-- Model rendering
-- Game Object
-- Component system (ECS or component based)
-- Model instancing
+- ECS Components:
+	Directional Light
+	Point Light
+	Spot Light
+	Camera
+	Animated Model
+
+- TAA animated model?
 - Line renderer
 - Memory management
 - Memory leak detection
