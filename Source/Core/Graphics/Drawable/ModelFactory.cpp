@@ -173,7 +173,7 @@ namespace Kaka
 
 	bool ModelFactory::LoadStaticModel(const Graphics& aGfx, const std::string& aFilePath)
 	{
-		if (meshLists.contains(aFilePath))
+		if (modelDatas.contains(aFilePath))
 		{
 			return true;
 		}
@@ -196,18 +196,18 @@ namespace Kaka
 			std::cerr << "Failed to load file: " << importer.GetErrorString() << std::endl;
 			return false;
 		}
-		meshLists[aFilePath] = MeshList();
-		MeshList& meshList = meshLists[aFilePath];
-		meshList.filePath = aFilePath;
-		meshList.meshes.resize(scene->mNumMeshes);
+		modelDatas[aFilePath] = ModelData();
+		ModelData& modelData = modelDatas[aFilePath];
+		modelData.filePath = aFilePath;
+		modelData.meshes.resize(scene->mNumMeshes);
 
-		for (size_t i = 0; i < meshList.meshes.size(); ++i)
+		for (size_t i = 0; i < modelData.meshes.size(); ++i)
 		{
 			// Imported data
 			aiMesh* aiMesh = scene->mMeshes[i];
 
 			// Our own data
-			Mesh& mesh = meshList.meshes[i];
+			Mesh& mesh = modelData.meshes[i];
 
 			// AABB
 			mesh.aabb.minBound =
@@ -323,6 +323,19 @@ namespace Kaka
 			mesh.indexBuffer.Init(aGfx, mesh.indices);
 		}
 
+		modelData.aabb.minBound = { FLT_MAX, FLT_MAX, FLT_MAX };
+		modelData.aabb.maxBound = { FLT_MIN, FLT_MIN, FLT_MIN };
+
+		for (Mesh& mesh : modelData.meshes)
+		{
+			modelData.aabb.minBound.x = std::min(modelData.aabb.minBound.x, mesh.aabb.minBound.x);
+			modelData.aabb.minBound.y = std::min(modelData.aabb.minBound.y, mesh.aabb.minBound.y);
+			modelData.aabb.minBound.z = std::min(modelData.aabb.minBound.z, mesh.aabb.minBound.z);
+
+			modelData.aabb.maxBound.x = std::max(modelData.aabb.maxBound.x, mesh.aabb.maxBound.x);
+			modelData.aabb.maxBound.y = std::max(modelData.aabb.maxBound.y, mesh.aabb.maxBound.y);
+			modelData.aabb.maxBound.z = std::max(modelData.aabb.maxBound.z, mesh.aabb.maxBound.z);
+		}
 
 		return true;
 	}

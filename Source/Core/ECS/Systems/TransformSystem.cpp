@@ -1,7 +1,6 @@
 #include "stdafx.h"
-#include "System.h"
+#include "TransformSystem.h"
 
-#include "Core/Graphics/Drawable/ModelData.h"
 #include "Core/ECS/Components/Components.h"
 
 #include <random>
@@ -9,7 +8,7 @@
 
 namespace Kaka
 {
-	void System::UpdateTransformComponents(ComponentRegistry& aRegistry, const float aDeltaTime)
+	void TransformSystem::UpdateTransformComponents(ComponentRegistry& aRegistry, const float aDeltaTime)
 	{
 		SparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
 		SparseSet<VelocityComponent>& velocities = aRegistry.GetComponentSet<VelocityComponent>();
@@ -19,7 +18,7 @@ namespace Kaka
 		std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * 3.14159f);
 		std::uniform_real_distribution<float> speedDist(0.5f, 20.0f);
 
-		for (const EntityID& entityId : velocities.indexToEntity)
+		for (const EntityID& entityId : velocities.GetEntities())
 		{
 			TransformComponent* transform = transforms.GetComponent(entityId);
 			VelocityComponent* velocity = velocities.GetComponent(entityId);
@@ -37,20 +36,6 @@ namespace Kaka
 			position.z += velocity->velocity.z * aDeltaTime;
 
 			transform->SetPosition(position);
-		}
-	}
-
-	void System::RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry)
-	{
-		SparseSet<ModelComponent>& models = aRegistry.GetComponentSet<ModelComponent>();
-		SparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
-
-		for (const EntityID& entityId : models.indexToEntity)
-		{
-			ModelComponent* model = models.GetComponent(entityId);
-			TransformComponent* transform = transforms.GetComponent(entityId);
-
-			aGfx.RegisterRenderData(RenderData{ model->meshList, model->vertexShader, model->pixelShader, transform });
 		}
 	}
 }

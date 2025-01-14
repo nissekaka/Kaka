@@ -4,7 +4,7 @@ namespace Kaka
 {
 	struct ModelComponent
 	{
-		MeshList* meshList = nullptr;
+		ModelData* modelData = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
 	};

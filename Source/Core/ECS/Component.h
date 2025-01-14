@@ -76,6 +76,11 @@ namespace Kaka
 			return components;
 		}
 
+		const std::vector<EntityID>& GetEntities()
+		{
+			return indexToEntity;
+		}
+
 	private:
 		std::vector<T> components = {};
 		std::unordered_map<EntityID, size_t> entityToIndex = {};

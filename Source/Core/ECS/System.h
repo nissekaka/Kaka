@@ -1,5 +1,6 @@
 #pragma once
-#include "Core/ECS/Component.h"
+#include "Systems/ModelSystem.h"
+#include "Systems/TransformSystem.h"
 
 namespace Kaka
 {
@@ -9,7 +10,7 @@ namespace Kaka
 		System() = default;
 		~System() = default;
 
-		void UpdateTransformComponents(ComponentRegistry& aRegistry, const float aDeltaTime);
-		void RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry);
+		TransformSystem transformSystem;
+		ModelSystem modelSystem;
 	};
 }

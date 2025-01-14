@@ -20,17 +20,17 @@ namespace Kaka
 
 		std::unordered_map<std::string, RenderQueue::RenderCommand> groups;
 
-		for (RenderData& package : aRenderData)
+		for (RenderData& renderData : aRenderData)
 		{
-			std::string key = std::to_string(static_cast<int>(package.vertexShader->GetType())) + "|" +
-				std::to_string(static_cast<int>(package.pixelShader->GetType())) + "|" +
-				package.meshList->filePath;
+			std::string key = std::to_string(static_cast<int>(renderData.vertexShader->GetType())) + "|" +
+				std::to_string(static_cast<int>(renderData.pixelShader->GetType())) + "|" +
+				renderData.modelData->filePath;
 
 			RenderQueue::RenderCommand& renderCommand = groups[key];
-			renderCommand.vertexShader = package.vertexShader;
-			renderCommand.pixelShader = package.pixelShader;
-			renderCommand.meshList = package.meshList;
-			renderCommand.transformComponents.push_back(package.transform);
+			renderCommand.vertexShader = renderData.vertexShader;
+			renderCommand.pixelShader = renderData.pixelShader;
+			renderCommand.modelData = renderData.modelData;
+			renderCommand.transformComponents.push_back(renderData.transform);
 		}
 
 		for (RenderQueue::RenderCommand& command : groups | std::views::values)
@@ -94,9 +94,9 @@ namespace Kaka
 			{
 				DirectX::XMMATRIX objectToWorld = CreateTransformMatrix(transform);
 
-				AABB aabb = Model::GetTranslatedAABB(command.meshList->meshes[0], objectToWorld);
+				AABB aabb = GetTranslatedAABB(command.modelData->aabb, objectToWorld);
 
-				if (aGfx.IsBoundingBoxInFrustum(aabb.minBound, aabb.maxBound))
+				if (aGfx.IsBoundingBoxInFrustum(aabb))
 				{
 					if (aShadowPass)
 					{
@@ -104,19 +104,28 @@ namespace Kaka
 						objectToClip = objectToClip * aGfx.GetProjection();
 						objectToWorld = objectToClip;
 					}
+					else
+					{
+						aGfx.DrawDebugAABB(command.modelData->aabb, objectToWorld);
+					}
 
 					instanceData.push_back(objectToWorld);
+
 				}
 			}
 
+			if (instanceData.empty())
+			{
+				continue;
+			}
 
 			// Update data in instance buffer
 			command.instanceBuffer.Update(aGfx, instanceData);
 			command.instanceBuffer.Bind(aGfx);
 
-			MeshList& meshList = *command.meshList;
+			ModelData& modelData = *command.modelData;
 
-			for (Mesh& mesh : meshList.meshes)
+			for (Mesh& mesh : modelData.meshes)
 			{
 				if (mesh.texture != nullptr)
 				{
@@ -146,7 +155,6 @@ namespace Kaka
 			ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
 			aGfx.pContext->PSSetShaderResources(1u, 3u, nullSRVs);
 		}
-
 	}
 
 	DirectX::XMMATRIX ModelRenderer::CreateTransformMatrix(const TransformComponent* aTransform)
@@ -161,5 +169,22 @@ namespace Kaka
 		XMMATRIX scaleMatrix = XMMatrixScalingFromVector(scale);
 
 		return scaleMatrix * rotationMatrix * translationMatrix;
+	}
+
+	AABB ModelRenderer::GetTranslatedAABB(const AABB& aAabb, const DirectX::XMMATRIX& aTransform)
+	{
+		const DirectX::XMMATRIX meshTransform = aTransform;
+		const DirectX::XMVECTOR minBound = DirectX::XMVector3Transform(
+			DirectX::XMLoadFloat3(&aAabb.minBound),
+			meshTransform
+		);
+		const DirectX::XMVECTOR maxBound = DirectX::XMVector3Transform(
+			DirectX::XMLoadFloat3(&aAabb.maxBound),
+			meshTransform
+		);
+		AABB aabb;
+		DirectX::XMStoreFloat3(&aabb.minBound, minBound);
+		DirectX::XMStoreFloat3(&aabb.maxBound, maxBound);
+		return aabb;
 	}
 }

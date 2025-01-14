@@ -35,7 +35,7 @@ namespace Kaka
 	class Camera;
 	struct Mesh;
 
-	struct RenderContext
+	struct FrameContext
 	{
 		float deltaTime;
 		float totalTime;
@@ -74,9 +74,9 @@ namespace Kaka
 		void RegisterRenderData(const RenderData& aRenderData);
 		void ClearRenderData();
 		void BuildRenderQueue();
-		void Render(const RenderContext& aContext);
+		void Render(const FrameContext& aContext);
 		void LoadModel(const std::string& aFilePath);
-		MeshList& LoadMeshList(const std::string& aFilePath) const;
+		ModelData& LoadModelData(const std::string& aFilePath) const;
 
 		// Camera
 		DirectX::XMMATRIX GetProjection() const;
@@ -86,6 +86,7 @@ namespace Kaka
 		DirectX::XMMATRIX GetCameraInverseView() const;
 		bool IsPointInFrustum(const DirectX::XMFLOAT3& aPoint) const;
 		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const;
+		bool IsBoundingBoxInFrustum(const AABB& aAabb) const;
 
 		// Render info
 		DirectX::XMFLOAT2 GetCurrentResolution() const;
@@ -134,6 +135,7 @@ namespace Kaka
 	public:
 		void UpdateLights(const float aDeltaTime);
 		void ProcessFileChangeEngine(const std::wstring& aPath, filewatch::Event aEvent);
+		void DrawDebugAABB(const AABB& aAabb, const DirectX::XMMATRIX& aTransform) const;
 		ID3D11Buffer* CreateInstanceBuffer(const std::vector<DirectX::XMMATRIX>& instanceTransforms);
 
 	private:

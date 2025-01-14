@@ -1,5 +1,7 @@
 #pragma once
 #include "Core/ECS/System.h"
+#include "Core/ECS/Component.h"
+
 #include <ranges>
 
 namespace Kaka
@@ -47,7 +49,7 @@ namespace Kaka
 
 #pragma endregion
 
-#pragma region KECS
+#pragma region ECS
 
 	public:
 		ECS() = default;
@@ -55,13 +57,12 @@ namespace Kaka
 
 		void RegisterModelComponents(Graphics& aGfx)
 		{
-			systems.RegisterModelComponents(aGfx, registry);
+			systems.modelSystem.RegisterModelComponents(aGfx, registry);
 		}
 
 		void UpdateComponents(const float aDeltaTime)
 		{
-			UNREFERENCED_PARAMETER(aDeltaTime);
-			systems.UpdateTransformComponents(registry, aDeltaTime);
+			systems.transformSystem.UpdateTransformComponents(registry, aDeltaTime);
 		}
 
 		template <typename T>

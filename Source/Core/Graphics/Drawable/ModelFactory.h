@@ -19,10 +19,10 @@ namespace Kaka
 		//static bool LoadTexture(const Graphics& aGfx, ModelData& aOutModelData, const std::string& aFilePath);
 		static Texture* LoadTexture(const Graphics& aGfx, const std::string& aFilePath, const UINT aSlot = 2u);
 		static bool LoadAnimation(AnimatedModelData& aOutModelData, const std::string& aFilePath);
-		static MeshList& GetMeshList(const std::string& aFilePath) { return meshLists[aFilePath]; }
+		static ModelData& GetModelData(const std::string& aFilePath) { return modelDatas[aFilePath]; }
 
 	private:
-		inline static std::unordered_map<std::string, MeshList> meshLists;
+		inline static std::unordered_map<std::string, ModelData> modelDatas;
 		inline static std::unordered_map<std::string, AnimatedMeshList> animatedMeshLists;
 		inline static std::unordered_map<std::string, Skeleton> skeletons;
 		inline static std::unordered_map<std::string, AnimationClip> animationClips;

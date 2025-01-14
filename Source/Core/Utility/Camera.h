@@ -1,5 +1,6 @@
 #pragma once
 #include "Core/Graphics/Graphics.h"
+#include "Graphics/Drawable/ModelData.h"
 
 
 namespace Kaka
@@ -78,6 +79,7 @@ namespace Kaka
 	public:
 		bool IsPointInFrustum(const DirectX::XMFLOAT3& aPoint);
 		bool IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax);
+		bool IsBoundingBoxInFrustum(const AABB& aAabb);
 		std::vector<bool> AreMeshesInFrustum(const std::vector<Mesh>& aMeshes, const DirectX::XMMATRIX& aObjectToWorld);
 
 	public:

@@ -290,6 +290,40 @@ namespace Kaka
 		// If the bounding box is not completely outside any frustum plane, it is visible
 		return true;
 	}
+
+	bool Camera::IsBoundingBoxInFrustum(const AABB& aAabb)
+	{
+		const DirectX::XMFLOAT3 aMin = aAabb.minBound;
+		const DirectX::XMFLOAT3 aMax = aAabb.maxBound;
+
+		const FrustumPlanes frustum = ExtractFrustumPlanes();
+		for (const DirectX::XMFLOAT4& plane : frustum.planes)
+		{
+			if (plane.x * aMin.x + plane.y * aMin.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMin.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMin.x + plane.y * aMax.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMax.y + plane.z * aMin.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMin.x + plane.y * aMin.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMin.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMin.x + plane.y * aMax.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+			if (plane.x * aMax.x + plane.y * aMax.y + plane.z * aMax.z + plane.w > 0.0f)
+				continue;
+
+			// If the bounding box is completely outside any frustum plane, it is not visible
+			return false;
+		}
+
+		// If the bounding box is not completely outside any frustum plane, it is visible
+		return true;
+	}
+
 	std::vector<bool> Camera::AreMeshesInFrustum(const std::vector<Mesh>& aMeshes, const DirectX::XMMATRIX& aObjectToWorld)
 	{
 		const FrustumPlanes frustum = ExtractFrustumPlanes();

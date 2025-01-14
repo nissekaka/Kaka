@@ -3,9 +3,14 @@
 
 #include "Core/Graphics/Drawable/Vertex.h"
 #include "Core/Graphics/Animation/AnimationData.h"
+#include "Graphics/Bindable/IndexBuffer.h"
+#include "Graphics/Bindable/VertexBuffer.h"
 
 namespace Kaka
 {
+	class VertexShader;
+	class PixelShader;
+	class Texture;
 	struct TransformComponent;
 
 	enum class eModelType { None, Static, Skeletal };
@@ -47,10 +52,11 @@ namespace Kaka
 		AABB aabb;
 	};
 
-	struct MeshList
+	struct ModelData
 	{
 		std::vector<Mesh> meshes;
 		std::string filePath;
+		AABB aabb;
 	};
 
 	struct AnimatedMesh
@@ -92,10 +98,9 @@ namespace Kaka
 
 	struct RenderData
 	{
-		MeshList* meshList = nullptr;
+		ModelData* modelData = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
 		TransformComponent* transform = nullptr;
-		//DirectX::XMMATRIX* transform;
 	};
 }

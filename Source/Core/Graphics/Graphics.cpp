@@ -218,7 +218,7 @@ namespace Kaka
 		modelRenderer.BuildRenderQueue(*this, renderQueue, modelRenderData);
 	}
 
-	void Graphics::Render(const RenderContext& aContext)
+	void Graphics::Render(const FrameContext& aContext)
 	{
 		/// ---------- SETUP ---------- BEGIN
 		{
@@ -490,14 +490,14 @@ namespace Kaka
 		}
 	}
 
-	MeshList& Graphics::LoadMeshList(const std::string& aFilePath) const
+	ModelData& Graphics::LoadModelData(const std::string& aFilePath) const
 	{
 		if (!ModelFactory::LoadStaticModel(*this, aFilePath))
 		{
 			assert(false && "Failed to load model");
 		}
 
-		return ModelFactory::GetMeshList(aFilePath);
+		return ModelFactory::GetModelData(aFilePath);
 	}
 
 	DirectX::XMMATRIX Graphics::GetProjection() const
@@ -535,6 +535,11 @@ namespace Kaka
 	bool Graphics::IsBoundingBoxInFrustum(const DirectX::XMFLOAT3& aMin, const DirectX::XMFLOAT3& aMax) const
 	{
 		return currentCamera->IsBoundingBoxInFrustum(aMin, aMax);
+	}
+
+	bool Graphics::IsBoundingBoxInFrustum(const AABB& aAabb) const
+	{
+		return currentCamera->IsBoundingBoxInFrustum(aAabb);
 	}
 
 	DirectX::XMFLOAT2 Graphics::GetCurrentResolution() const
@@ -875,7 +880,7 @@ namespace Kaka
 						if (ImGui::TreeNode("Model"))
 						{
 							const ModelComponent* model = entity->GetComponent<ModelComponent>();
-							ImGui::Text(model->meshList->filePath.c_str());
+							ImGui::Text(model->modelData->filePath.c_str());
 							ImGui::TreePop();
 						}
 					}
@@ -917,24 +922,27 @@ namespace Kaka
 		}
 	}
 
-	static inline void DrawDebugAABB(const Graphics& aGfx, const Mesh& aMesh, const DirectX::XMMATRIX& aTransform)
+	void Graphics::DrawDebugAABB(const AABB& aAabb, const DirectX::XMMATRIX& aTransform) const
 	{
+		if (!drawDebug)
+		{
+			return;
+		}
+
 		struct Cube
 		{
 			DirectX::XMFLOAT3 vertices[8];
 		};
 
-		const AABB aabb = aMesh.aabb;
-
 		Cube cube;
-		cube.vertices[0] = { aabb.minBound.x, aabb.minBound.y, aabb.minBound.z };
-		cube.vertices[1] = { aabb.minBound.x, aabb.maxBound.y, aabb.minBound.z };
-		cube.vertices[2] = { aabb.maxBound.x, aabb.maxBound.y, aabb.minBound.z };
-		cube.vertices[3] = { aabb.maxBound.x, aabb.minBound.y, aabb.minBound.z };
-		cube.vertices[4] = { aabb.minBound.x, aabb.minBound.y, aabb.maxBound.z };
-		cube.vertices[5] = { aabb.minBound.x, aabb.maxBound.y, aabb.maxBound.z };
-		cube.vertices[6] = { aabb.maxBound.x, aabb.maxBound.y, aabb.maxBound.z };
-		cube.vertices[7] = { aabb.maxBound.x, aabb.minBound.y, aabb.maxBound.z };
+		cube.vertices[0] = { aAabb.minBound.x, aAabb.minBound.y, aAabb.minBound.z };
+		cube.vertices[1] = { aAabb.minBound.x, aAabb.maxBound.y, aAabb.minBound.z };
+		cube.vertices[2] = { aAabb.maxBound.x, aAabb.maxBound.y, aAabb.minBound.z };
+		cube.vertices[3] = { aAabb.maxBound.x, aAabb.minBound.y, aAabb.minBound.z };
+		cube.vertices[4] = { aAabb.minBound.x, aAabb.minBound.y, aAabb.maxBound.z };
+		cube.vertices[5] = { aAabb.minBound.x, aAabb.maxBound.y, aAabb.maxBound.z };
+		cube.vertices[6] = { aAabb.maxBound.x, aAabb.maxBound.y, aAabb.maxBound.z };
+		cube.vertices[7] = { aAabb.maxBound.x, aAabb.minBound.y, aAabb.maxBound.z };
 
 		// If any vertex is outside of camera frustum, don't draw
 		for (auto& vertice : cube.vertices)
@@ -943,7 +951,7 @@ namespace Kaka
 			DirectX::XMFLOAT3 transformedVertexFloat3;
 			DirectX::XMStoreFloat3(&transformedVertexFloat3, transformedVertex);
 
-			if (!aGfx.IsPointInFrustum(transformedVertexFloat3))
+			if (!IsPointInFrustum(transformedVertexFloat3))
 			{
 				return;
 			}
@@ -954,8 +962,8 @@ namespace Kaka
 		// Convert 3D positions to screen space
 		for (int i = 0; i < 8; ++i)
 		{
-			DirectX::XMMATRIX projectionMatrix = aTransform * aGfx.GetCameraInverseView();
-			projectionMatrix = projectionMatrix * aGfx.GetProjection();
+			DirectX::XMMATRIX projectionMatrix = aTransform * GetCameraInverseView();
+			projectionMatrix = projectionMatrix * GetProjection();
 
 			DirectX::XMStoreFloat2(
 				&screenPos[i],

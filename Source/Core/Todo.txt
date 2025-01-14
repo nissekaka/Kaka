@@ -25,3 +25,5 @@
 - Memory management
 - Memory leak detection
 - Editor
+
+FIX: Timer reset when dragging window / pausing execution
