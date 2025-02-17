@@ -6,12 +6,12 @@
 #include <random>
 #include <cmath>
 
-namespace Kaka
+namespace Kaka::Ecs
 {
 	void TransformSystem::UpdateTransformComponents(ComponentRegistry& aRegistry, const float aDeltaTime)
 	{
-		SparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
-		SparseSet<VelocityComponent>& velocities = aRegistry.GetComponentSet<VelocityComponent>();
+		ComponentSparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
+		ComponentSparseSet<VelocityComponent>& velocities = aRegistry.GetComponentSet<VelocityComponent>();
 
 		std::random_device rd;
 		std::mt19937 gen(rd());

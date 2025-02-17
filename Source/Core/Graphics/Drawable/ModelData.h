@@ -8,10 +8,14 @@
 
 namespace Kaka
 {
+	namespace Ecs
+	{
+		struct TransformComponent;
+	}
+
 	class VertexShader;
 	class PixelShader;
 	class Texture;
-	struct TransformComponent;
 
 	enum class eModelType { None, Static, Skeletal };
 
@@ -101,6 +105,6 @@ namespace Kaka
 		ModelData* modelData = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
-		TransformComponent* transform = nullptr;
+		Ecs::TransformComponent* transform = nullptr;
 	};
 }

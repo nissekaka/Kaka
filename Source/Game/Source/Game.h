@@ -21,10 +21,10 @@ namespace Kaka
 		ImGuiManager imGui;
 		Window wnd;
 		Timer timer;
-		ECS ecs;
+		Ecs::ECS ecs;
 
-		std::vector<ECS::Entity*> entities;
+		std::vector<Ecs::ECS::Entity*> entities;
 
-		EntityID selectedEntity = 0;
+		Ecs::EntityID selectedEntity = 0;
 	};
 }

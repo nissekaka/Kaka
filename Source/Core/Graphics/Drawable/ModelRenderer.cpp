@@ -38,7 +38,7 @@ namespace Kaka
 			std::vector<DirectX::XMMATRIX> instanceData;
 			instanceData.reserve(command.transformComponents.size());
 
-			for (TransformComponent* transform : command.transformComponents)
+			for (Ecs::TransformComponent* transform : command.transformComponents)
 			{
 				instanceData.push_back(CreateTransformMatrix(transform));
 			}
@@ -90,7 +90,7 @@ namespace Kaka
 
 			std::vector<DirectX::XMMATRIX> instanceData;
 
-			for (TransformComponent* transform : command.transformComponents)
+			for (Ecs::TransformComponent* transform : command.transformComponents)
 			{
 				DirectX::XMMATRIX objectToWorld = CreateTransformMatrix(transform);
 
@@ -157,7 +157,7 @@ namespace Kaka
 		}
 	}
 
-	DirectX::XMMATRIX ModelRenderer::CreateTransformMatrix(const TransformComponent* aTransform)
+	DirectX::XMMATRIX ModelRenderer::CreateTransformMatrix(const Ecs::TransformComponent* aTransform)
 	{
 		using namespace DirectX;
 		XMVECTOR position = XMLoadFloat3(&aTransform->GetPosition());

@@ -794,16 +794,16 @@ namespace Kaka
 		ImGui::End();
 	}
 
-	void Graphics::ShowEntities(const std::vector<ECS::Entity*>& aEntities, EntityID& aOutSelectedEntity)
+	void Graphics::ShowEntities(const std::vector<Ecs::ECS::Entity*>& aEntities, Ecs::EntityID& aOutSelectedEntity)
 	{
 		// TODO Has no cleanup, if an entity is removed, it will stay in this map
 		// TODO Maybe implement a callback (event system) to remove entities from this map
-		static std::unordered_map<EntityID, float[3]> rotationMap;
+		static std::unordered_map<Ecs::EntityID, float[3]> rotationMap;
 
 		if (ImGui::Begin("Entities"))
 		{
 			std::string node;
-			for (ECS::Entity* entity : aEntities)
+			for (Ecs::ECS::Entity* entity : aEntities)
 			{
 				node = "Entity " + std::to_string(entity->GetID());
 				if (ImGui::TreeNode(node.c_str()))
@@ -817,7 +817,7 @@ namespace Kaka
 					{
 						if (ImGui::TreeNode("Transform"))
 						{
-							TransformComponent* transform = entity->GetComponent<TransformComponent>();
+							Ecs::TransformComponent* transform = entity->GetComponent<Ecs::TransformComponent>();
 
 							// ---- Position ----
 							float position[3] = { transform->GetPosition().x, transform->GetPosition().y, transform->GetPosition().z };
@@ -879,7 +879,7 @@ namespace Kaka
 
 						if (ImGui::TreeNode("Model"))
 						{
-							const ModelComponent* model = entity->GetComponent<ModelComponent>();
+							const Ecs::ModelComponent* model = entity->GetComponent<Ecs::ModelComponent>();
 							ImGui::Text(model->modelData->filePath.c_str());
 							ImGui::TreePop();
 						}

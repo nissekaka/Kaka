@@ -121,7 +121,7 @@ namespace Kaka
 		// ImGui
 		void ShowImGui(const float aFPS);
 		void ShowStatsWindow(const float aFPS);
-		void ShowEntities(const std::vector<ECS::Entity*>& aEntities, EntityID& aOutSelectedEntity);
+		void ShowEntities(const std::vector<Ecs::ECS::Entity*>& aEntities, Ecs::EntityID& aOutSelectedEntity);
 		void EnableImGui();
 		void DisableImGui();
 		bool IsImGuiEnabled() const;

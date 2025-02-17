@@ -4,7 +4,7 @@
 
 #include <ranges>
 
-namespace Kaka
+namespace Kaka::Ecs
 {
 	struct TransformComponent;
 	struct ModelComponent;
@@ -68,7 +68,7 @@ namespace Kaka
 		template <typename T>
 		void AddComponent(EntityID aId, T aComponent)
 		{
-			SparseSet<T>& componentSet = registry.GetComponentSet<T>();
+			ComponentSparseSet<T>& componentSet = registry.GetComponentSet<T>();
 			componentSet.AddComponent(aId, aComponent);
 		}
 

@@ -2,7 +2,7 @@
 #include "Systems/ModelSystem.h"
 #include "Systems/TransformSystem.h"
 
-namespace Kaka
+namespace Kaka::Ecs
 {
 	class System
 	{

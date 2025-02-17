@@ -4,21 +4,21 @@
 
 #include "Core/ECS/Entity.h"
 
-namespace Kaka
+namespace Kaka::Ecs
 {
 	template <typename T>
-	class SparseSet
+	class ComponentSparseSet
 	{
 		friend class ECS;
 		friend class System;
 	public:
-		SparseSet()
+		ComponentSparseSet()
 		{
 			components.reserve(MAX_ENTITIES);
 			indexToEntity.reserve(MAX_ENTITIES);
 		}
 
-		~SparseSet() = default;
+		~ComponentSparseSet() = default;
 
 		void AddComponent(EntityID aEntityId, const T aComponent)
 		{
@@ -87,18 +87,18 @@ namespace Kaka
 		std::vector<EntityID> indexToEntity = {};
 	};
 
-	class BaseComponentSet
+	class IComponentSet
 	{
 	public:
-		virtual ~BaseComponentSet() = default;
+		virtual ~IComponentSet() = default;
 		virtual void Erase(EntityID aEntityId) = 0;
 	};
 
 	template <typename T>
-	class ComponentSetWrapper : public BaseComponentSet
+	class ComponentSparseSetWrapper : public IComponentSet
 	{
 	public:
-		SparseSet<T> set;
+		ComponentSparseSet<T> set;
 
 		void Erase(EntityID aEntityId) override
 		{
@@ -110,14 +110,15 @@ namespace Kaka
 	{
 	public:
 		template <typename T>
-		SparseSet<T>& GetComponentSet()
+		ComponentSparseSet<T>& GetComponentSet()
 		{
 			const std::type_index typeIndex = std::type_index(typeid(T));
 			if (!sets.contains(typeIndex))
 			{
-				sets[typeIndex] = std::make_unique<ComponentSetWrapper<T>>();
+				sets[typeIndex] = std::make_unique<ComponentSparseSetWrapper<T>>();
 			}
-			return static_cast<ComponentSetWrapper<T>*>(sets[typeIndex].get())->set;
+
+			return static_cast<ComponentSparseSetWrapper<T>*>(sets[typeIndex].get())->set;
 		}
 
 		template <typename T>
@@ -126,6 +127,6 @@ namespace Kaka
 			return GetComponentSet<T>().GetComponents();
 		}
 
-		std::unordered_map<std::type_index, std::unique_ptr<BaseComponentSet>> sets = {};
+		std::unordered_map<std::type_index, std::unique_ptr<IComponentSet>> sets = {};
 	};
 }

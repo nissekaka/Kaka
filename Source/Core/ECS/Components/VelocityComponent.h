@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Kaka
+namespace Kaka::Ecs
 {
 	struct VelocityComponent
 	{

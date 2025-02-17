@@ -6,13 +6,12 @@
 
 #include <random>
 
-
-namespace Kaka
+namespace Kaka::Ecs
 {
 	void ModelSystem::RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry)
 	{
-		SparseSet<ModelComponent>& models = aRegistry.GetComponentSet<ModelComponent>();
-		SparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
+		ComponentSparseSet<ModelComponent>& models = aRegistry.GetComponentSet<ModelComponent>();
+		ComponentSparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
 
 		for (const EntityID& entityId : models.GetEntities())
 		{

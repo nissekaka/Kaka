@@ -3,8 +3,12 @@
 
 namespace Kaka
 {
+	namespace Ecs
+	{
+		struct TransformComponent;
+	}
+
 	struct RenderPackage;
-	struct TransformComponent;
 	struct ModelComponent;
 
 	struct RenderQueue
@@ -14,7 +18,7 @@ namespace Kaka
 			ModelData* modelData;
 			VertexShader* vertexShader;
 			PixelShader* pixelShader;
-			std::vector<TransformComponent*> transformComponents;
+			std::vector<Ecs::TransformComponent*> transformComponents;
 			InstanceBuffer<DirectX::XMMATRIX> instanceBuffer = { 11u };
 		};
 
@@ -29,7 +33,7 @@ namespace Kaka
 		void Init(const Graphics& aGfx);
 		void BuildRenderQueue(const Graphics& aGfx, RenderQueue& aRenderQueue, std::vector<RenderData>& aRenderData);
 		void DrawRenderQueue(Graphics& aGfx, RenderQueue& aRenderQueue, const bool aShadowPass = false);
-		static DirectX::XMMATRIX CreateTransformMatrix(const TransformComponent* aTransform);
+		static DirectX::XMMATRIX CreateTransformMatrix(const Ecs::TransformComponent* aTransform);
 	private:
 		static AABB GetTranslatedAABB(const AABB& aAabb, const DirectX::XMMATRIX& aTransform);
 
