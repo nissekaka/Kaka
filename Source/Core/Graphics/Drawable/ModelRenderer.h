@@ -36,14 +36,17 @@ namespace Kaka
 		static DirectX::XMMATRIX CreateTransformMatrix(const Ecs::TransformComponent* aTransform);
 	private:
 		static AABB GetTranslatedAABB(const AABB& aAabb, const DirectX::XMMATRIX& aTransform);
+		static uint64_t GetRenderDataHash(const std::string& aVertexShader, const std::string& aPixelShader, const std::string& aFilePath);
 
 	private:
 		Topology topology = {};
 
 		VertexShader* currentVertexShader = nullptr;
 		PixelShader* currentPixelShader = nullptr;
+		Texture* boundTexture = nullptr;
 
-		std::unordered_map<std::string, RenderQueue::RenderCommand> groups = {};
-		std::vector<DirectX::XMMATRIX> instanceData = {};
+		std::unordered_map<uint64_t, RenderQueue::RenderCommand> groups = {};
+		std::vector<DirectX::XMMATRIX> commandInstanceData = {};
+		std::vector<DirectX::XMMATRIX> renderInstanceData = {};
 	};
 }

@@ -158,6 +158,27 @@ namespace Kaka
 					selectedEntity = entities.back()->GetID();
 				}
 				break;
+				case 'B':
+				{
+					// Create entity
+					entities.push_back(ecs.CreateEntity());
+					entities.back()->AddComponent(Ecs::TransformComponent{});
+					Ecs::TransformComponent* transformComponent = entities.back()->GetComponent<Ecs::TransformComponent>();
+					transformComponent->SetPosition(entities.size() * 20.0f, transformComponent->GetPosition().y, transformComponent->GetPosition().z);
+					transformComponent->SetScale(0.1f);
+
+					entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/wizard/SM_wizard.fbx") });
+					entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+					entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+
+					entities.back()->AddComponent(Ecs::VelocityComponent{});
+
+					wnd.Gfx().ClearRenderData();
+					ecs.RegisterModelComponents(wnd.Gfx());
+					wnd.Gfx().BuildRenderQueue();
+					selectedEntity = entities.back()->GetID();
+				}
+				break;
 				case 'F':
 				{
 					// Destroy entity

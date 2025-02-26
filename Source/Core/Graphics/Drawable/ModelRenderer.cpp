@@ -18,12 +18,13 @@ namespace Kaka
 	{
 		aRenderQueue.commands.clear();
 		groups.clear();
+		commandInstanceData.clear();
 
 		for (RenderData& renderData : aRenderData)
 		{
-			std::string key = std::to_string(static_cast<int>(renderData.vertexShader->GetType())) + "|" +
-				std::to_string(static_cast<int>(renderData.pixelShader->GetType())) + "|" +
-				renderData.modelData->filePath;
+			uint64_t key = GetRenderDataHash(std::to_string(static_cast<int>(renderData.vertexShader->GetType())),
+					std::to_string(static_cast<int>(renderData.pixelShader->GetType())),
+					renderData.modelData->filePath);
 
 			RenderQueue::RenderCommand& renderCommand = groups[key];
 			renderCommand.vertexShader = renderData.vertexShader;
@@ -34,16 +35,16 @@ namespace Kaka
 
 		for (RenderQueue::RenderCommand& command : groups | std::views::values)
 		{
-			std::vector<DirectX::XMMATRIX> instanceData;
-			instanceData.reserve(command.transformComponents.size());
+			commandInstanceData.clear();
+			commandInstanceData.reserve(command.transformComponents.size());
 
-			for (Ecs::TransformComponent* transform : command.transformComponents)
+			for (const Ecs::TransformComponent* transform : command.transformComponents)
 			{
-				instanceData.push_back(CreateTransformMatrix(transform));
+				commandInstanceData.push_back(CreateTransformMatrix(transform));
 			}
 
 			command.instanceBuffer.Reset();
-			command.instanceBuffer.Init(aGfx, instanceData);
+			command.instanceBuffer.Init(aGfx, commandInstanceData);
 
 			aRenderQueue.commands.push_back(command);
 		}
@@ -51,9 +52,9 @@ namespace Kaka
 
 	void ModelRenderer::DrawRenderQueue(Graphics& aGfx, RenderQueue& aRenderQueue, const bool aShadowPass)
 	{
-		Texture* boundTexture = nullptr;
-
+		boundTexture = nullptr;
 		topology.Bind(aGfx);
+		renderInstanceData.clear();
 
 		for (RenderQueue::RenderCommand& command : aRenderQueue.commands)
 		{
@@ -106,18 +107,17 @@ namespace Kaka
 						aGfx.DrawDebugAABB(command.modelData->aabb, objectToWorld);
 					}
 
-					instanceData.push_back(objectToWorld);
-
+					renderInstanceData.push_back(objectToWorld);
 				}
 			}
 
-			if (instanceData.empty())
+			if (renderInstanceData.empty())
 			{
 				continue;
 			}
 
 			// Update data in instance buffer
-			command.instanceBuffer.Update(aGfx, instanceData);
+			command.instanceBuffer.Update(aGfx, renderInstanceData);
 			command.instanceBuffer.Bind(aGfx);
 
 			ModelData& modelData = *command.modelData;
@@ -145,14 +145,14 @@ namespace Kaka
 					aGfx.SetRasterizerState(eRasterizerStates::BackfaceCulling);
 				}
 
-				aGfx.DrawIndexedInstanced(mesh.indexBuffer.GetCount(), instanceData.size());
+				aGfx.DrawIndexedInstanced(mesh.indexBuffer.GetCount(), renderInstanceData.size());
 			}
 
 			// Unbind shader resources
 			ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
 			aGfx.pContext->PSSetShaderResources(1u, 3u, nullSRVs);
 
-			instanceData.clear();
+			renderInstanceData.clear();
 		}
 	}
 
@@ -185,5 +185,11 @@ namespace Kaka
 		DirectX::XMStoreFloat3(&aabb.minBound, minBound);
 		DirectX::XMStoreFloat3(&aabb.maxBound, maxBound);
 		return aabb;
+	}
+
+	uint64_t ModelRenderer::GetRenderDataHash(const std::string& aVertexShader, const std::string& aPixelShader, const std::string& aFilePath)
+	{
+		constexpr std::hash<std::string> hasher;
+		return hasher(aVertexShader + aPixelShader + aFilePath);
 	}
 }
