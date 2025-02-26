@@ -17,8 +17,7 @@ namespace Kaka
 	void ModelRenderer::BuildRenderQueue(const Graphics& aGfx, RenderQueue& aRenderQueue, std::vector<RenderData>& aRenderData)
 	{
 		aRenderQueue.commands.clear();
-
-		std::unordered_map<std::string, RenderQueue::RenderCommand> groups;
+		groups.clear();
 
 		for (RenderData& renderData : aRenderData)
 		{
@@ -88,8 +87,6 @@ namespace Kaka
 				currentPixelShader = command.pixelShader;
 			}
 
-			std::vector<DirectX::XMMATRIX> instanceData;
-
 			for (Ecs::TransformComponent* transform : command.transformComponents)
 			{
 				DirectX::XMMATRIX objectToWorld = CreateTransformMatrix(transform);
@@ -154,6 +151,8 @@ namespace Kaka
 			// Unbind shader resources
 			ID3D11ShaderResourceView* nullSRVs[3] = { nullptr };
 			aGfx.pContext->PSSetShaderResources(1u, 3u, nullSRVs);
+
+			instanceData.clear();
 		}
 	}
 

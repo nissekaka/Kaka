@@ -42,5 +42,8 @@ namespace Kaka
 
 		VertexShader* currentVertexShader = nullptr;
 		PixelShader* currentPixelShader = nullptr;
+
+		std::unordered_map<std::string, RenderQueue::RenderCommand> groups = {};
+		std::vector<DirectX::XMMATRIX> instanceData = {};
 	};
 }
