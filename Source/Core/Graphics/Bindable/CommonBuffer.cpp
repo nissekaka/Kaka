@@ -9,9 +9,9 @@ namespace Kaka
 		pcb.Init(aGfx, commonData);
 	}
 
-	void CommonBuffer::UpdateAndBindBuffers(const Graphics& aGfx, const CommonContext& aContext)
+	void CommonBuffer::UpdateAndBindBuffers(const Graphics& aGfx, const CommonContext& aContext, const DirectX::XMMATRIX& aHistoryViewProjection)
 	{
-		commonData.historyViewProjection = commonData.viewProjection;
+		commonData.historyViewProjection = aHistoryViewProjection;
 		commonData.viewProjection = aContext.camera->GetInverseView() * aContext.camera->GetJitteredProjection();
 		commonData.inverseViewProjection = DirectX::XMMatrixInverse(nullptr, commonData.viewProjection);
 		commonData.projection = DirectX::XMMatrixInverse(nullptr, aContext.camera->GetProjection());

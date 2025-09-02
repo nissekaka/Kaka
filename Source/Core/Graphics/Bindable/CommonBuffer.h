@@ -28,7 +28,7 @@ namespace Kaka
 		CommonBuffer() = default;
 		~CommonBuffer() = default;
 		void InitBuffers(const Graphics& aGfx);
-		void UpdateAndBindBuffers(const Graphics& aGfx, const CommonContext& aContext);
+		void UpdateAndBindBuffers(const Graphics& aGfx, const CommonContext& aContext, const DirectX::XMMATRIX& aHistoryViewProjection);
 
 	private:
 

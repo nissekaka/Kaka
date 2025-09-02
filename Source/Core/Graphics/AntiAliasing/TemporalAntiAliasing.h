@@ -22,6 +22,7 @@ namespace Kaka
 		void InitBuffer(const Graphics& aGfx);
 		void UpdateAndBindBuffer(Graphics& aGfx);
 		void SetHistoryViewProjection(const DirectX::XMMATRIX& aViewProjection);
+		DirectX::XMMATRIX& GetHistoryViewProjection() { return historyViewProjection; }
 		void ApplyProjectionJitter(Camera* aCamera, const long long aFrameCount, const UINT aWidth, const UINT aHeight);
 		void UpdateJitter();
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GetNTarget() const { return historyNTarget.pTarget; }

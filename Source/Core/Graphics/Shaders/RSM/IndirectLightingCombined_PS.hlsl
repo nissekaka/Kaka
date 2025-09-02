@@ -62,7 +62,8 @@ float4 main(const PixelInput aInput) : SV_TARGET
         reprojectedUV = CameraReproject(worldPosition);
     }
 
-    const float3 currentColour = currentDirectional.Sample(linearSampler, aInput.texCoord).rgb;
+    //const float3 currentColour = currentDirectional.Sample(linearSampler, aInput.texCoord).rgb;
+    const float3 currentColour = float3(0,0,0);
     const float3 previousColour = previousDirectional.Sample(linearSampler, reprojectedUV).rgb;
 
     // Arbitrary out of range numbers

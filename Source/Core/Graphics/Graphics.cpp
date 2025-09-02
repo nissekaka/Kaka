@@ -220,23 +220,30 @@ namespace Kaka
 
 	void Graphics::Render(const FrameContext& aContext)
 	{
+		const CommonBuffer::CommonContext context = {
+			&camera,
+			aContext.totalTime,
+			GetCurrentResolution()
+		};
+
 		/// ---------- SETUP ---------- BEGIN
 		{
 			SetCamera(camera);
 
-			const CommonBuffer::CommonContext context = { &camera, aContext.totalTime, GetCurrentResolution() };
-			commonBuffer.UpdateAndBindBuffers(*this, context);
+			commonBuffer.UpdateAndBindBuffers(*this, context, temporalAntiAliasing.GetHistoryViewProjection());
 
 			SetDepthStencilState(eDepthStencilStates::Normal);
-			// May need to change to backface culling due to shadow artifacts
-			if (useReflectiveShadowMap)
-			{
-				SetRasterizerState(eRasterizerStates::BackfaceCulling);
-			}
-			else
-			{
-				SetRasterizerState(eRasterizerStates::BackfaceCulling);
-			}
+			SetRasterizerState(eRasterizerStates::BackfaceCulling);
+
+			// May need to change to backface culling due to shadow artifacts ???
+			//if (useReflectiveShadowMap)
+			//{
+			//	SetRasterizerState(eRasterizerStates::BackfaceCulling);
+			//}
+			//else
+			//{
+			//	SetRasterizerState(eRasterizerStates::BackfaceCulling);
+			//}
 
 			// Apply jitter to projection matrix
 			temporalAntiAliasing.ApplyProjectionJitter(currentCamera, frameCount, width, height);
@@ -247,7 +254,7 @@ namespace Kaka
 
 		if (useReflectiveShadowMap)
 		{
-			/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- BEGIN
+			/// ---------- RSM SETUP BUFFER PASS -- DIRECTIONAL LIGHT ---------- BEGIN
 			{
 				StartShadows(rsmBuffer.GetCamera(), lightManager.GetDirectionalLightData().lightDirection, rsmBuffer);
 				lightManager.SetShadowCamera(rsmBuffer.GetCamera().GetInverseView() * rsmBuffer.GetCamera().GetProjection());
@@ -264,14 +271,22 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					//TempSetupModelRender();
-					//RenderQueue();
+					// TODO Hack to get the RSM directional light as camera in common buffer in deferred_common.hlsli
+					// Current camera is here the directional light
+					const CommonBuffer::CommonContext rsmContext = {
+						currentCamera,
+						aContext.totalTime,
+						GetCurrentResolution()
+					};
+
+					commonBuffer.UpdateAndBindBuffers(*this, rsmContext, temporalAntiAliasing.GetHistoryViewProjection());
 					modelRenderer.DrawRenderQueue(*this, renderQueue);
 				}
 
 				ResetShadows(camera);
+				commonBuffer.UpdateAndBindBuffers(*this, context, temporalAntiAliasing.GetHistoryViewProjection());
 			}
-			/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- END
+			/// ---------- RSM SETUP BUFFER PASS -- DIRECTIONAL LIGHT ---------- END
 		}
 		else
 		{
@@ -285,8 +300,6 @@ namespace Kaka
 
 				// Render everything that casts shadows
 				{
-					//TempSetupModelRender();
-					//RenderQueue();
 					modelRenderer.DrawRenderQueue(*this, renderQueue, true);
 				}
 
@@ -294,8 +307,6 @@ namespace Kaka
 			}
 			/// ---------- SHADOW MAP PASS -- DIRECTIONAL LIGHT ---------- END
 		}
-
-
 
 		/// ---------- GBUFFER PASS ---------- BEGIN
 		{
@@ -306,8 +317,6 @@ namespace Kaka
 
 			// Render all models to the GBuffer
 			{
-				//TempSetupModelRender();
-				//RenderQueue();
 				modelRenderer.DrawRenderQueue(*this, renderQueue);
 			}
 
@@ -320,6 +329,7 @@ namespace Kaka
 
 		/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- BEGIN
 		{
+			// Uses RSM Buffer and GBuffer to compute indirect lighting and draws it to a render target for later use
 			if (useReflectiveShadowMap)
 			{
 				rsmBuffer.SetAllAsResources(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
