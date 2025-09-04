@@ -96,6 +96,9 @@ namespace Kaka
 
 			shadowSampler.Init(pDevice.Get(), PS_SAMPLER_SLOT_SHADOW, Sampler::eSamplerType::Shadow);
 			shadowSampler.Bind(pContext.Get());
+
+			fullscreenSampler.Init(pDevice.Get(), PS_SAMPLER_SLOT_SHADOW, Sampler::eSamplerType::Fullscreen);
+			fullscreenSampler.Bind(pContext.Get());
 		}
 
 		// Buffers

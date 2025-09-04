@@ -33,11 +33,11 @@ float4 main(const PixelInput aInput) : SV_TARGET
 {
     if (!useTAA)
     {
-        return currentTexture.Sample(pointSampler, aInput.texCoord);
+        return currentTexture.Sample(fullscreenSampler, aInput.texCoord);
     }
 
 	// Use history view-projection matrix to project onto previous camera's screen space
-    const float3 worldPosition = worldPositionTexture.Sample(pointSampler, aInput.texCoord).rgb;
+    const float3 worldPosition = worldPositionTexture.Sample(fullscreenSampler, aInput.texCoord).rgb;
 
     float2 reprojectedUV = aInput.texCoord;
 
@@ -50,8 +50,8 @@ float4 main(const PixelInput aInput) : SV_TARGET
     //const float2 motionVector = velocityTexture.Sample(linearSampler, aInput.texCoord).xy;
     //const float2 reprojectedUV = (aInput.texCoord - motionVector); // / resolution;
 
-    const float3 currentColour = currentTexture.Sample(pointSampler, aInput.texCoord).rgb;
-    const float3 previousColour = previousTexture.Sample(linearSampler, reprojectedUV).rgb;
+    const float3 currentColour = currentTexture.Sample(fullscreenSampler, aInput.texCoord).rgb;
+    const float3 previousColour = previousTexture.Sample(fullscreenSampler, reprojectedUV).rgb;
 
     //return float4(previousColour, 1.0f);
 
@@ -63,7 +63,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
     {
         for (int y = -1; y <= 1; ++y)
         {
-            const float3 colour = currentTexture.Sample(linearSampler, aInput.texCoord + float2(x, y) / resolution); // Sample neighbor
+            const float3 colour = currentTexture.Sample(fullscreenSampler, aInput.texCoord + float2(x, y) / resolution); // Sample neighbor
             minColour = min(minColour, colour); // Take min and max
             maxColour = max(maxColour, colour);
         }

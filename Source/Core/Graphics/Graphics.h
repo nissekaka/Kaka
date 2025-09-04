@@ -158,6 +158,7 @@ namespace Kaka
 		Sampler linearSampler;
 		Sampler pointClampedSampler;
 		Sampler shadowSampler;
+		Sampler fullscreenSampler;
 
 		BlendState blendState;
 		Rasterizer rasterizer;

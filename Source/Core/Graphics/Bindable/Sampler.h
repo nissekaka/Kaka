@@ -11,6 +11,7 @@ namespace Kaka
 			Linear,
 			Anisotropic,
 			Shadow,
+			Fullscreen,
 			Count,
 		};
 
@@ -24,6 +25,7 @@ namespace Kaka
 		void InitLinear(ID3D11Device* aDevice);
 		void InitAnisotropic(ID3D11Device* aDevice);
 		void InitShadow(ID3D11Device* aDevice);
+		void InitFullscreen(ID3D11Device* aDevice);
 
 	private:
 		UINT slot = {};

@@ -20,6 +20,8 @@ namespace Kaka
 				break;
 			case eSamplerType::Shadow:
 				InitShadow(aDevice);
+			case eSamplerType::Fullscreen:
+				InitFullscreen(aDevice);
 				break;
 			default:
 				assert("Invalid sampler type" && false);
@@ -84,6 +86,21 @@ namespace Kaka
 		samplerDesc.BorderColor[1] = 1.0f;
 		samplerDesc.BorderColor[2] = 1.0f;
 		samplerDesc.BorderColor[3] = 1.0f;
+		samplerDesc.MinLOD = 0.0f;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		aDevice->CreateSamplerState(&samplerDesc, &pSamplerState);
+	}
+	void Sampler::InitFullscreen(ID3D11Device* aDevice)
+	{
+		// Used for TAA and post processing
+		// This needs to be clamped to avoid bleeding from the edges of the screen
+		D3D11_SAMPLER_DESC samplerDesc = CD3D11_SAMPLER_DESC{ CD3D11_DEFAULT{} };
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+		samplerDesc.MaxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 		samplerDesc.MinLOD = 0.0f;
 		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
