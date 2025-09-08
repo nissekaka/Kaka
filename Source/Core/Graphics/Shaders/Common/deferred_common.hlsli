@@ -10,6 +10,21 @@ cbuffer CommonBuffer : register(b4)
 			float currentTime;
 }
 
+float3 ReconstructWorldPosition(float2 uv, float depth01)
+{
+    // UV [0,1] -> NDC [-1,1]
+    float4 ndc;
+    ndc.x = uv.x * 2.0f - 1.0f;
+    ndc.y = 1.0f - uv.y * 2.0f; // Y flip
+    ndc.z = depth01; // D3D depth in [0,1]
+    ndc.w = 1.0f;
+
+    // Clip -> World
+    float4 world = mul(inverseViewProjection, ndc);
+    world /= world.w;
+    return world.xyz;
+}
+
 struct GBufferOutput
 {
     float4 worldPosition : SV_TARGET0;

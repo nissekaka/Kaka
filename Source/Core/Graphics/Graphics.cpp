@@ -429,7 +429,8 @@ namespace Kaka
 			pContext->PSSetShaderResources(PS_TAA_SLOT_CURRENT, 1u, postProcessing.GetResource().GetAddressOf());
 
 			// Need world position for reprojection
-			pContext->PSSetShaderResources(PS_TAA_SLOT_WORLDPOS, 1u, gBuffer.GetResource(GBuffer::GBufferTexture::WorldPosition));
+			pContext->PSSetShaderResources(PS_TAA_SLOT_DEPTH, 1u, gBuffer.GetDepthShaderResourceView());
+			//pContext->PSSetShaderResources(PS_TAA_SLOT_WORLDPOS, 1u, gBuffer.GetResource(GBuffer::GBufferTexture::WorldPosition));
 			// Velocity?
 			//pContext->PSSetShaderResources(3u, 1u, gBuffer.GetDepthShaderResourceView());
 

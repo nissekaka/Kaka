@@ -2,12 +2,10 @@
 #include <Core/Utility/KakaMath.h>
 
 #include "ECS/Components/Components.h"
-#include "Graphics/Drawable/ModelFactory.h"
 #include "imgui/imgui.h"
 
 constexpr int WINDOW_WIDTH = 1920;
 constexpr int WINDOW_HEIGHT = 1080;
-
 
 namespace Kaka
 {
