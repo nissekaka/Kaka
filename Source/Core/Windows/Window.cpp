@@ -48,7 +48,7 @@ namespace Kaka
 		height = aHeight;
 
 		// Calculate window size based on desired client region size
-		RECT wr = {};
+		RECT wr = { 0 };
 		wr.left = 0;
 		wr.right = aWidth + wr.left;
 		wr.top = 0;
@@ -68,6 +68,7 @@ namespace Kaka
 			WindowClass::GetInstance(),
 			this
 		);
+
 		// Check error
 		assert(hWnd && "hWnd is null");
 
@@ -87,7 +88,7 @@ namespace Kaka
 		ImGui_ImplWin32_Init(hWnd);
 
 		// Register mouse raw input device
-		RAWINPUTDEVICE rid = {};
+		RAWINPUTDEVICE rid = { 0 };
 		rid.usUsagePage = 0x01; // Mouse page
 		rid.usUsage = 0x02; // Mouse usage
 		rid.dwFlags = 0;
@@ -485,7 +486,8 @@ namespace Kaka
 				}
 				break;
 			}
-			/********** END RAW MOUSE MESSAGES **********/
+		default: ;
+		/********** END RAW MOUSE MESSAGES **********/
 #pragma endregion
 		}
 		return DefWindowProc(aHWnd, aUMsg, aWParam, aLParam);
