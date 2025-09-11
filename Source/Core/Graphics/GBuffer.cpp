@@ -9,12 +9,12 @@ namespace Kaka
 		HRESULT hr;
 		constexpr std::array textureFormats =
 		{
-			DXGI_FORMAT_R32G32B32A32_FLOAT, // World Position
+			//DXGI_FORMAT_R32G32B32A32_FLOAT, // World Position
 			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // Albedo
 			DXGI_FORMAT_R10G10B10A2_UNORM, // Normal,
 			DXGI_FORMAT_R8G8B8A8_UNORM, // Material
 			DXGI_FORMAT_R8G8B8A8_UNORM, // AmbientOcclusionAndCustom
-			DXGI_FORMAT_R16G16_FLOAT // Velocity
+			//DXGI_FORMAT_R16G16_FLOAT // Velocity
 		};
 
 		GBuffer returnGBuffer;
@@ -139,7 +139,12 @@ namespace Kaka
 
 	void GBuffer::SetAsResourceOnSlot(ID3D11DeviceContext* aContext, GBufferTexture aTexture, const unsigned int aSlot)
 	{
-		aContext->PSSetShaderResources(aSlot, 1, shaderResourceViews[static_cast<int>(aTexture)].GetAddressOf());
+		aContext->PSSetShaderResources(aSlot, 1u, shaderResourceViews[static_cast<int>(aTexture)].GetAddressOf());
+	}
+
+	void GBuffer::SetDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, const unsigned int aSlot)
+	{
+		aContext->PSSetShaderResources(aSlot, 1u, depthStencilShaderResourceView.GetAddressOf());
 	}
 
 	void GBuffer::SetAllAsResources(ID3D11DeviceContext* aContext, const unsigned int aSlot)
@@ -147,14 +152,20 @@ namespace Kaka
 		aContext->PSSetShaderResources(aSlot, static_cast<int>(GBufferTexture::Count), shaderResourceViews[0].GetAddressOf());
 	}
 
-	void GBuffer::ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot)
+	void GBuffer::ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, const unsigned int aSlot)
 	{
-		ID3D11ShaderResourceView* const nullSRV[static_cast<int>(GBufferTexture::Count)] = {nullptr};
+		constexpr ID3D11ShaderResourceView* const nullSRV[static_cast<int>(GBufferTexture::Count)] = {nullptr};
 
 		aContext->PSSetShaderResources(aSlot, static_cast<int>(GBufferTexture::Count), nullSRV);
 	}
 
-	ID3D11Texture2D* GBuffer::GetTexture(const unsigned int aIndex)
+	void GBuffer::ClearDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, const unsigned int aSlot)
+	{
+		constexpr ID3D11ShaderResourceView* const nullSRV[1] = {nullptr};
+		aContext->PSSetShaderResources(aSlot, 1u, nullSRV);
+	}
+
+	ID3D11Texture2D* GBuffer::GetTexture(const unsigned int aIndex) const
 	{
 		assert(aIndex < (int)GBufferTexture::Count && "Trying to get a Texture2D from Gbuffer that doesnt exist.");
 

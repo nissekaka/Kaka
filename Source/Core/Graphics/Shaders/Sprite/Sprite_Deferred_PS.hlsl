@@ -52,7 +52,7 @@ GBufferOutput main(PixelInput aInput) : SV_TARGET
     const float3 pixelNormal = normalize(mul(TBN, normal));
 
     GBufferOutput output;
-    output.worldPosition = float4(aInput.worldPos, 1.0f);
+    //output.worldPosition = float4(aInput.worldPos, 1.0f);
     output.albedo = float4(albedo.rgb, 1.0f);
     //output.normal = float4(aInput.normal, 1.0f);
     output.normal = float4(0.5f + 0.5f * pixelNormal, 1.0f);

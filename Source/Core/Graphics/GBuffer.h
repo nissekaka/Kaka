@@ -12,7 +12,7 @@ namespace Kaka
 	public:
 		enum class GBufferTexture
 		{
-			WorldPosition,
+			//WorldPosition,
 			Albedo,
 			Normal,
 			Material,
@@ -21,26 +21,26 @@ namespace Kaka
 			Count
 		};
 
-		static UINT GetBufferTextureBindSlot(const GBufferTexture aTexture)
-		{
-			switch (aTexture)
-			{
-			case GBufferTexture::WorldPosition:
-				return 2u;
-			case GBufferTexture::Albedo:
-				return 3u;
-			case GBufferTexture::Normal:
-				return 4u;
-			case GBufferTexture::Material:
-				return 5u;
-			case GBufferTexture::AmbientOcclusionAndCustom:
-				return 6u;
-			//case GBufferTexture::Velocity:
-			//	return 7u;
-			default:
-				return 0;
-			}
-		}
+		//static UINT GetBufferTextureBindSlot(const GBufferTexture aTexture)
+		//{
+		//	switch (aTexture)
+		//	{
+		//	case GBufferTexture::WorldPosition:
+		//		return 2u;
+		//	case GBufferTexture::Albedo:
+		//		return 3u;
+		//	case GBufferTexture::Normal:
+		//		return 4u;
+		//	case GBufferTexture::Material:
+		//		return 5u;
+		//	case GBufferTexture::AmbientOcclusionAndCustom:
+		//		return 6u;
+		//	//case GBufferTexture::Velocity:
+		//	//	return 7u;
+		//	default:
+		//		return 0;
+		//	}
+		//}
 
 		GBuffer() = default;
 		~GBuffer() = default;
@@ -49,8 +49,10 @@ namespace Kaka
 		void ClearTextures(ID3D11DeviceContext* aContext) const;
 		void SetAsActiveTarget(ID3D11DeviceContext* aContext, ID3D11DepthStencilView* aDepth = nullptr);
 		void SetAsResourceOnSlot(ID3D11DeviceContext* aContext, GBufferTexture aTexture, unsigned int aSlot);
+		void SetDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, unsigned int aSlot);
 		void SetAllAsResources(ID3D11DeviceContext* aContext, unsigned int aSlot);
 		void ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot);
+		void ClearDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, unsigned int aSlot);
 
 		inline ID3D11ShaderResourceView* const* GetResource(GBufferTexture aType) const
 		{
@@ -72,7 +74,7 @@ namespace Kaka
 			return depthStencilView.Get();
 		}
 
-		ID3D11Texture2D* GetTexture(const unsigned int aIndex);
+		ID3D11Texture2D* GetTexture(const unsigned int aIndex) const;
 
 	private:
 		std::array<Microsoft::WRL::ComPtr<ID3D11Texture2D>, static_cast<size_t>(GBufferTexture::Count)> textures;

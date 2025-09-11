@@ -14,10 +14,9 @@ cbuffer TAABuffer : register(b1)
     bool useTAA;
 };
 
-Texture2D currentTexture : register(t0);
-Texture2D previousTexture : register(t1);
-//Texture2D worldPositionTexture : register(t2);
-Texture2D depthTexture : register(t3); // TODO Should not be at t3
+Texture2D depthTexture : register(t0);
+Texture2D currentTexture : register(t1);
+Texture2D previousTexture : register(t2);
 //Texture2D velocityTexture : register(t2);
 
 float2 CameraReproject(float3 aPosition)
@@ -35,15 +34,13 @@ float4 main(const PixelInput aInput) : SV_TARGET
         return currentTexture.Sample(fullscreenSampler, aInput.texCoord);
     }
     
-    float depth = depthTexture.Sample(fullscreenSampler, aInput.texCoord).r;
-    float3 worldPos = ReconstructWorldPosition(aInput.texCoord, depth);
+    const float depth = depthTexture.Sample(fullscreenSampler, aInput.texCoord).r;
+    const float3 worldPos = ReconstructWorldPosition(aInput.texCoord, depth);
+
+    const float2 prevUV = CameraReproject(worldPos);
     
-    float4 prevClip = mul(historyViewProjection, float4(worldPos, 1.0f));
-    float2 prevNDC = prevClip.xy / prevClip.w;
-    float2 prevUV = prevNDC * float2(0.5f, -0.5f) + 0.5f; // NDC -> UV (Y flip back)
-    
-    float3 currentColour = currentTexture.Sample(fullscreenSampler, aInput.texCoord).rgb;
-    float3 previousColour = previousTexture.Sample(fullscreenSampler, prevUV).rgb;
+    const float3 currentColour = currentTexture.Sample(fullscreenSampler, aInput.texCoord).rgb;
+    const float3 previousColour = previousTexture.Sample(fullscreenSampler, prevUV).rgb;
 
     //return float4(previousColour, 1.0f);
     
@@ -62,7 +59,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
  
     const float3 previousColourClamped = clamp(previousColour, minColour, maxColour);
 
-    float3 output = currentColour * 0.1f + previousColourClamped * 0.9f;
+    const float3 output = currentColour * 0.1f + previousColourClamped * 0.9f;
 
     return float4(output, 1.0f);
 }

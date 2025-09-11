@@ -16,7 +16,9 @@ cbuffer PointlightData : register(b2)
 float4 main(DeferredVertexToPixel aInput) : SV_TARGET
 {
     const float2 uv = aInput.position.xy / resolution.xy;
-    const float3 worldPosition = gWorldPositionTex.Sample(linearSampler, uv).rgb;
+    float depth = gDepthTex.Sample(fullscreenSampler, uv).r;
+    const float3 worldPosition = ReconstructWorldPosition(uv, depth);
+    //const float3 worldPosition = gWorldPositionTex.Sample(linearSampler, uv).rgb;
 
     const float3 albedo = gColourTex.Sample(defaultSampler, uv).rgb;
     const float3 normal = normalize(2.0f * gNormalTex.Sample(linearSampler, uv).xyz - 1.0f);

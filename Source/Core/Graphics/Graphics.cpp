@@ -325,6 +325,7 @@ namespace Kaka
 
 			SetRenderTarget(eRenderTargetType::None, nullptr);
 			gBuffer.SetAllAsResources(pContext.Get(), PS_GBUFFER_SLOT);
+			gBuffer.SetDepthAsResourceOnSlot(pContext.Get(), PS_GBUFFER_SLOT_DEPTH);
 		}
 		/// ---------- GBUFFER PASS ---------- END
 
@@ -377,7 +378,9 @@ namespace Kaka
 		}
 		/// ---------- LIGHTING PASS ---------- END
 
-
+		// Clear GBuffer slots since they are not needed anymore
+		gBuffer.ClearAllAsResourcesSlots(pContext.Get(), PS_GBUFFER_SLOT);
+		gBuffer.ClearDepthAsResourceOnSlot(pContext.Get(), PS_GBUFFER_SLOT_DEPTH);
 
 		/// ---------- SKYBOX PASS ---------- BEGIN
 		{
@@ -427,9 +430,10 @@ namespace Kaka
 			}
 
 			pContext->PSSetShaderResources(PS_TAA_SLOT_CURRENT, 1u, postProcessing.GetResource().GetAddressOf());
+			gBuffer.SetDepthAsResourceOnSlot(pContext.Get(), PS_GBUFFER_SLOT_DEPTH);
 
 			// Need world position for reprojection
-			pContext->PSSetShaderResources(PS_TAA_SLOT_DEPTH, 1u, gBuffer.GetDepthShaderResourceView());
+			//pContext->PSSetShaderResources(PS_TAA_SLOT_DEPTH, 1u, gBuffer.GetDepthShaderResourceView()); // This is already bound
 			//pContext->PSSetShaderResources(PS_TAA_SLOT_WORLDPOS, 1u, gBuffer.GetResource(GBuffer::GBufferTexture::WorldPosition));
 			// Velocity?
 			//pContext->PSSetShaderResources(3u, 1u, gBuffer.GetDepthShaderResourceView());
@@ -726,18 +730,17 @@ namespace Kaka
 			// Draw all resources in GBuffer
 			if (ImGui::Begin("GBuffer"))
 			{
+				//ImGui::Text("World Position");
 				ImGui::Columns(2, nullptr, false);
-				ImGui::Text("World Position");
-				ImGui::Image(gBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
 				ImGui::Text("Albedo");
-				ImGui::Image(gBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
+				ImGui::Image(gBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
 				ImGui::Text("Normal");
+				ImGui::Image(gBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
+				ImGui::Text("Material");
 				ImGui::Image(gBuffer.GetShaderResourceViews()[2], ImVec2(512, 288));
 				ImGui::NextColumn();
-				ImGui::Text("Material");
-				ImGui::Image(gBuffer.GetShaderResourceViews()[3], ImVec2(512, 288));
 				ImGui::Text("Ambient Occlusion");
-				ImGui::Image(gBuffer.GetShaderResourceViews()[4], ImVec2(512, 288));
+				ImGui::Image(gBuffer.GetShaderResourceViews()[3], ImVec2(512, 288));
 				ImGui::Text("Depth");
 				ImGui::Image(*gBuffer.GetDepthShaderResourceView(), ImVec2(512, 288));
 				//ImGui::Text("Velocity");

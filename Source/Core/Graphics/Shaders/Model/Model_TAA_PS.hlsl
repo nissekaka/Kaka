@@ -54,7 +54,7 @@ GBufferOutput main(PixelInput aInput)
     float ambientOcclusion = material.r;
 
     GBufferOutput output;
-    output.worldPosition = float4(aInput.worldPos, 1.0f);
+    //output.worldPosition = float4(aInput.worldPos, 1.0f);
     output.albedo = float4(albedo.rgb, 1.0f);
     output.normal = float4(0.5f + 0.5f * pixelNormal, 1.0f);
     output.material = float4(material.rgb, 1.0f);

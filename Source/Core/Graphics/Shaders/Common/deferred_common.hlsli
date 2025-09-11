@@ -27,11 +27,11 @@ float3 ReconstructWorldPosition(float2 uv, float depth01)
 
 struct GBufferOutput
 {
-    float4 worldPosition : SV_TARGET0;
-    float4 albedo : SV_TARGET1;
-    float4 normal : SV_TARGET2;
-    float4 material : SV_TARGET3;
-    float4 ambientOcclusionAndCustom : SV_TARGET4;
+    //float4 worldPosition : SV_TARGET0;
+    float4 albedo : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 material : SV_TARGET2;
+    float4 ambientOcclusionAndCustom : SV_TARGET3;
     //float2 velocity : SV_TARGET5;
     //float4 rsm : SV_TARGET5;
 };
