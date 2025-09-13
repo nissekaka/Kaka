@@ -11,7 +11,7 @@ namespace Kaka
 	public:
 		enum class eRSMBufferTexture
 		{
-			WorldPosition,
+			//WorldPosition,
 			Normal,
 			Flux,
 			Count
@@ -24,6 +24,7 @@ namespace Kaka
 			float rMax = 0.04f; // Maximum sampling radius
 			float rsmIntensity = 750.0f;
 			DirectX::XMMATRIX lightCameraTransform = {};
+			DirectX::XMMATRIX lightInverseViewProjection = {};
 		} rsmSamplingData;
 
 		struct RSMLightData
@@ -47,8 +48,10 @@ namespace Kaka
 		void ClearTextures(ID3D11DeviceContext* aContext) const;
 		void SetAsActiveTarget(ID3D11DeviceContext* aContext);
 		void SetAsResourceOnSlot(ID3D11DeviceContext* aContext, eRSMBufferTexture aTexture, unsigned int aSlot);
+		void SetDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, unsigned int aSlot);
 		void SetAllAsResources(ID3D11DeviceContext* aContext, unsigned int aSlot);
 		void ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot);
+		void ClearDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, unsigned int aSlot);
 
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> GetTarget() const { return renderTarget.pTarget; }
 		Microsoft::WRL::ComPtr <ID3D11ShaderResourceView> GetResource() const { return renderTarget.pResource; }

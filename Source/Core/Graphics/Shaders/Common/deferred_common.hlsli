@@ -10,7 +10,7 @@ cbuffer CommonBuffer : register(b4)
 			float currentTime;
 }
 
-float3 ReconstructWorldPosition(float2 uv, float depth01)
+float3 ReconstructWorldPosition(float2 uv, float depth01, matrix inverseViewProj)
 {
     // UV [0,1] -> NDC [-1,1]
     float4 ndc;
@@ -20,7 +20,7 @@ float3 ReconstructWorldPosition(float2 uv, float depth01)
     ndc.w = 1.0f;
 
     // Clip -> World
-    float4 world = mul(inverseViewProjection, ndc);
+    float4 world = mul(inverseViewProj, ndc);
     world /= world.w;
     return world.xyz;
 }
@@ -38,9 +38,9 @@ struct GBufferOutput
 
 struct RSMBufferOutput
 {
-    float4 worldPosition : SV_TARGET0;
-    float4 normal : SV_TARGET1;
-    float4 flux : SV_TARGET2;
+    //float4 worldPosition : SV_TARGET0;
+    float4 normal : SV_TARGET0;
+    float4 flux : SV_TARGET1;
 };
 struct DeferredVertexInput
 {

@@ -2,7 +2,8 @@
 #include "../Common/common.hlsli"
 #include "../Math/Poisson.hlsli"
 
-Texture2D rsmWorldPositionTex : register(t6);
+//Texture2D rsmWorldPositionTex : register(t6);
+Texture2D rsmDepthTex : register(t6);
 Texture2D rsmNormalTex : register(t7);
 Texture2D rsmFluxTex : register(t8);
 
@@ -13,6 +14,7 @@ cbuffer RSMData : register(b3)
     float rMax;
     float rsmIntensity;
     float4x4 lightCameraTransform;
+    matrix lightInverseViewProjection;
 };
 
 #define PI (3.141592653)
@@ -63,14 +65,16 @@ float3 IndirectLighting(const float2 aUv, const float3 aN, const float3 aX, cons
     	// Soft radius rather than hard cutoff
         offset.x = (offset.x * offset.x * offset.x * offset.x + 1.0f) * offset.x;
 
-        float r = offset.x * aRMax;
-        float theta = offset.y * TWO_PI;
-        float2 coord = aUv + float2(r * cos(theta), r * sin(theta));
-        float weight = offset.x * offset.x;
+        const float r = offset.x * aRMax;
+        const float theta = offset.y * TWO_PI;
+        const float2 coord = aUv + float2(r * cos(theta), r * sin(theta));
+        const float weight = offset.x * offset.x;
 
-        float3 xp = rsmWorldPositionTex.Sample(pointSampler, coord).xyz; // Position (x_p) and normal (n_p) are in world coordinates too
-        float3 flux = rsmFluxTex.Sample(pointSampler, coord).rgb; // Collect components from corresponding RSM textures
-        float3 np = normalize(2.0f * rsmNormalTex.Sample(pointSampler, coord).xyz - 1.0f);
+        //float3 xp = rsmWorldPositionTex.Sample(pointSampler, coord).xyz; // Position (x_p) and normal (n_p) are in world coordinates too
+        const float depth = rsmDepthTex.Sample(fullscreenSampler, coord).r;
+        const float3 xp = ReconstructWorldPosition(coord, depth, lightInverseViewProjection);
+        const float3 flux = rsmFluxTex.Sample(pointSampler, coord).rgb; // Collect components from corresponding RSM textures
+        const float3 np = normalize(2.0f * rsmNormalTex.Sample(pointSampler, coord).xyz - 1.0f);
 
         float3 Ep = flux * ((max(0, dot(np, aX - xp)) * max(0, dot(aN, xp - aX)))
 									/ pow(length(aX - xp), 4));

@@ -22,7 +22,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
 
     const float3 albedo = gColourTex.Sample(defaultSampler, uv).rgb;
     float depth = gDepthTex.Sample(fullscreenSampler, uv).r;
-    const float3 worldPosition = ReconstructWorldPosition(uv, depth);
+    const float3 worldPosition = ReconstructWorldPosition(uv, depth, inverseViewProjection);
     //const float3 worldPosition = gWorldPositionTex.Sample(linearSampler, uv).rgb;
     const float3 worldNormal = normalize(2.0f * gNormalTex.Sample(linearSampler, uv).xyz - 1.0f);
 

@@ -337,7 +337,9 @@ namespace Kaka
 			if (useReflectiveShadowMap)
 			{
 				rsmBuffer.SetAllAsResources(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
+				rsmBuffer.SetDepthAsResourceOnSlot(pContext.Get(), PS_RSM_SLOT_DEPTH);
 				rsmBuffer.rsmSamplingData.lightCameraTransform = rsmBuffer.GetCamera().GetInverseView() * rsmBuffer.GetCamera().GetJitteredProjection();
+				rsmBuffer.rsmSamplingData.lightInverseViewProjection = DirectX::XMMatrixInverse(nullptr, rsmBuffer.rsmSamplingData.lightCameraTransform);
 
 				SetRenderTarget(eRenderTargetType::RSM, nullptr);
 
@@ -349,6 +351,7 @@ namespace Kaka
 				}
 
 				rsmBuffer.ClearAllAsResourcesSlots(pContext.Get(), PS_RSM_SLOT_DIRECTIONAL);
+				rsmBuffer.ClearDepthAsResourceOnSlot(pContext.Get(), PS_RSM_SLOT_DEPTH);
 			}
 		}
 		/// ---------- RSM PASS -- DIRECTIONAL LIGHT ---------- END
@@ -770,13 +773,13 @@ namespace Kaka
 				if (ImGui::Begin("RSMBuffer Directional"))
 				{
 					ImGui::Columns(2, nullptr, false);
-					ImGui::Text("World Position");
-					ImGui::Image(rsmBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
+					//ImGui::Text("World Position");
+					//ImGui::Image(rsmBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
 					ImGui::Text("Normal");
-					ImGui::Image(rsmBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
+					ImGui::Image(rsmBuffer.GetShaderResourceViews()[0], ImVec2(512, 288));
 					ImGui::NextColumn();
 					ImGui::Text("Flux");
-					ImGui::Image(rsmBuffer.GetShaderResourceViews()[2], ImVec2(512, 288));
+					ImGui::Image(rsmBuffer.GetShaderResourceViews()[1], ImVec2(512, 288));
 					ImGui::Text("Depth");
 					ImGui::Image(*rsmBuffer.GetDepthShaderResourceView(), ImVec2(512, 288));
 				}

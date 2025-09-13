@@ -35,7 +35,7 @@ float4 main(const PixelInput aInput) : SV_TARGET
     }
     
     const float depth = depthTexture.Sample(fullscreenSampler, aInput.texCoord).r;
-    const float3 worldPos = ReconstructWorldPosition(aInput.texCoord, depth);
+    const float3 worldPos = ReconstructWorldPosition(aInput.texCoord, depth, inverseViewProjection);
 
     const float2 prevUV = CameraReproject(worldPos);
     

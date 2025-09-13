@@ -78,7 +78,7 @@ RSMBufferOutput main(PixelInput aInput)
 
     RSMBufferOutput output;
 
-    output.worldPosition = float4(aInput.worldPos, 1.0f);
+    //output.worldPosition = float4(aInput.worldPos, 1.0f);
     if (isDirectionalLight)
     {
         output.flux = float4(albedo.rgb * lightColourAndIntensity.xyz, 1.0f) * lightColourAndIntensity.w;

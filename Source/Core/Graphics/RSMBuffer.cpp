@@ -9,7 +9,7 @@ namespace Kaka
 
 		constexpr std::array textureFormats =
 		{
-			DXGI_FORMAT_R32G32B32A32_FLOAT, // World Position
+			//DXGI_FORMAT_R32G32B32A32_FLOAT, // World Position
 			DXGI_FORMAT_R10G10B10A2_UNORM, // Normal,
 			DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, // Flux
 			DXGI_FORMAT_R8G8B8A8_UNORM, // Depth
@@ -169,16 +169,27 @@ namespace Kaka
 		aContext->PSSetShaderResources(aSlot, 1, shaderResourceViews[static_cast<int>(aTexture)].GetAddressOf());
 	}
 
+	void RSMBuffer::SetDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, const unsigned int aSlot)
+	{
+		aContext->PSSetShaderResources(aSlot, 1, depthStencilShaderResourceView.GetAddressOf());
+	}
+
 	void RSMBuffer::SetAllAsResources(ID3D11DeviceContext* aContext, const unsigned int aSlot)
 	{
 		aContext->PSSetShaderResources(aSlot, static_cast<int>(eRSMBufferTexture::Count), shaderResourceViews[0].GetAddressOf());
 	}
 
-	void RSMBuffer::ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, unsigned int aSlot)
+	void RSMBuffer::ClearAllAsResourcesSlots(ID3D11DeviceContext* aContext, const unsigned int aSlot)
 	{
 		ID3D11ShaderResourceView* const nullSRV[static_cast<int>(eRSMBufferTexture::Count)] = { nullptr };
 
 		aContext->PSSetShaderResources(aSlot, static_cast<int>(eRSMBufferTexture::Count), nullSRV);
+	}
+
+	void RSMBuffer::ClearDepthAsResourceOnSlot(ID3D11DeviceContext* aContext, const unsigned int aSlot)
+	{
+		ID3D11ShaderResourceView* const nullSRV[1] = { nullptr };
+		aContext->PSSetShaderResources(aSlot, 1, nullSRV);
 	}
 
 	ID3D11Texture2D* RSMBuffer::GetTexture(const unsigned int aIndex)
