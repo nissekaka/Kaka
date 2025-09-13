@@ -77,6 +77,8 @@ namespace Kaka
 		void Render(const FrameContext& aContext);
 		void LoadModel(const std::string& aFilePath);
 		ModelData& LoadModelData(const std::string& aFilePath) const;
+		uint64_t LoadModelHashKey(const std::string& aFilePath, eVertexShaderType aVertexShaderType,
+		                          ePixelShaderType aPixelShaderType) const;
 
 		// Camera
 		DirectX::XMMATRIX GetProjection() const;

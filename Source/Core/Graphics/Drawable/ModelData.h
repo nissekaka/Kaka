@@ -100,11 +100,16 @@ namespace Kaka
 		std::vector<DirectX::XMMATRIX> finalTransforms = {};
 	};
 
-	struct RenderData
+	struct HashRenderData
 	{
 		ModelData* modelData = nullptr;
 		VertexShader* vertexShader = nullptr;
 		PixelShader* pixelShader = nullptr;
+	};
+
+	struct RenderData
+	{
+		uint64_t hashKey = 0;
 		Ecs::TransformComponent* transform = nullptr;
 	};
 }

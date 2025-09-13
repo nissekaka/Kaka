@@ -521,6 +521,18 @@ namespace Kaka
 		return ModelFactory::GetModelData(aFilePath);
 	}
 
+	uint64_t Graphics::LoadModelHashKey(const std::string& aFilePath, const eVertexShaderType aVertexShaderType, const ePixelShaderType aPixelShaderType) const
+	{
+		if (!ModelFactory::LoadStaticModel(*this, aFilePath))
+		{
+			assert(false && "Failed to load model");
+		}
+
+		return ModelFactory::GetModelDataHashKey(&ModelFactory::GetModelData(aFilePath),
+												 ShaderFactory::GetVertexShader(*this, aVertexShaderType),
+												 ShaderFactory::GetPixelShader(*this, aPixelShaderType));
+	}
+
 	DirectX::XMMATRIX Graphics::GetProjection() const
 	{
 		return currentCamera->GetProjection();
@@ -900,7 +912,7 @@ namespace Kaka
 						if (ImGui::TreeNode("Model"))
 						{
 							const Ecs::ModelComponent* model = entity->GetComponent<Ecs::ModelComponent>();
-							ImGui::Text(model->modelData->filePath.c_str());
+							ImGui::Text(ModelFactory::GetHashRenderData(model->hashKey).modelData->filePath.c_str());
 							ImGui::TreePop();
 						}
 					}

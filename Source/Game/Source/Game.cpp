@@ -15,12 +15,10 @@ namespace Kaka
 	{
 		entities.reserve(MAX_ENTITIES);
 
-		entities.push_back(ecs.CreateEntity());
-		entities.back()->AddComponent(Ecs::TransformComponent{});
-		entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/sponza_pbr/Sponza.obj") });
-		entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
-		entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
-		entities.back()->GetComponent<Ecs::TransformComponent>()->SetScale(0.1f);
+		//entities.push_back(ecs.CreateEntity());
+		//entities.back()->AddComponent(Ecs::TransformComponent{});
+		//entities.back()->AddComponent(Ecs::ModelComponent{wnd.Gfx().LoadModelHashKey("Assets/Models/sponza_pbr/Sponza.obj", eVertexShaderType::ModelTAAInstanced, ePixelShaderType::Model)});
+		//entities.back()->GetComponent<Ecs::TransformComponent>()->SetScale(0.1f);
 
 		//entities.push_back(ecs.CreateEntity());
 		//entities.back().AddComponent(TransformComponent{});
@@ -47,9 +45,11 @@ namespace Kaka
 
 		//		entities.back()->AddComponent(Ecs::VelocityComponent{});
 
-		//		entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx") });
-		//		entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
-		//		entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+		//		entities.back()->AddComponent(Ecs::ModelComponent{ wnd.Gfx().LoadModelHashKey("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx", eVertexShaderType::ModelTAAInstanced, ePixelShaderType::Model) });
+		//		//entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx") });
+		//		//entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+		//		//entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+		//		//entities.back()->GetComponent<Ecs::ModelComponent>()->hashKey = wnd.Gfx().GetModelDataHashKey("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx", eVertexShaderType::ModelTAAInstanced, ePixelShaderType::Model);
 		//	}
 		//}
 
@@ -144,9 +144,11 @@ namespace Kaka
 					transformComponent->SetPosition(entities.size() * 20.0f, transformComponent->GetPosition().y, transformComponent->GetPosition().z);
 					transformComponent->SetScale(0.1f);
 
-					entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx") });
-					entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
-					entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+					entities.back()->AddComponent(Ecs::ModelComponent{ wnd.Gfx().LoadModelHashKey("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx", eVertexShaderType::ModelTAAInstanced, ePixelShaderType::Model) });
+
+					//entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/crawler/CH_NPC_Crawler_01_22G3S_SK.fbx") });
+					//entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+					//entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
 
 					entities.back()->AddComponent(Ecs::VelocityComponent{});
 
@@ -165,9 +167,11 @@ namespace Kaka
 					transformComponent->SetPosition(entities.size() * 20.0f, transformComponent->GetPosition().y, transformComponent->GetPosition().z);
 					transformComponent->SetScale(0.1f);
 
-					entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/wizard/SM_wizard.fbx") });
-					entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
-					entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
+					entities.back()->AddComponent(Ecs::ModelComponent{ wnd.Gfx().LoadModelHashKey("Assets/Models/wizard/SM_wizard.fbx", eVertexShaderType::ModelTAAInstanced, ePixelShaderType::Model) });
+
+					//entities.back()->AddComponent(Ecs::ModelComponent{ &wnd.Gfx().LoadModelData("Assets/Models/wizard/SM_wizard.fbx") });
+					//entities.back()->GetComponent<Ecs::ModelComponent>()->vertexShader = ShaderFactory::GetVertexShader(wnd.Gfx(), eVertexShaderType::ModelTAAInstanced);
+					//entities.back()->GetComponent<Ecs::ModelComponent>()->pixelShader = ShaderFactory::GetPixelShader(wnd.Gfx(), ePixelShaderType::Model);
 
 					entities.back()->AddComponent(Ecs::VelocityComponent{});
 

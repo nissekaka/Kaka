@@ -4,8 +4,6 @@ namespace Kaka::Ecs
 {
 	struct ModelComponent
 	{
-		ModelData* modelData = nullptr;
-		VertexShader* vertexShader = nullptr;
-		PixelShader* pixelShader = nullptr;
+		uint64_t hashKey = 0;
 	};
 }

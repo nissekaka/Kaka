@@ -682,4 +682,19 @@ namespace Kaka
 
 		return false;
 	}
+
+	uint64_t ModelFactory::GetModelDataHashKey(ModelData* aModelData, VertexShader* aVertexShader,
+		PixelShader* aPixelShader)
+	{
+		const std::string key = aModelData->filePath + std::to_string(static_cast<int>(aVertexShader->GetType())) +
+						  std::to_string(static_cast<int>(aPixelShader->GetType()));
+		constexpr std::hash<std::string> hasher;
+		if (hashRenderDatas.contains(hasher(key)))
+		{
+			return hasher(key);
+		}
+
+		hashRenderDatas[hasher(key)] = HashRenderData{ aModelData, aVertexShader, aPixelShader };
+		return hasher(key);
+	}
 }

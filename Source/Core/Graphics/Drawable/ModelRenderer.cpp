@@ -4,6 +4,7 @@
 #include <ranges>
 
 #include "Model.h"
+#include "ModelFactory.h"
 #include "ECS/Components/TransformComponent.h"
 
 namespace Kaka
@@ -22,14 +23,12 @@ namespace Kaka
 
 		for (RenderData& renderData : aRenderData)
 		{
-			uint64_t key = GetRenderDataHash(std::to_string(static_cast<int>(renderData.vertexShader->GetType())),
-					std::to_string(static_cast<int>(renderData.pixelShader->GetType())),
-					renderData.modelData->filePath);
+			HashRenderData& hashRenderData = ModelFactory::GetHashRenderData(renderData.hashKey);
 
-			RenderQueue::RenderCommand& renderCommand = groups[key];
-			renderCommand.vertexShader = renderData.vertexShader;
-			renderCommand.pixelShader = renderData.pixelShader;
-			renderCommand.modelData = renderData.modelData;
+			RenderQueue::RenderCommand& renderCommand = groups[renderData.hashKey];
+			renderCommand.modelData = hashRenderData.modelData;
+			renderCommand.vertexShader = hashRenderData.vertexShader;
+			renderCommand.pixelShader = hashRenderData.pixelShader;
 			renderCommand.transformComponents.push_back(renderData.transform);
 		}
 

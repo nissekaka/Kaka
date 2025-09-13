@@ -20,6 +20,8 @@ namespace Kaka
 		static Texture* LoadTexture(const Graphics& aGfx, const std::string& aFilePath, const UINT aSlot = 2u);
 		static bool LoadAnimation(AnimatedModelData& aOutModelData, const std::string& aFilePath);
 		static ModelData& GetModelData(const std::string& aFilePath) { return modelDatas[aFilePath]; }
+		static HashRenderData& GetHashRenderData(const uint64_t aHash) { return hashRenderDatas[aHash]; }
+		static uint64_t GetModelDataHashKey(ModelData* aModelData, VertexShader* aVertexShader, PixelShader* aPixelShader);
 
 	private:
 		inline static std::unordered_map<std::string, ModelData> modelDatas;
@@ -27,5 +29,6 @@ namespace Kaka
 		inline static std::unordered_map<std::string, Skeleton> skeletons;
 		inline static std::unordered_map<std::string, AnimationClip> animationClips;
 		inline static std::unordered_map<std::string, Texture> textures;
+		inline static std::unordered_map<uint64_t, HashRenderData> hashRenderDatas;
 	};
 }

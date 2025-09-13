@@ -18,7 +18,7 @@ namespace Kaka::Ecs
 			ModelComponent* model = models.GetComponent(entityId);
 			TransformComponent* transform = transforms.GetComponent(entityId);
 
-			aGfx.RegisterRenderData(RenderData{ model->modelData, model->vertexShader, model->pixelShader, transform });
+			aGfx.RegisterRenderData(RenderData{model->hashKey, transform});
 		}
 	}
 }
