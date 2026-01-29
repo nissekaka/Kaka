@@ -206,6 +206,11 @@ namespace Kaka
 		pContext->DrawIndexedInstanced(aCount, aInstanceCount, 0u, 0u, 0u);
 	}
 
+	void Graphics::SetupRenderData(const size_t aSize)
+	{
+		modelRenderData.reserve(aSize);
+	}
+
 	void Graphics::RegisterRenderData(const RenderData& aRenderData)
 	{
 		modelRenderData.push_back(aRenderData);

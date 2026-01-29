@@ -71,6 +71,7 @@ namespace Kaka
 		void EndFrame();
 		void DrawIndexed(UINT aCount);
 		void DrawIndexedInstanced(UINT aCount, UINT aInstanceCount);
+		void SetupRenderData(const size_t aSize);
 		void RegisterRenderData(const RenderData& aRenderData);
 		void ClearRenderData();
 		void BuildRenderQueue();

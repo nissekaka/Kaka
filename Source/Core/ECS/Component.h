@@ -30,8 +30,8 @@ namespace Kaka::Ecs
 
 			const size_t index = components.size();
 			entityToIndex[aEntityId] = index;
-			indexToEntity.push_back(aEntityId);
-			components.push_back(aComponent);
+			indexToEntity.emplace_back(aEntityId);
+			components.emplace_back(aComponent);
 		}
 
 		void RemoveComponent(EntityID aEntityId)

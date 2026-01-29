@@ -6,6 +6,6 @@ namespace Kaka::Ecs
 
 	struct ModelSystem
 	{
-		void RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry);
+		void RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry) const;
 	};
 }

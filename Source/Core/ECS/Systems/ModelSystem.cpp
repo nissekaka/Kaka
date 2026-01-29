@@ -8,17 +8,16 @@
 
 namespace Kaka::Ecs
 {
-	void ModelSystem::RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry)
+	void ModelSystem::RegisterModelComponents(Graphics& aGfx, ComponentRegistry& aRegistry) const
 	{
 		ComponentSparseSet<ModelComponent>& models = aRegistry.GetComponentSet<ModelComponent>();
 		ComponentSparseSet<TransformComponent>& transforms = aRegistry.GetComponentSet<TransformComponent>();
 
+		aGfx.SetupRenderData(models.GetEntities().size());
+
 		for (const EntityID& entityId : models.GetEntities())
 		{
-			ModelComponent* model = models.GetComponent(entityId);
-			TransformComponent* transform = transforms.GetComponent(entityId);
-
-			aGfx.RegisterRenderData(RenderData{model->hashKey, transform});
+			aGfx.RegisterRenderData(RenderData{ models.GetComponent(entityId)->hashKey, transforms.GetComponent(entityId) });
 		}
 	}
 }

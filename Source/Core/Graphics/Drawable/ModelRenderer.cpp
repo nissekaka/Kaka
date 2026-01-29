@@ -9,7 +9,6 @@
 
 namespace Kaka
 {
-
 	void ModelRenderer::Init(const Graphics& aGfx)
 	{
 		topology.Init(aGfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
