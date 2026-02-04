@@ -11,6 +11,7 @@ cbuffer ShadowBuffer : register(b7)
     int sampleCountPCF;
     bool usePoisson;
     float offsetScalePoissonDisk;
+    int sampleCountPoisson;
 }
 
 float PoissonDisk(float3 aLightProjectedPosition, Texture2D aTexture)
@@ -20,7 +21,7 @@ float PoissonDisk(float3 aLightProjectedPosition, Texture2D aTexture)
 
     float shadowFactor = 0.0f;
 
-    const int sampleCount = 64;
+    const int sampleCount = clamp(sampleCountPoisson, 4, 64);
     const float offsetScale = offsetScalePoissonDisk;
 
     [unroll(64)] // Unroll the loop (64 samples in the Poisson disk pattern)]
@@ -31,7 +32,7 @@ float PoissonDisk(float3 aLightProjectedPosition, Texture2D aTexture)
 		// Adjust sampleUV based on facing direction
         const float2 sampleUV = 0.5f + float2(0.5f, -0.5f) * (aLightProjectedPosition.xy) + sampleOffset * offsetScale;
 
-        const float shadowMapZ = aTexture.Sample(shadowSampler, sampleUV);
+        const float shadowMapZ = aTexture.Sample(shadowSampler, sampleUV).r;
 
         //shadowFactor -= (1.0f / 16.0f) * clamp(1.0f - shadowMapZ + bias, 0.0f, 1.0f);
         shadowFactor += (computedZ < shadowMapZ + bias) ? 1.0f : 0.0f;
@@ -49,18 +50,19 @@ float PCF(float3 aLightProjectedPosition, Texture2D aTexture)
 
 	// Filter kernel for PCF eg. (15x15)
     const int sampleCount = clamp(sampleCountPCF, 3, 25);
+    const int halfCount = sampleCount / 2;
 	// Offset scale decides how much the shadow edge is moved for "blurring"
     const float offsetScale = offsetScalePCF;
 
     [unroll(25)] // Unroll the loop (max 25x25 samples in the PCF pattern)]
-    for (int i = -sampleCount / 2u; i <= sampleCount / 2u; ++i)
+    for (int i = -halfCount; i <= halfCount; ++i)
     {
         [unroll(25)]
-        for (int j = -sampleCount / 2u; j <= sampleCount / 2u; ++j)
+        for (int j = -halfCount; j <= halfCount; ++j)
         {
             const float2 sampleOffset = float2(i, j) / float(sampleCount);
             const float2 sampleUV = 0.5f + float2(0.5f, -0.5f) * (aLightProjectedPosition.xy + sampleOffset * offsetScale);
-            const float shadowMapZ = aTexture.Sample(shadowSampler, sampleUV);
+            const float shadowMapZ = aTexture.Sample(shadowSampler, sampleUV).r;
 
             shadowFactor += (computedZ < shadowMapZ + bias) ? 1.0f : 0.0f;
         }

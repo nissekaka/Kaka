@@ -14,17 +14,18 @@ namespace Kaka
 			int sampleCountPCF = 5;
 			BOOL usePoisson = true;
 			float offsetScalePoissonDisk = 0.0019f;
-			float padding[3] = {};
+			int sampleCountPoisson = 32;
+			float padding[2] = {};
 		} shadowData;
 
 		static ShadowBuffer Create(Graphics& aGfx, UINT aWidth, UINT aHeight);
 		~ShadowBuffer() = default;
 		void InitBuffer(const Graphics& aGfx);
-		void UpdateAndBindBuffer(Graphics& aGfx);
+		void UpdateAndBindBuffer(const Graphics& aGfx);
 		Camera& GetCamera() { return camera; }
 
 		void Clear(ID3D11DeviceContext* aContext) const;
-		void SetAsActiveTarget(ID3D11DeviceContext* aContext);
+		void SetAsActiveTarget(ID3D11DeviceContext* aContext) const;
 
 		inline ID3D11ShaderResourceView* const* GetDepthShaderResourceView() const
 		{

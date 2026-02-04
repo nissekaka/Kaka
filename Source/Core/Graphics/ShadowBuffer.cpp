@@ -62,7 +62,7 @@ namespace Kaka
 		shadowPixelBuffer.Init(aGfx, shadowData);
 	}
 
-	void ShadowBuffer::UpdateAndBindBuffer(Graphics& aGfx)
+	void ShadowBuffer::UpdateAndBindBuffer(const Graphics& aGfx)
 	{
 		shadowPixelBuffer.Update(aGfx, shadowData);
 		shadowPixelBuffer.Bind(aGfx);
@@ -73,7 +73,7 @@ namespace Kaka
 		aContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
-	void ShadowBuffer::SetAsActiveTarget(ID3D11DeviceContext* aContext)
+	void ShadowBuffer::SetAsActiveTarget(ID3D11DeviceContext* aContext) const
 	{
 		aContext->OMSetRenderTargets(0u, nullptr, depthStencilView.Get());
 	}

@@ -736,12 +736,13 @@ namespace Kaka
 			if (ImGui::Begin("Shadows"))
 			{
 				ImGui::Text("PCF");
-				ImGui::Checkbox("Use PCF", (bool*)&shadowBuffer.shadowData.usePCF);
+				ImGui::Checkbox("Use PCF", reinterpret_cast<bool*>(&shadowBuffer.shadowData.usePCF));
 				ImGui::DragFloat("Offset scale##OffsetPCF", &shadowBuffer.shadowData.offsetScalePCF, 0.0001f, 0.0f, 1.0f, "%.6f");
-				ImGui::DragInt("Sample count", &shadowBuffer.shadowData.sampleCountPCF, 1, 1, 25);
+				ImGui::DragInt("Sample count##SamplePCF", &shadowBuffer.shadowData.sampleCountPCF, 1, 1, 25);
 				ImGui::Text("Poisson");
-				ImGui::Checkbox("Use Poisson##Shadow", (bool*)&shadowBuffer.shadowData.usePoisson);
+				ImGui::Checkbox("Use Poisson##UsePoisson", reinterpret_cast<bool*>(&shadowBuffer.shadowData.usePoisson));
 				ImGui::DragFloat("Offset scale##OffsetPoisson", &shadowBuffer.shadowData.offsetScalePoissonDisk, 0.0001f, 0.0f, 1.0f, "%.6f");
+				ImGui::DragInt("Sample count##SamplePoisson", &shadowBuffer.shadowData.sampleCountPoisson, 1, 1, 25);
 			}
 			ImGui::End();
 
